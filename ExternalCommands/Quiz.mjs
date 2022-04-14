@@ -86,6 +86,7 @@ var odstQuestions = [
         Question: "Oni",
         Answers: ["Pog"],
     },
+    // Characters
     {
         Question:
             "During the events of Halo 3:ODST what is Buck's military rank?",
@@ -114,6 +115,10 @@ var odstQuestions = [
     {
         Question: "What is The Rookie's full name?",
         Answers: ["Jonathan Doherty"],
+    },
+    {
+        Question: "Who killed The Rookie?",
+        Answers: ["Captain Ingridson", "Ingridson"],
     },
     {
         Question: "What is Dare's middle name?",
@@ -160,10 +165,22 @@ var odstQuestions = [
         Question: "Who is the voice actor for the Superintendent?",
         Answers: ["Joseph Staten"],
     },
+    // Lore/World Building/Meta-trivia
+    {
+        Question:
+            "When was Halo 3:ODST released on the Xbox 360? (Answer is YYYY-MM-DD format)",
+        Answers: ["2009-09-22", "2009-9-22"],
+    },
     {
         Question: "What is the alternative name for the Coastal Highway?",
         Answers: ["Waterfront Highway", "the Waterfront Highway"],
     },
+    {
+        Question:
+            "What is the name of the TV show that stars both Nathan Fillian (voice of Buck) and Tricia Helfer (voice of Dare)?",
+        Answers: ["The Rookie"], //The Rookie (Season 4, Episode 2) https://www.youtube.com/watch?v=bHmRHWdnKP0
+    },
+    // Gameplay
     {
         Question:
             "The cutscene at the end of Uplift Reserve changes depending if the player is driving a Warthog, a Ghost or which other vehicle?",
@@ -178,11 +195,6 @@ var odstQuestions = [
         Question:
             "How many audio logs are required to alter the events in the mission Data Hive?",
         Answers: ["29"],
-    },
-    {
-        Question:
-            "What is the name of the TV show that stars both Nathan Fillian (voice of Buck) and Tricia Helfer (voice of Dare)?",
-        Answers: ["The Rookie"], //The Rookie (Season 4, Episode 2) https://www.youtube.com/watch?v=bHmRHWdnKP0
     },
     {
         Question:
@@ -209,6 +221,35 @@ var odstQuestions = [
             "In Halo 3:ODST how many needles are required to supercombine?",
         Answers: ["12"],
     },
+    // Speedrunning/Haloruns
+    {
+        Question: "Halo 3:ODST was run at GDQ by which speedrunner?",
+        Answers: ["Heroic Robb", "Heroic_Robb"],
+    },
+    {
+        Question:
+            "In March 2016 SkilledGames_ set the Legendary IL WR for which level?",
+        Answers: ["NMPD HQ", "NMPD"],
+    },
+    {
+        Question: '2019 was named the "Year of ODST" by which speedrunner?',
+        Answers: ["Adversaryy"],
+    },
+    {
+        Question:
+            "In 2020 SkilledGames_ set a new Uplift Easy WR with a time of 2:12, which runner previously held the WR?",
+        Answers: ["Sorix", "TehSorix"],
+    },
+    {
+        Question:
+            "In 2016 a_royal_hobo battled out with which other runner for Kikowani Station WR?",
+        Answers: ["Hoshka"],
+    },
+    {
+        Question:
+            "Wingman953, SkilledGames_ & Zombie343 set the ONI Alpha Site Easy Co-op WR in an RTA time of 10:42, what was the In-Game time?",
+        Answers: ["7:46"],
+    },
     // Quotes
     {
         Question:
@@ -222,7 +263,7 @@ var odstQuestions = [
     },
     {
         Question:
-            "On what mission is the following quote said: \"Trooper, we're pinned down! Flank through this building, hit 'em from behind!\"",
+            'On what mission is the following quote said: "Wanna live? Then get your ass out of the street!"',
         Answers: [
             "Kizingo Blvd.",
             "Kizingo",
@@ -237,13 +278,48 @@ var odstQuestions = [
     },
     {
         Question:
+            'On what mission is the following quote said: "Whew! Lord, that thing stinks. Kinda reminds me of my-"',
+        Answers: ["Coastal Highway", "Coastal"],
+    },
+    {
+        Question:
+            'Who says the following quote: "You know the music, time to dance."',
+        Answers: ["Buck"],
+    },
+    {
+        Question:
             'Who says the following quote: "Your mama never loved ya and she dresses you funny."',
-        Answers: ["Mickey", "Michael Crespo"],
+        Answers: ["Mickey"],
+    },
+    {
+        Question:
+            'Who says the following quote: "I saw my life flash before me. It sucked."',
+        Answers: ["Mickey"],
     },
     {
         Question:
             "Who says the following quote: \"It ain't logical. I mean, hell, I'll kill a man in a fair fight... or if I think he's gonna start a fair fight, or if he bothers me, or if there's a woman... (sniffs) or if I'm gettin' paid - mostly only when I'm gettin' paid.\"",
         Answers: ["Dutch"],
+    },
+    {
+        Question:
+            "Who says the following quote: \"Uh, Lord? I didn't train to be a pilot. Tell me I don't have any more flying to do today.\"",
+        Answers: ["Dutch"],
+    },
+    {
+        Question:
+            'Who says the following quote: "I\'m gonna kill you! With light!"',
+        Answers: ["Romeo"],
+    },
+    {
+        Question:
+            'Who says the following quote: "We went through hell for that?"',
+        Answers: ["Romeo"],
+    },
+    {
+        Question:
+            'Who says the following quote: "I recommend trying a lot harder."',
+        Answers: ["Dare"],
     },
     {
         Question:

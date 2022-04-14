@@ -36,3 +36,5 @@ const fastFactList = [
 // "Soft-locking NMPD HQ, if the last phantom is destroyed too quickly the mission will not end.",
 // "Soft-locking Coastal Highway, by clearing the Jackals too quickly the Hunter's spawn before the Phantom and fall outside of the map. While the Hunters are live the mission won't progress: https://www.youtube.com/watch?v=ei6E8tzsCUc",
 // "MCC Season 8 changes https://www.youtube.com/watch?v=4v0SaOwZWmQ",
+// 2nd March 2016 SkilledGames NMPD Leg IL WR, beaten later that day, rip. 3.5yrs later he set the ODST Easy FG WR in 1:08:04.
+// The following is a link to the first documented ODST Speedrun by a member of the public, Tayari Plaza Easy done in 2:13. The video is uploaded before the official release of the game. The runner says they received the game 3 days before release. https://www.youtube.com/watch?v=XCViO047t8g
