@@ -162,13 +162,57 @@ var odstQuestions = [
         Answers: ["Quick to Adjust"],
     },
     {
+        Question: "What was the name of the ODST Fireteam in Halo 3:ODST?",
+        Answers: ["Alpha-9", "Alpha 9", "Alpha Nine", "Alpha-Nine"],
+    },
+    {
+        Question: "Who is the voice actor for Buck?",
+        Answers: ["Nathan Fillion"],
+    },
+    {
+        Question: "Who is the voice actress for Dare?",
+        Answers: ["Tricia Helfer"],
+    },
+    {
+        Question: "Who is the voice actor for Dutch?",
+        Answers: ["Adam Baldwin"],
+    },
+    {
+        Question: "Who is the voice actor for Mickey?",
+        Answers: ["Alan Tudyk"],
+    },
+    {
+        Question: "Who is the voice actor for Romeo?",
+        Answers: ["Nolan North"],
+    },
+    {
         Question: "Who is the voice actor for the Superintendent?",
         Answers: ["Joseph Staten"],
+    },
+    {
+        Question: "The in-game audio logs tell the story of which young lady?",
+        Answers: ["Sadie Endesha", "Sadie"],
+    },
+    {
+        Question:
+            "In pounds (lb), how heavy is Jonas the Butcher from the audio log story?",
+        Answers: ["800lbs", "800"],
+    },
+    {
+        Question:
+            "In the audio log story, what food is Jonas the Butcher handing out for free?",
+        Answers: ["Kebab", "Kebabs"],
+    },
+    // Weapons, vehicles, equipment
+    {
+        Question:
+            "What is the name of the type of garbage trucks that operate in New Mombasa?",
+        Answers: ["Olifant", "Olifants"],
     },
     // Lore/World Building/Meta-trivia
     {
         Question:
-            "When was Halo 3:ODST released on the Xbox 360? (Answer is YYYY-MM-DD format)",
+            "When was Halo 3:ODST released on the Xbox 360? (Answer in YYYY-MM-DD format)",
         Answers: ["2009-09-22", "2009-9-22"],
     },
     {
@@ -177,7 +221,7 @@ var odstQuestions = [
     },
     {
         Question:
-            "What is the name of the TV show that stars both Nathan Fillian (voice of Buck) and Tricia Helfer (voice of Dare)?",
+            "What is the name of the TV show that stars both Nathan Fillion (voice of Buck) and Tricia Helfer (voice of Dare)?",
         Answers: ["The Rookie"], //The Rookie (Season 4, Episode 2) https://www.youtube.com/watch?v=bHmRHWdnKP0
     },
     // Gameplay
@@ -237,6 +281,11 @@ var odstQuestions = [
     },
     {
         Question:
+            "Adversaryy achieved his first Legendary IL WR ever on which level?",
+        Answers: ["Kikowani Station", "Kikowani"],
+    },
+    {
+        Question:
             "In 2020 SkilledGames_ set a new Uplift Easy WR with a time of 2:12, which runner previously held the WR?",
         Answers: ["Sorix", "TehSorix"],
     },
@@ -249,6 +298,15 @@ var odstQuestions = [
         Question:
             "Wingman953, SkilledGames_ & Zombie343 set the ONI Alpha Site Easy Co-op WR in an RTA time of 10:42, what was the In-Game time?",
         Answers: ["7:46"],
+    },
+    {
+        Question: "Welshevo79 was known for speedrunning which IL?",
+        Answers: ["Coastal Highway", "Coastal"],
+    },
+    {
+        Question:
+            'The trick known as "The Charpet" is named after which speedrunner?',
+        Answers: ["Chappified", "Chappy"],
     },
     // Quotes
     {

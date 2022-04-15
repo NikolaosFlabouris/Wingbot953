@@ -38,3 +38,4 @@ const fastFactList = [
 // "MCC Season 8 changes https://www.youtube.com/watch?v=4v0SaOwZWmQ",
 // 2nd March 2016 SkilledGames NMPD Leg IL WR, beaten later that day, rip. 3.5yrs later he set the ODST Easy FG WR in 1:08:04.
 // The following is a link to the first documented ODST Speedrun by a member of the public, Tayari Plaza Easy done in 2:13. The video is uploaded before the official release of the game. The runner says they received the game 3 days before release. https://www.youtube.com/watch?v=XCViO047t8g
+// Heroic Robb held the Kizingo Blvd. Legendary IL WR from 12th Mar 2015 to 19th Oct 2020. He set 9 different WRs during that time.

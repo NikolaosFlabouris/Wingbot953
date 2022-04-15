@@ -306,6 +306,16 @@ const odstQuotesList = [
     '"CAUTION, TRAVELER! CAUTION!" - Superintendent',
     '"ATTENTION, TRAVELER! LOST ITEM CAN BE CLAIMED ON...LOWER LEVELS." - Superintendent',
     '"SPAY AND NEUTER YOUR PETS. ALL DOGS MUST BE KEPT ON LEASH!" - Superintendent',
+    '"HELLO, TRAVELLER, MOMBASA WELCOMES YOU!" - Superintendent',
+    '"ALL ABOARD LAST RAIN NOW DEPARTING. NEXT STOP -- MAKUPA, NAIROBI ROAD, HOPE STATION... And beyond." - Superintendent',
+    // Sadie
+    '"Vergil, I\'m going to enlist!" - Sadie',
+    '"I think I\'m the only one in this car that needs to be thinking about my ass!" - Sadie',
+    "\"Vergil, you've watched me all my life, kept me safe. Now you've got to save the city!\" - Sadie",
+    '"Well... Vergil is part of the Superintendent -- a sub-routine my Dad wrote to look after me when I was a kid." - Sadie',
+    '"Mike.. I want you to live. I need you to live... For me." - Sadie',
+    '"Virgil. Open the doors." - Sadie',
+    '"That creature helped Virgil! It helped you and me! It helped all of us!" - Sadie',
     // Johnson
     '"Don\'t worry...(tapping a control panel)...I know what the aliens like." - Johnson',
     '"Bip, bap, bam!" - Johnson',
