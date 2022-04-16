@@ -3,9 +3,10 @@ import { Between } from "./ExternalCommands/Utils.mjs"
 import { commandMap } from "./ExternalCommands/GeneralCommands.mjs"
 import { quoteMap } from "./ExternalCommands/Quotes.mjs"
 import { functionMap } from "./ExternalCommands/FunctionMap.mjs"
-import { onQuizHandler } from "./ExternalCommands/Quiz.mjs"
+import { onQuizHandler, StartQuiz } from "./ExternalCommands/Quiz.mjs"
 import fs from "fs"
 import tmi from "tmi.js"
+import { SendDidYouKnowFact } from "./ExternalCommands/FastFacts.mjs"
 
 const debug = false
 
@@ -37,6 +38,10 @@ export const client = new tmi.client(opts)
 client.on("message", onMessageHandler)
 client.on("message", onQuizHandler)
 client.on("connected", onConnectedHandler)
+
+// Automatic messages on timers
+var quizInterval = setInterval(StartQuiz, 1500000) // 25mins
+var didYouKnowInterval = setInterval(SendDidYouKnowFact, 2580000) // 43mins
 
 // Connect to Twitch:
 client.connect()

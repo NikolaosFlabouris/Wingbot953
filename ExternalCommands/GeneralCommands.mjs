@@ -75,19 +75,19 @@ export var commandMap = [
     {
         Command: ["!segmented", "!seg", "!odstseg", "!odstsegmented"],
         Message: [
-            "ODST Easy Segmented w/ Commentary: https://www.youtube.com/watch?v=mnMEszaVJM8 | No Commentary (Harc's YT): https://www.youtube.com/watch?v=QA7ZeL0uHT0 | No Commentary (TT's YT): https://www.youtube.com/watch?v=u_yCHrVh5VE",
+            "ODST Easy Segmented w/ Commentary: https://youtu.be/mnMEszaVJM8 | No Commentary (Harc's YT): https://youtu.be/QA7ZeL0uHT0 | No Commentary (TT's YT): https://youtu.be/u_yCHrVh5VE",
         ],
     },
     {
         Command: ["!top10", "!slidejump"],
         Message: [
-            "MLG TOP 10 ODST SLIDE JUMPS LETS GOOOOO!!! https://www.youtube.com/watch?v=9m7Jy5gTkuw",
+            "MLG TOP 10 ODST SLIDE JUMPS LETS GOOOOO!!! https://youtu.be/9m7Jy5gTkuw",
         ],
     },
     {
         Command: ["!gdq", "!agdq", "!odstgdq", "!odstagdq"],
         Message: [
-            "ODST Legendary GDQ Run by Heroic_Robb w/ Commentary: https://www.youtube.com/watch?v=ZArL7_UDMWI",
+            "ODST Legendary GDQ Run by Heroic_Robb w/ Commentary: https://youtu.be/ZArL7_UDMWI",
         ],
     },
     {
@@ -131,7 +131,7 @@ export var commandMap = [
     {
         Command: ["!timer"],
         Message: [
-            "The auto-splitter matches the in-game timer. On the first mission the in-game timer appears to start late as we press the 'exit vehicle' button to exit the pod earlier than the game expects. Video explanation here: https://www.youtube.com/watch?v=ZQhXSoZUAP4",
+            "The auto-splitter matches the in-game timer. On the first mission the in-game timer appears to start late as we press the 'exit vehicle' button to exit the pod earlier than the game expects. Video explanation here: https://youtu.be/ZQhXSoZUAP4",
         ],
     },
     {
@@ -181,7 +181,7 @@ export var commandMap = [
     },
     {
         Command: ["!adversary", "!adversaryy", "!sean", "!reraised"],
-        Message: ["https://www.youtube.com/watch?v=SVrhxQ5imM0"],
+        Message: ["https://youtu.be/SVrhxQ5imM0"],
     },
 
     // Random
@@ -204,10 +204,7 @@ export var commandMap = [
     },
     {
         Command: ["!bars"],
-        Message: [
-            '"yo nik is like a brick"',
-            "www.youtube.com/watch?v=Q6i8YXykzwE",
-        ],
+        Message: ['"yo nik is like a brick"', "https://youtu.be/Q6i8YXykzwE"],
     },
     {
         Command: ["!happened"],
@@ -246,9 +243,7 @@ export var commandMap = [
     },
     {
         Command: ["!bigbrain"],
-        Message: [
-            "Kiko Ricochet Ending: https://www.youtube.com/watch?v=1rY7vjc_a7w",
-        ],
+        Message: ["Kiko Ricochet Ending: https://youtu.be/1rY7vjc_a7w"],
     },
 ]
 

@@ -12,23 +12,27 @@ export async function StartQuiz() {
 
         SendMessage(
             "!quizcontroller",
-            "/me QUIZ: The next Quiz Question is in 30secs! Be the first to answer the upcoming question to earn a point (monthly leaderboards comming soon)!"
+            "/announce QUIZ: The next Quiz Question is in 30secs! Be the first to answer the upcoming question to earn a point (monthly leaderboards comming soon)!"
         )
 
         await sleep(20000)
 
         SendMessage(
             "!quizcontroller",
-            `/me QUIZ: The next Quiz is in 10secs and the topic will be Halo 3:ODST! Good luck!`
+            `/announce QUIZ: The next Quiz is in 10secs and the topic will be Halo 3:ODST! Good luck!`
         )
 
-        await sleep(10000)
+        await sleep(8000)
+
+        SendMessage("!quizcontroller", `/slow 3`)
+
+        await sleep(2000)
 
         quizActive = true
 
         SendMessage(
             "!quizcontroller",
-            `/me QUIZ: ${odstQuestions[questionIndex].Question}`
+            `/announce QUIZ: ${odstQuestions[questionIndex].Question}`
         )
 
         await sleep(30000)
@@ -38,13 +42,17 @@ export async function StartQuiz() {
 
             SendMessage(
                 "!quizcontroller",
-                `/me QUIZ: No one successfully answered the question. The answer was: ${odstQuestions[questionIndex].Answers[0]}`
+                `/announce QUIZ: No one successfully answered the question. The answer was: ${odstQuestions[questionIndex].Answers[0]}`
             )
+
+            await sleep(1000)
+
+            SendMessage("!quizcontroller", `/slowoff`)
         }
     }
 }
 
-export function onQuizHandler(target, context, msg, self) {
+export async function onQuizHandler(target, context, msg, self) {
     if (quizActive && !self) {
         if (
             odstQuestions[questionIndex].Answers.findIndex((element) => {
@@ -53,8 +61,12 @@ export function onQuizHandler(target, context, msg, self) {
         ) {
             SendMessage(
                 "!quizcontroller",
-                `/me Congratulations ${context["display-name"]}! You answered the question correctly! The answer was: ${odstQuestions[questionIndex].Answers[0]}.`
+                `/announce Congratulations ${context["display-name"]}! You answered the question correctly! The answer was: ${odstQuestions[questionIndex].Answers[0]}.`
             )
+
+            await sleep(1000)
+
+            SendMessage("!quizcontroller", `/slowoff`)
             quizActive = false
         }
     }
@@ -90,7 +102,7 @@ var odstQuestions = [
     {
         Question:
             "During the events of Halo 3:ODST what is Buck's military rank?",
-        Answers: ["Gunnery sergeant"],
+        Answers: ["Gunnery Sergeant"],
     },
     {
         Question: "On what planet was Buck born?",
@@ -222,7 +234,7 @@ var odstQuestions = [
     {
         Question:
             "What is the name of the TV show that stars both Nathan Fillion (voice of Buck) and Tricia Helfer (voice of Dare)?",
-        Answers: ["The Rookie"], //The Rookie (Season 4, Episode 2) https://www.youtube.com/watch?v=bHmRHWdnKP0
+        Answers: ["The Rookie"], //The Rookie (Season 4, Episode 2) https://youtu.be/bHmRHWdnKP0
     },
     // Gameplay
     {
@@ -248,7 +260,7 @@ var odstQuestions = [
     {
         Question:
             "2 skulls where cut from the original release of Halo 3:ODST, one provided a 'directors style' commentary, what did the other skull do?",
-        Answers: ["3rd person camera", "third person camera"], //More info here: https://www.youtube.com/watch?v=9InGqBDgff8"
+        Answers: ["3rd person camera", "third person camera"], //More info here: https://youtu.be/9InGqBDgff8"
     },
     {
         Question:
@@ -264,6 +276,20 @@ var odstQuestions = [
         Question:
             "In Halo 3:ODST how many needles are required to supercombine?",
         Answers: ["12"],
+    },
+    {
+        Question:
+            "On the mission Coastal Highway, The Rookie, Buck, Dare and Virgil hold out for pickup out the front of which facility?",
+        Answers: ["Uplift Nature Reserve", "The Uplift Nature Reserve"],
+    },
+    {
+        Question:
+            "On the mission Kikowani Station, on legendary difficulty, on MCC, what character appears when triggering the sound que?",
+        Answers: ["Hamish Beamish", "Beamish"],
+    },
+    {
+        Question: "Which campaign level has the most Hunter spawns?",
+        Answers: ["Mombasa Streets", "Streets"],
     },
     // Speedrunning/Haloruns
     {
@@ -282,7 +308,7 @@ var odstQuestions = [
     {
         Question:
             "Adversaryy achieved his first Legendary IL WR ever on which level?",
-        Answers: ["Kikowani Station", "Kikowani"],
+        Answers: ["Kikowani Station", "Kikowani", "Kiko"],
     },
     {
         Question:
@@ -307,6 +333,127 @@ var odstQuestions = [
         Question:
             'The trick known as "The Charpet" is named after which speedrunner?',
         Answers: ["Chappified", "Chappy"],
+    },
+    {
+        Question: "Which runner has completed the Halo 3:ODST Trophy sweep?",
+        Answers: ["SkilledGames_"],
+    },
+    {
+        Question:
+            "Wingman953 set his first IL WR on ONI Alpha Site. What was the next level that he set a WR on?",
+        Answers: ["Coastal Highway", "Coastal"],
+    },
+    // Achievements
+    {
+        Question:
+            "What is the name of the MCC sub 3hr ODST speedrun achievement?",
+        Answers: ["Nagato Makes Moving Easy"],
+    },
+    {
+        Question:
+            "What is the name of the MCC achievement that requires you to kill a drone with a flame nade on Data Hive?",
+        Answers: ["Firefly"],
+    },
+    {
+        Question:
+            "What is the name of the achievement to fly a banshee on Kizingo Blvd.?",
+        Answers: ["Shiny...", "Shiny"],
+    },
+    {
+        Question:
+            'The MCC achievement "Two Places, Same Time" requires the player to interact with which other character?',
+        Answers: ["Chipps Dubbo"],
+    },
+    // Firefight
+    {
+        Question:
+            "What is the name of the Firefight map set in the level Tayari Plaza?",
+        Answers: ["Crater", "Crater (Day)"],
+    },
+    {
+        Question:
+            "What is the name of the Firefight map set in the level Uplift Reserve?",
+        Answers: ["Lost Platoon"],
+    },
+    {
+        Question:
+            "What is the name of the Firefight map set in the level Kizingo Blvd.?",
+        Answers: ["Rally Point", "Rally Point (Day)"],
+    },
+    {
+        Question:
+            "Alpha Site and which other Firefight map are set in the level ONI Alpha Site?",
+        Answers: ["Security Zone"],
+    },
+    {
+        Question:
+            "Security Zone and which other Firefight map are set in the level ONI Alpha Site?",
+        Answers: ["Alpha Site"],
+    },
+    {
+        Question:
+            "What is the name of the Firefight map set in the level NMPD HQ?",
+        Answers: ["Windward"],
+    },
+    {
+        Question:
+            "What is the name of the Firefight map set in the level Data Hive?",
+        Answers: ["Chasm Ten"],
+    },
+    {
+        Question:
+            "What is the name of the Firefight map set in the level Coastal Highway?",
+        Answers: ["Last Exit"],
+    },
+    {
+        Question:
+            "The flamethrower and which other UNSC weapon from the campaign do not appear in standard Firefight settings on any map?",
+        Answers: ["Assault Rifle", "AR"],
+    },
+    {
+        Question:
+            "Which campaign level is not represented with a Firefight map?",
+        Answers: ["Kikowani Station", "Kikowani", "Kiko"],
+    },
+    {
+        Question:
+            "With standard Firefight settings, which skull is enabled from the start of Round 1?",
+        Answers: ["Tough Luck"],
+    },
+    {
+        Question:
+            "With standard Firefight settings, which additional skull is enabled from the start of Round 2?",
+        Answers: ["Catch"],
+    },
+    {
+        Question:
+            "With standard Firefight settings, which additional skull is enabled from the start of Round 3?",
+        Answers: ["Black Eye"],
+    },
+    {
+        Question:
+            "With standard Firefight settings, which skull is enabled from the start of Set 2?",
+        Answers: ["Tilt"],
+    },
+    {
+        Question:
+            "With standard Firefight settings, which additional skull is enabled from the start of Set 3?",
+        Answers: ["Famine"],
+    },
+    {
+        Question:
+            "With standard Firefight settings, which additional skull is enabled from the start of Set 4?",
+        Answers: ["Mythic"],
+    },
+    {
+        Question:
+            "In the original version of Firefight, which was the only skull that could not be enabled?",
+        Answers: ["Thunderstorm"],
+    },
+    {
+        Question:
+            "The Vidmaster Challenge: Endure achievement requires 4 players to survive Heroic or Legendary firefight for how many rounds?",
+        Answers: ["16"],
     },
     // Quotes
     {
