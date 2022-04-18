@@ -37,4 +37,5 @@ const didYouKnowList = [
     "Did you know on the 2nd March 2016 SkilledGames_ set the NMPD Leg IL WR and... was bopped later that day, RIP. 3.5yrs later he set the ODST Easy FG WR in 1:08:04.",
     "Did you know the first documented ODST speedrun by a member of the public (probably) was Tayari Plaza Easy done in 2:13. The runner says they received the game 3 days before release. https://youtu.be/XCViO047t8g",
     "Did you know Heroic Robb held the Kizingo Blvd. Legendary IL WR from 12th Mar 2015 to 19th Oct 2020. He set 9 different WRs during that time.",
+    "Did you know the entry to Data Hive varies based on which flashback mission was completed last.",
 ]

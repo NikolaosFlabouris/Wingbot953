@@ -12,14 +12,14 @@ export async function StartQuiz() {
 
         SendMessage(
             "!quizcontroller",
-            "/announce QUIZ: The next Quiz Question is in 30secs! Be the first to answer the upcoming question to earn a point (monthly leaderboards comming soon)!"
+            "/announce QUIZ: The next Quiz Question is in 30secs!" // Be the first to answer the upcoming question to earn a point (monthly leaderboards comming soon)!"
         )
 
         await sleep(20000)
 
         SendMessage(
             "!quizcontroller",
-            `/announce QUIZ: The next Quiz is in 10secs and the topic will be Halo 3:ODST! Good luck!`
+            `/announce QUIZ: The next Quiz is in 10secs. The topic will be Halo 3:ODST! Good luck!`
         )
 
         await sleep(8000)
@@ -98,6 +98,11 @@ var odstQuestions = [
         Question: "Oni",
         Answers: ["Pog"],
     },
+    {
+        Question:
+            "When watching Adversaryy and Heroic_Robb streams, Wingman953 coined what term?",
+        Answers: ["Oni Pog"],
+    },
     // Characters
     {
         Question:
@@ -113,6 +118,10 @@ var odstQuestions = [
         Answers: ["Mars"],
     },
     {
+        Question: "Who does Dutch marry?",
+        Answers: ["Gretchen Ketola", "Gretchen"],
+    },
+    {
         Question: "On what planet was Romeo born?",
         Answers: ["Madrigal"],
     },
@@ -125,7 +134,7 @@ var odstQuestions = [
         Answers: ["Luna"],
     },
     {
-        Question: "What is The Rookie's full name?",
+        Question: "What is The Rookie's name?",
         Answers: ["Jonathan Doherty"],
     },
     {
@@ -137,7 +146,7 @@ var odstQuestions = [
         Answers: ["Ann"],
     },
     {
-        Question: "What is Dutch's full name?",
+        Question: "What is Dutch's name?",
         Answers: [
             "Taylor Miles",
             "Corporal Taylor Miles",
@@ -151,7 +160,7 @@ var odstQuestions = [
         Answers: ["Corporal"],
     },
     {
-        Question: "What is Mickey's full name?",
+        Question: "What is Mickey's name?",
         Answers: ["Michael Crespo", "Private First Class Michael Crespo"],
     },
     {
@@ -160,7 +169,7 @@ var odstQuestions = [
         Answers: ["Private First Class"],
     },
     {
-        Question: "What is Romeo's full name?",
+        Question: "What is Romeo's name?",
         Answers: ["Kojo Agu", "Lance Corporal Kojo Agu"],
     },
     {
@@ -221,6 +230,14 @@ var odstQuestions = [
             "What is the name of the type of garbage trucks that operate in New Mombasa?",
         Answers: ["Olifant", "Olifants"],
     },
+    {
+        Question: "A Silenced SMG with full ammo has how many bullets?",
+        Answers: ["240"],
+    },
+    {
+        Question: "An Automag with full ammo has how many bullets?",
+        Answers: ["72"],
+    },
     // Lore/World Building/Meta-trivia
     {
         Question:
@@ -233,10 +250,15 @@ var odstQuestions = [
     },
     {
         Question:
-            "What is the name of the TV show that stars both Nathan Fillion (voice of Buck) and Tricia Helfer (voice of Dare)?",
+            "Nathan Fillion (voice of Buck) and Tricia Helfer (voice of Dare) both stare in a TV series called what?",
         Answers: ["The Rookie"], //The Rookie (Season 4, Episode 2) https://youtu.be/bHmRHWdnKP0
     },
     // Gameplay
+    {
+        Question:
+            "Which UNSC ship can be seen going through the slipspace rupture in Prepare to Drop?",
+        Answers: ["In Amber Clad"],
+    },
     {
         Question:
             "The cutscene at the end of Uplift Reserve changes depending if the player is driving a Warthog, a Ghost or which other vehicle?",
@@ -284,12 +306,17 @@ var odstQuestions = [
     },
     {
         Question:
-            "On the mission Kikowani Station, on legendary difficulty, on MCC, what character appears when triggering the sound que?",
+            "On the mission Kikowani Station, legendary difficulty, MCC, what character appears when triggering the sound que?",
         Answers: ["Hamish Beamish", "Beamish"],
     },
     {
         Question: "Which campaign level has the most Hunter spawns?",
         Answers: ["Mombasa Streets", "Streets"],
+    },
+    {
+        Question:
+            "How many grunts spawn on the first highway section in Coastal Highway?",
+        Answers: ["23"],
     },
     // Speedrunning/Haloruns
     {
@@ -321,11 +348,6 @@ var odstQuestions = [
         Answers: ["Hoshka"],
     },
     {
-        Question:
-            "Wingman953, SkilledGames_ & Zombie343 set the ONI Alpha Site Easy Co-op WR in an RTA time of 10:42, what was the In-Game time?",
-        Answers: ["7:46"],
-    },
-    {
         Question: "Welshevo79 was known for speedrunning which IL?",
         Answers: ["Coastal Highway", "Coastal"],
     },
@@ -335,13 +357,60 @@ var odstQuestions = [
         Answers: ["Chappified", "Chappy"],
     },
     {
+        Question: "What does BPL stand for?",
+        Answers: ["Brute Pressure Launch"],
+    },
+    {
+        Question: "What does HCB stand for?",
+        Answers: ["Hunter Car Boost", "Hunter-Car Boost"],
+    },
+    {
+        Question: "What does RCB stand for?",
+        Answers: ["Rocket Car Boost", "Rocket-Car Boost"],
+    },
+    {
+        Question:
+            "If I was performing the Robb Special I would be on which level?",
+        Answers: [
+            "Mombasa Streets",
+            "Streets",
+            "Mombasa Streets 3",
+            "Streets 3",
+            "MS3",
+        ],
+    },
+    {
+        Question:
+            "If I was performing the Catwalk Launch I would be on which level?",
+        Answers: ["Data Hive"],
+    },
+    {
         Question: "Which runner has completed the Halo 3:ODST Trophy sweep?",
         Answers: ["SkilledGames_"],
     },
     {
         Question:
+            "The NMPD HQ Easy IL WR stood for 4.5yrs until Adversaryy beat it by 1 sec on 19th Jan 2020. Who previously held the WR?",
+        Answers: ["HLGNagato", "Nagato"],
+    },
+    {
+        Question: "The first 1hr time was achieved by who?",
+        Answers: ["Harc", "HarcTehShark"],
+    },
+    {
+        Question:
+            "As a percentage, which IL WR is the fastest when compared to it's MCC Par Time?",
+        Answers: ["Kikowani Station", "Kikowani", "Kiko"],
+    },
+    {
+        Question:
             "Wingman953 set his first IL WR on ONI Alpha Site. What was the next level that he set a WR on?",
         Answers: ["Coastal Highway", "Coastal"],
+    },
+    {
+        Question:
+            "Wingman953, SkilledGames_ & Zombie343 set the ONI Alpha Site Easy Co-op WR in an RTA time of 10:42, what was the In-Game time?",
+        Answers: ["7:46"],
     },
     // Achievements
     {
@@ -351,7 +420,7 @@ var odstQuestions = [
     },
     {
         Question:
-            "What is the name of the MCC achievement that requires you to kill a drone with a flame nade on Data Hive?",
+            "What is the name of the MCC achievement that requires you to kill a drone with a flame grenade on Data Hive?",
         Answers: ["Firefly"],
     },
     {
@@ -454,6 +523,11 @@ var odstQuestions = [
         Question:
             "The Vidmaster Challenge: Endure achievement requires 4 players to survive Heroic or Legendary firefight for how many rounds?",
         Answers: ["16"],
+    },
+    {
+        Question:
+            "With standard Firefight settings the player spawns with an SMG and an Automag on all maps except for one, which map is this?",
+        Answers: ["Windward"],
     },
     // Quotes
     {
