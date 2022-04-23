@@ -12,21 +12,21 @@ export async function StartQuiz() {
 
         SendMessage(
             "!quizcontroller",
-            "/announce QUIZ: The next Quiz Question is in 30secs!" // Be the first to answer the upcoming question to earn a point (monthly leaderboards comming soon)!"
+            "/announce QUIZ: The next Quiz Question is in 20secs! The topic will be Halo 3:ODST! Good luck!" // Be the first to answer the upcoming question to earn a point (monthly leaderboards comming soon)!"
         )
 
-        await sleep(20000)
+        // await sleep(20000)
 
-        SendMessage(
-            "!quizcontroller",
-            `/announce QUIZ: The next Quiz is in 10secs. The topic will be Halo 3:ODST! Good luck!`
-        )
+        // SendMessage(
+        //     "!quizcontroller",
+        //     `/announce QUIZ: The next Quiz is in 10secs. The topic will be Halo 3:ODST! Good luck!`
+        // )
 
-        await sleep(8000)
+        await sleep(17000)
 
         SendMessage("!quizcontroller", `/slow 3`)
 
-        await sleep(2000)
+        await sleep(3000)
 
         quizActive = true
 
@@ -35,7 +35,7 @@ export async function StartQuiz() {
             `/announce QUIZ: ${odstQuestions[questionIndex].Question}`
         )
 
-        await sleep(30000)
+        await sleep(35000)
 
         if (quizActive) {
             quizActive = false
@@ -211,13 +211,37 @@ var odstQuestions = [
         Answers: ["Joseph Staten"],
     },
     {
+        Question: "What is The Rookie's signature weapon?",
+        Answers: ["Silence SMG", "SMG"],
+    },
+    {
+        Question: "What is Buck's signature weapon?",
+        Answers: ["Assault Rifle", "AR"],
+    },
+    {
+        Question: "What is Dutch's signature weapon?",
+        Answers: ["Spartan Laser", "Laser"],
+    },
+    {
+        Question: "What is Mickey's signature weapon?",
+        Answers: ["Rocket Launcher", "Rocket", "Rockets"],
+    },
+    {
+        Question: "What is Romeo's signature weapon?",
+        Answers: ["Sniper Rifle", "Sniper"],
+    },
+    {
+        Question: "What is Dare's signature weapon?",
+        Answers: ["Automag", "Pistol"],
+    },
+    {
         Question: "The in-game audio logs tell the story of which young lady?",
         Answers: ["Sadie Endesha", "Sadie"],
     },
     {
         Question:
             "In pounds (lb), how heavy is Jonas the Butcher from the audio log story?",
-        Answers: ["800lbs", "800"],
+        Answers: ["800lbs", "800", "800 lbs", "800lb", "800 lb", "800 pounds"],
     },
     {
         Question:
@@ -243,6 +267,21 @@ var odstQuestions = [
         Question:
             "When was Halo 3:ODST released on the Xbox 360? (Answer in YYYY-MM-DD format)",
         Answers: ["2009-09-22", "2009-9-22"],
+    },
+    {
+        Question:
+            "What was the name originally given to game Halo 3:ODST before release?",
+        Answers: ["Halo 3:Recon", "Halo 3: Recon", "Halo 3 Recon", "Recon"],
+    },
+    {
+        Question:
+            "Which Firefight character was a Halo 3:ODST pre-order bonus?",
+        Answers: [
+            "Sergeant Major Avery Johnson",
+            "Sergeant Johnson",
+            "Avery Johnson",
+            "Johnson",
+        ],
     },
     {
         Question: "What is the alternative name for the Coastal Highway?",
@@ -318,10 +357,55 @@ var odstQuestions = [
             "How many grunts spawn on the first highway section in Coastal Highway?",
         Answers: ["23"],
     },
+    {
+        Question: "What word is written by hand on Mickey's helmet?",
+        Answers: ["Mickey"],
+    },
+    {
+        Question: "What is painted on Dutch's helmet?",
+        Answers: ["a skull", "skull"],
+    },
+    // Music/Soundtrack
+    {
+        Question:
+            "After completing the mission Tayari Plaza, what is the name of the music track that plays on Mombasa Streets?",
+        Answers: [
+            "Deference for Darkness (Rain)",
+            "Deference for Darkness",
+            "Rain",
+        ],
+    },
+    {
+        Question:
+            "After complete the mission Uplift Reserve, what is the name of the music track that plays on Mombasa Streets?",
+        Answers: [
+            "Asphalt and Ablution (Still Grounded)",
+            "Asphalt and Ablution",
+            "Still Grounded",
+        ],
+    },
+    {
+        Question:
+            "What is the name of the music track that plays at the end of NMPD HQ?",
+        Answers: [
+            "Skyline (Air Traffic Control)",
+            "Skyline",
+            "Air Traffic Control",
+        ],
+    },
     // Speedrunning/Haloruns
     {
+        Question: "Which IL has the most submissions on the Easy difficulty?",
+        Answers: ["Tayari Plaza", "Tayari"],
+    },
+    {
+        Question:
+            "Which IL has the most submissions on the Legendary difficulty?",
+        Answers: ["Uplift Reserve", "Uplift"],
+    },
+    {
         Question: "Halo 3:ODST was run at GDQ by which speedrunner?",
-        Answers: ["Heroic Robb", "Heroic_Robb"],
+        Answers: ["Heroic Robb", "Heroic_Robb", "Robb"],
     },
     {
         Question:
@@ -348,8 +432,20 @@ var odstQuestions = [
         Answers: ["Hoshka"],
     },
     {
-        Question: "Welshevo79 was known for speedrunning which IL?",
+        Question: "Welshevo79 is known to be a fan of which level?",
         Answers: ["Coastal Highway", "Coastal"],
+    },
+    {
+        Question: "Harc is known to be a fan of which level?",
+        Answers: ["NMPD HQ", "NMPD"],
+    },
+    {
+        Question: "Wingman953 is known to be a fan of which level?",
+        Answers: ["ONI Alpha Site", "Oni Pog", "Oni", "Alpha Site"],
+    },
+    {
+        Question: "Wingman953 is known to be a fan of which level?",
+        Answers: ["ONI Alpha Site", "Oni Pog", "Oni", "Alpha Site"],
     },
     {
         Question:
@@ -431,13 +527,19 @@ var odstQuestions = [
     {
         Question:
             'The MCC achievement "Two Places, Same Time" requires the player to interact with which other character?',
-        Answers: ["Chipps Dubbo"],
+        Answers: [
+            "Chips Dubbo",
+            "Chips",
+            "Chipps Dubbo",
+            "Chipps Dubo",
+            "Chips Dubo",
+        ],
     },
     // Firefight
     {
         Question:
             "What is the name of the Firefight map set in the level Tayari Plaza?",
-        Answers: ["Crater", "Crater (Day)"],
+        Answers: ["Crater", "Crater (Day)", "Crater Day"],
     },
     {
         Question:
@@ -447,7 +549,7 @@ var odstQuestions = [
     {
         Question:
             "What is the name of the Firefight map set in the level Kizingo Blvd.?",
-        Answers: ["Rally Point", "Rally Point (Day)"],
+        Answers: ["Rally Point", "Rally Point (Day)", "Rally Point Day"],
     },
     {
         Question:
@@ -603,7 +705,13 @@ var odstQuestions = [
     {
         Question:
             'Who says the following quote: "Trooper! Over here! I saw your pod hit... You\'re one lucky S.O.B."',
-        Answers: ["Chips Dubbo"],
+        Answers: [
+            "Chips Dubbo",
+            "Chips",
+            "Chipps Dubbo",
+            "Chipps Dubo",
+            "Chips Dubo",
+        ],
     },
 ]
 

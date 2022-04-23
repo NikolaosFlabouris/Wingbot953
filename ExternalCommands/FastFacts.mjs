@@ -25,7 +25,7 @@ const didYouKnowList = [
     "Did you know on the final cutscene for NMPD HQ, the pilot can be seen wielding a Battle Rifle",
     'Did you know on NMPD HQ there is no double phantom for right-side last. There is a missing "ai_place" for the 2nd phantom in the scripts. Bug or intentionally disabled? Who knows...',
     "Did you know on Coastal Highway, the highway can be accessed without going through the cutscene: https://youtu.be/P7szf4v1nu8",
-    "Ever wanted to know how to get to the bottom of an elevator in Mombasa Streets? No? Oh, well, here's a video of it anyways: https://youtu.be/94CmgFi2Vms",
+    "Ever wanted to know how to get to the bottom of an elevator shaft in Mombasa Streets? No? Oh, well, here's a video of it anyways: https://youtu.be/94CmgFi2Vms",
     "Did you know after you drop out of the pod, you can re-enter it: https://youtu.be/gfZJsHsAcEk",
     "Did you know jumping up slopes saves ~1/60sec per jump!", // https://youtu.be/1ZVna-aIIW4",
     "Did you know you can get out of bounds on Mombasa Streets: https://youtu.be/tj1xAuXY8ZY",
@@ -38,4 +38,5 @@ const didYouKnowList = [
     "Did you know the first documented ODST speedrun by a member of the public (probably) was Tayari Plaza Easy done in 2:13. The runner says they received the game 3 days before release. https://youtu.be/XCViO047t8g",
     "Did you know Heroic Robb held the Kizingo Blvd. Legendary IL WR from 12th Mar 2015 to 19th Oct 2020. He set 9 different WRs during that time.",
     "Did you know the entry to Data Hive varies based on which flashback mission was completed last.",
+    "Did you know Halo 3: ODST is the first game where player characters have dialogue during gameplay.",
 ]

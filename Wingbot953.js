@@ -7,6 +7,7 @@ import { onQuizHandler, StartQuiz } from "./ExternalCommands/Quiz.mjs"
 import fs from "fs"
 import tmi from "tmi.js"
 import { SendDidYouKnowFact } from "./ExternalCommands/FastFacts.mjs"
+import "./ExternalIntegrations/spotify.js"
 
 const debug = false
 
@@ -40,7 +41,7 @@ client.on("message", onQuizHandler)
 client.on("connected", onConnectedHandler)
 
 // Automatic messages on timers
-var quizInterval = setInterval(StartQuiz, 1500000) // 25mins
+var quizInterval = setInterval(StartQuiz, 2100000) // 35mins
 var didYouKnowInterval = setInterval(SendDidYouKnowFact, 2580000) // 43mins
 
 // Connect to Twitch:

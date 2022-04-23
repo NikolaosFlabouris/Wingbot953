@@ -100,4 +100,24 @@ export var vipWelcome = [
         Message: ["hi cutie ;)"],
         Arrived: false,
     },
+    {
+        Username: ["thiccElite"],
+        Message: ["thiccElite hello!"],
+        Arrived: false,
+    },
+    {
+        Username: ["Alextremo08"],
+        Message: ["Alextremo08 hello!"],
+        Arrived: false,
+    },
+    {
+        Username: ["yeV_cM"],
+        Message: ["yeV_cM hello!"],
+        Arrived: false,
+    },
+    {
+        Username: ["Baachan"],
+        Message: ["Baachan hello!"],
+        Arrived: false,
+    },
 ]

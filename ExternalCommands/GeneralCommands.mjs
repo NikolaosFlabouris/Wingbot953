@@ -2,6 +2,18 @@ import { SendMessage } from "../Wingbot953.js"
 import { Between } from "./Utils.mjs"
 
 export var commandMap = [
+    {
+        Command: ["!update"],
+        Message: [
+            "Channel has a new look, added more sub badges, added bit badges, added more ways to support the stream, added follower emotes, added !quiz, added periodic 'did you know facts'.",
+        ],
+    },
+    {
+        Command: ["!quiz"],
+        Message: [
+            "Periodically, or via channel point redemption, a quiz question will be asked in chat, be the first to answer it! (Leaderboards coming soon, maybe)",
+        ],
+    },
     // Haloruns/Speedruns/Socials/Stream
     {
         Command: ["!hr", "!haloruns"],
@@ -63,12 +75,6 @@ export var commandMap = [
         ],
     },
     {
-        Command: ["!song"],
-        Message: [
-            "I am not smart enough to tell you the current song but is is probably in the !playlist.",
-        ],
-    },
-    {
         Command: ["!sr", "!songrequest"],
         Message: ["If you share a song the streamer may choose to play it."],
     },
@@ -120,7 +126,7 @@ export var commandMap = [
     // FAQ
     {
         Command: ["!faq"],
-        Message: ["!ammoempty, !timer, !glyphs"],
+        Message: ["!ammoempty, !timer, !glyphs, !downpatch"],
     },
     {
         Command: ["!ammoempty", "!ammo"],
@@ -138,7 +144,12 @@ export var commandMap = [
         Command: ["!glyphs"],
         Message: ["idk"],
     },
-
+    {
+        Command: ["!downpatch"],
+        Message: [
+            "On Season 8 Brutes slide around a lot when EMP'd, this can make it difficult to deal with them (particularly for the Chieftain on the roof of the ONI building and during Data Hive). It's not a big deal but the issue can easily be avoided by downpatching to Season 7.",
+        ],
+    },
     // People
     {
         Command: ["!sleepless", "!sleeplessblue"],

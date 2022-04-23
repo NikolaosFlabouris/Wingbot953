@@ -3,6 +3,10 @@ import { HandleRandomNumberGeneration } from "./GeneralCommands.mjs"
 import { HandleOdstQuote } from "./Quotes.mjs"
 import { HandleFastFact } from "./FastFacts.mjs"
 import { StartQuiz } from "./Quiz.mjs"
+import {
+    GetCurrentSong,
+    //SpotifySetup,
+} from "../ExternalIntegrations/spotify.js"
 
 export var functionMap = [
     {
@@ -21,6 +25,17 @@ export var functionMap = [
         Command: ["!fastfact"],
         Function: HandleFastFact,
     },
+    // Spotify
+    {
+        Command: ["!song"],
+        Function: GetCurrentSong,
+    },
+    // {
+    //     Command: ["!songsetup", "!spotifysetup"],
+    //     Username: ["Wingman953"],
+    //     Function: SpotifySetup,
+    // },
+    // Quiz
     {
         Command: ["!quizstart"],
         Username: ["Wingman953"],

@@ -1,13 +1,19 @@
 {
-    "name": "twitch-chatbot",
+    "name": "wingbot953",
     "version": "0.0.1",
-    "description": "A simple app chatbot example. Using the command !echo will simply repeat the message.",
+    "description": "Twitch chatbot for Wingman953.",
+    "main": "Wingbot953.js",
     "type": "module",
-    "main": "bot.js",
     "scripts": {
-        "start": "node bot.js"
+        "start": "node Wingbot953.js"
     },
     "dependencies": {
+        "dotenv": "^16.0.0",
+        "http": "^0.0.1-security",
+        "open": "^8.4.0",
+        "request": "^2.88.2",
+        "socket.io": "^4.4.1",
+        "spotify-web-api-node": "^5.0.2",
         "tmi.js": "^1.5.0"
     },
     "engines": {
