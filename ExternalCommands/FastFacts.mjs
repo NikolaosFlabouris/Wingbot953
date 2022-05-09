@@ -29,7 +29,7 @@ const didYouKnowList = [
     "Did you know after you drop out of the pod, you can re-enter it: https://youtu.be/gfZJsHsAcEk",
     "Did you know jumping up slopes saves ~1/60sec per jump!", // https://youtu.be/1ZVna-aIIW4",
     "Did you know you can get out of bounds on Mombasa Streets: https://youtu.be/tj1xAuXY8ZY",
-    "Did you know you can get out of bound on Tayari Plaza: Out of bounds: (video TBA), Out of Map: https://youtu.be/kQOj5JaenIs",
+    "Did you know you can get out of bound on Tayari Plaza: Out of bounds: https://youtu.be/jEzbmqd_Ygw, Out of Map: https://youtu.be/kQOj5JaenIs",
     "Did you know you can get out of bounds on ONI Alpha Site: The Easy Way https://youtu.be/MBUEpuulGzs, The Hard Way https://youtu.be/vIZJ8-IFYHw",
     "Did you know you can get out of bounds on NMPD HQ: Basic OOB https://youtu.be/bm7J18IyNaI, With a banshee https://youtu.be/xr_X5k4BmUk",
     "Did you know you can soft-lock on NMPD HQ? If you destroy the last phantom too quickly the mission won't end.",
