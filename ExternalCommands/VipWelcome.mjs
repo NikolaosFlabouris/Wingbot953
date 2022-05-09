@@ -120,4 +120,19 @@ export var vipWelcome = [
         Message: ["Baachan hello!"],
         Arrived: false,
     },
+    {
+        Username: ["TheIncomeTaxes"],
+        Message: ["TheIncomeTaxes hello!"],
+        Arrived: false,
+    },
+    {
+        Username: ["Shoncay"],
+        Message: ["shoncaaaaaay"],
+        Arrived: false,
+    },
+    {
+        Username: ["goatrope"],
+        Message: ["Goatrope hello!"],
+        Arrived: false,
+    },
 ]
