@@ -1,18 +1,20 @@
 import { sleep, Between } from "./Utils.mjs"
 import { SendMessage } from "../Wingbot953.js"
+import fs from "fs"
 
 var quizActive = false
 var questionIndex
+var leaderboards = []
+var leaderboardsFilePath = "./Data/"
+var leaderboardsFileName = "QuizLeaderboards.json"
 
 export async function StartQuiz() {
-    // (track monthly scores)
-
     if (!quizActive) {
         questionIndex = Between(0, odstQuestions.length - 1)
 
         SendMessage(
             "!quizcontroller",
-            "/announce QUIZ: The next Quiz Question is in 20secs! The topic will be Halo 3:ODST! Good luck!" // Be the first to answer the upcoming question to earn a point (monthly leaderboards comming soon)!"
+            "/announce QUIZ: The next Quiz Question is in 20secs! Be the first to answer to earn a point. The topic will be Halo 3:ODST! Good luck!"
         )
 
         // await sleep(20000)
@@ -25,6 +27,8 @@ export async function StartQuiz() {
         await sleep(17000)
 
         SendMessage("!quizcontroller", `/slow 3`)
+
+        ReadLeaderboardsFromFile()
 
         await sleep(3000)
 
@@ -59,6 +63,7 @@ export async function onQuizHandler(target, context, msg, self) {
                 return element.toLowerCase() === msg.toLowerCase()
             }) >= 0
         ) {
+            UpdateQuizScore(context["display-name"], 1)
             SendMessage(
                 "!quizcontroller",
                 `/announce Congratulations ${context["display-name"]}! You answered the question correctly! The answer was: ${odstQuestions[questionIndex].Answers[0]}.`
@@ -69,6 +74,81 @@ export async function onQuizHandler(target, context, msg, self) {
             SendMessage("!quizcontroller", `/slowoff`)
             quizActive = false
         }
+    }
+}
+
+export function DisplayQuizLeaderboards() {
+    ReadLeaderboardsFromFile()
+
+    leaderboards.sort(
+        (firstItem, secondItem) => secondItem.Score - firstItem.Score
+    )
+
+    var message = "QUIZ LEADERBOARDS Top 5: "
+
+    var learboardSize = 5 > leaderboards.length ? leaderboards.length : 5
+
+    for (var i = 0; i < learboardSize; i++) {
+        message +=
+            leaderboards[i].Username + " - " + leaderboards[i].Score + "pts | "
+    }
+    SendMessage("!quizleaderboard", message)
+}
+
+export function GetMyQuizScore(originalMessage, messageUsername) {
+    ReadLeaderboardsFromFile()
+
+    var score = 0
+    var user = messageUsername
+
+    if (originalMessage.split(" ").length >= 2) {
+        user = originalMessage.split(" ")[1].trim()
+    }
+
+    for (var i = 0; i < leaderboards.length; i++) {
+        if (leaderboards[i].Username == user) {
+            score = leaderboards[i].Score
+            SendMessage("!quizscore", `${user}'s Quiz Score is: ` + score)
+            return
+        }
+    }
+
+    SendMessage("!quizscore", `No score found for user: ${user}`)
+}
+
+function UpdateQuizScore(user, pointsChange) {
+    for (var i = 0; i < leaderboards.length; i++) {
+        if (leaderboards[i].Username == user) {
+            leaderboards[i].Score += pointsChange
+            WriteLeaderboardsToFile()
+            return
+        }
+    }
+
+    leaderboards.push({ Username: user, Score: pointsChange })
+    WriteLeaderboardsToFile()
+}
+
+function ReadLeaderboardsFromFile() {
+    try {
+        const data = fs.readFileSync(
+            leaderboardsFilePath + leaderboardsFileName,
+            "utf8"
+        )
+        leaderboards = JSON.parse(data)
+    } catch (err) {
+        console.error(err)
+    }
+}
+
+function WriteLeaderboardsToFile() {
+    try {
+        const data = fs.writeFileSync(
+            leaderboardsFilePath + leaderboardsFileName,
+            JSON.stringify(leaderboards)
+        )
+    } catch (err) {
+        console.error(err)
     }
 }
 
@@ -100,7 +180,7 @@ var odstQuestions = [
     },
     {
         Question:
-            "When watching Adversaryy and Heroic_Robb streams, Wingman953 coined what term?",
+            "When watching Adversary and Heroic_Robb streams, Wingman953 coined what term?",
         Answers: ["Oni Pog"],
     },
     // Characters
@@ -256,11 +336,11 @@ var odstQuestions = [
     },
     {
         Question: "A Silenced SMG with full ammo has how many bullets?",
-        Answers: ["240"],
+        Answers: ["240", "two hundred and forty"],
     },
     {
         Question: "An Automag with full ammo has how many bullets?",
-        Answers: ["72"],
+        Answers: ["72", "seventy-two", "seventytwo", "seventy two"],
     },
     // Lore/World Building/Meta-trivia
     {
@@ -311,7 +391,7 @@ var odstQuestions = [
     {
         Question:
             "How many audio logs are required to alter the events in the mission Data Hive?",
-        Answers: ["29"],
+        Answers: ["29", "twenty-nine", "twenty nine", "twentynine"],
     },
     {
         Question:
@@ -326,7 +406,7 @@ var odstQuestions = [
     {
         Question:
             "How many skulls launched with the original version of Halo 3:ODST?",
-        Answers: ["12"],
+        Answers: ["12", "twelve"],
     },
     {
         Question:
@@ -336,7 +416,7 @@ var odstQuestions = [
     {
         Question:
             "In Halo 3:ODST how many needles are required to supercombine?",
-        Answers: ["12"],
+        Answers: ["12", "twelve"],
     },
     {
         Question:
@@ -355,7 +435,7 @@ var odstQuestions = [
     {
         Question:
             "How many grunts spawn on the first highway section in Coastal Highway?",
-        Answers: ["23"],
+        Answers: ["23", "twenty-three", "twentythree", "twenty three"],
     },
     {
         Question: "What word is written by hand on Mickey's helmet?",
@@ -414,11 +494,11 @@ var odstQuestions = [
     },
     {
         Question: '2019 was named the "Year of ODST" by which speedrunner?',
-        Answers: ["Adversaryy"],
+        Answers: ["Adversary"],
     },
     {
         Question:
-            "Adversaryy achieved his first Legendary IL WR ever on which level?",
+            "Adversary achieved his first Legendary IL WR ever on which level?",
         Answers: ["Kikowani Station", "Kikowani", "Kiko"],
     },
     {
@@ -486,7 +566,7 @@ var odstQuestions = [
     },
     {
         Question:
-            "The NMPD HQ Easy IL WR stood for 4.5yrs until Adversaryy beat it by 1 sec on 19th Jan 2020. Who previously held the WR?",
+            "The NMPD HQ Easy IL WR stood for 4.5yrs until Adversary beat it by 1 sec on 19th Jan 2020. Who previously held the WR?",
         Answers: ["HLGNagato", "Nagato"],
     },
     {
@@ -624,7 +704,7 @@ var odstQuestions = [
     {
         Question:
             "The Vidmaster Challenge: Endure achievement requires 4 players to survive Heroic or Legendary firefight for how many rounds?",
-        Answers: ["16"],
+        Answers: ["16", "sixteen"],
     },
     {
         Question:
@@ -712,6 +792,11 @@ var odstQuestions = [
             "Chipps Dubo",
             "Chips Dubo",
         ],
+    },
+    {
+        Question:
+            "The Covenant refer to Master Chief as the 'Demon', what name do they have for The Rookie and the other ODSTs?",
+        Answers: ["Imp", "Imps"],
     },
 ]
 

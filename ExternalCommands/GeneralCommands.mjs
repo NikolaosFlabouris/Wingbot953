@@ -11,7 +11,7 @@ export var commandMap = [
     {
         Command: ["!quiz"],
         Message: [
-            "Periodically, or via channel point redemption, a quiz question will be asked in chat, be the first to answer it! (Leaderboards coming soon, maybe)",
+            "Periodically, or via channel point redemption, a quiz question will be asked in chat, be the first to answer it! See the channel description for more info.",
         ],
     },
     // Haloruns/Speedruns/Socials/Stream
@@ -126,7 +126,7 @@ export var commandMap = [
     // FAQ
     {
         Command: ["!faq"],
-        Message: ["!ammoempty, !timer, !glyphs, !downpatch"],
+        Message: ["!ammoempty, !timer, !glyphs, !downpatch, !quiz"],
     },
     {
         Command: ["!ammoempty", "!ammo"],

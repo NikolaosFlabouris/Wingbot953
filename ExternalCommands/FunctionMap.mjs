@@ -2,7 +2,7 @@ import { HandleCommandsList } from "../Wingbot953.js"
 import { HandleRandomNumberGeneration } from "./GeneralCommands.mjs"
 import { HandleOdstQuote } from "./Quotes.mjs"
 import { HandleFastFact } from "./FastFacts.mjs"
-import { StartQuiz } from "./Quiz.mjs"
+import { StartQuiz, GetMyQuizScore, DisplayQuizLeaderboards } from "./Quiz.mjs"
 import {
     GetCurrentSong,
     //SpotifySetup,
@@ -40,5 +40,13 @@ export var functionMap = [
         Command: ["!quizstart"],
         Username: ["Wingman953"],
         Function: StartQuiz,
+    },
+    {
+        Command: ["!quizscore"],
+        Function: GetMyQuizScore,
+    },
+    {
+        Command: ["!quizleaderboard", "!quizleaderboards"],
+        Function: DisplayQuizLeaderboards,
     },
 ]
