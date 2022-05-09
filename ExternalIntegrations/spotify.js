@@ -8,12 +8,12 @@ var scopes = ["user-read-currently-playing"]
 var refreshTimeSec
 var authCode
 var tokenRefreshInterval
-var spotifyApiActive = false
+var spotifyApiActive = true
 
 const spotifyApi = new SpotifyWebApi({
     clientId: process.env.SPOTIFY_CLIENT_ID,
     clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-    redirectUri: process.env.REDIRECT_URI,
+    redirectUri: process.env.SPOTIFY_REDIRECT_URI,
 })
 
 var authorizeURL = spotifyApi.createAuthorizeURL(scopes)
