@@ -8,13 +8,15 @@
         "start": "node Wingbot953.js"
     },
     "dependencies": {
+        "axios": "^0.27.2",
         "dotenv": "^16.0.0",
         "http": "^0.0.1-security",
         "open": "^8.4.0",
         "request": "^2.88.2",
         "socket.io": "^4.4.1",
         "spotify-web-api-node": "^5.0.2",
-        "tmi.js": "^1.5.0"
+        "tmi.js": "^1.5.0",
+        "twurple": "^1.0.0"
     },
     "engines": {
         "node": "16.x"
