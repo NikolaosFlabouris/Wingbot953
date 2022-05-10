@@ -1,11 +1,13 @@
 import { Between } from "./Utils.mjs"
-import { SendMessage } from "../Wingbot953.js"
+import { SendMessage } from "./../Integrations/Twitch.js"
 
 export function CheckForVipWelcome(messageUsername) {
     for (var i = 0; i < vipWelcome.length; i++) {
         if (
             !vipWelcome[i].Arrived &&
-            vipWelcome[i].Username.includes(messageUsername)
+            vipWelcome[i].Username.findIndex((element) => {
+                return element.toLowerCase() === messageUsername.toLowerCase()
+            }) >= 0
         ) {
             var greetingIndex = Between(0, vipWelcome[i].Message.length - 1)
 
@@ -16,7 +18,7 @@ export function CheckForVipWelcome(messageUsername) {
     }
 }
 
-export var vipWelcome = [
+var vipWelcome = [
     {
         Username: ["Wingman953"],
         Message: ["Hello streamer!"],

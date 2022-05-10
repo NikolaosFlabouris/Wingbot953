@@ -8,15 +8,20 @@
         "start": "node Wingbot953.js"
     },
     "dependencies": {
+        "@d-fischer/shared-utils": "^3.2.0",
+        "@twurple/api": "^5.1.6",
+        "@twurple/auth": "^5.1.6",
+        "@twurple/chat": "^5.1.6",
+        "@twurple/ebs-helper": "^5.1.6",
+        "@twurple/eventsub": "^5.1.6",
+        "@twurple/pubsub": "^5.1.6",
         "axios": "^0.27.2",
         "dotenv": "^16.0.0",
         "http": "^0.0.1-security",
         "open": "^8.4.0",
-        "request": "^2.88.2",
+        "shared-utils": "^2.0.1",
         "socket.io": "^4.4.1",
-        "spotify-web-api-node": "^5.0.2",
-        "tmi.js": "^1.5.0",
-        "twurple": "^1.0.0"
+        "spotify-web-api-node": "^5.0.2"
     },
     "engines": {
         "node": "16.x"

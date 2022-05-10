@@ -1,4 +1,4 @@
-import { SendMessage } from "../Wingbot953.js"
+import { SendMessage } from "../Integrations/Twitch.js"
 import { Between } from "./Utils.mjs"
 
 export var commandMap = [

@@ -1,5 +1,5 @@
 import { sleep, Between } from "./Utils.mjs"
-import { SendMessage } from "../Wingbot953.js"
+import { SendMessage } from "../Integrations/Twitch.js"
 import fs from "fs"
 
 var quizActive = false
@@ -56,17 +56,17 @@ export async function StartQuiz() {
     }
 }
 
-export async function onQuizHandler(target, context, msg, self) {
+export async function onQuizHandler(user, message) {
     if (quizActive && !self) {
         if (
             odstQuestions[questionIndex].Answers.findIndex((element) => {
-                return element.toLowerCase() === msg.toLowerCase()
+                return element.toLowerCase() === message.toLowerCase()
             }) >= 0
         ) {
-            UpdateQuizScore(context["display-name"], 1)
+            UpdateQuizScore(user, 1)
             SendMessage(
                 "!quizcontroller",
-                `/announce Congratulations ${context["display-name"]}! You answered the question correctly! The answer was: ${odstQuestions[questionIndex].Answers[0]}.`
+                `/announce Congratulations ${user}! You answered the question correctly! The answer was: ${odstQuestions[questionIndex].Answers[0]}.`
             )
 
             await sleep(1000)

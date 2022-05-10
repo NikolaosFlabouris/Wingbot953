@@ -1,7 +1,7 @@
 import SpotifyWebApi from "spotify-web-api-node"
 import open from "open"
 import readline from "readline"
-import { SendMessage } from "../Wingbot953.js"
+import { SendMessage } from "./Twitch.js"
 import "dotenv/config"
 
 var scopes = ["user-read-currently-playing"]
@@ -18,8 +18,6 @@ const spotifyApi = new SpotifyWebApi({
 
 var authorizeURL = spotifyApi.createAuthorizeURL(scopes)
 
-SpotifySetup()
-
 export async function SpotifySetup() {
     var rl = readline.createInterface({
         input: process.stdin,
@@ -30,7 +28,7 @@ export async function SpotifySetup() {
         var authWindow = open(authorizeURL)
 
         await new Promise((response) =>
-            rl.question("Please enter in the token: ", (ans) => {
+            rl.question("Please enter in the Spotify token: ", (ans) => {
                 rl.close()
                 authCode = ans
                 response(ans)

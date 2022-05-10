@@ -1,5 +1,5 @@
 import { SelectFromList, Between } from "./Utils.mjs"
-import { SendMessage } from "../Wingbot953.js"
+import { SendMessage } from "../Integrations/Twitch.js"
 
 export function HandleFastFact(originalMessage) {
     SelectFromList(fastFactList, originalMessage)

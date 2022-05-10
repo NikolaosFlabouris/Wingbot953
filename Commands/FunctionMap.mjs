@@ -1,12 +1,9 @@
-import { HandleCommandsList } from "../Wingbot953.js"
+import { HandleCommandsList } from "./../Integrations/twitch.js"
 import { HandleRandomNumberGeneration } from "./GeneralCommands.mjs"
 import { HandleOdstQuote } from "./Quotes.mjs"
 import { HandleFastFact } from "./FastFacts.mjs"
 import { StartQuiz, GetMyQuizScore, DisplayQuizLeaderboards } from "./Quiz.mjs"
-import {
-    GetCurrentSong,
-    //SpotifySetup,
-} from "../ExternalIntegrations/spotify.js"
+import { GetCurrentSong } from "../Integrations/spotify.js"
 
 export var functionMap = [
     {

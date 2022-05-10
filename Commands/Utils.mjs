@@ -1,4 +1,4 @@
-import { SendMessage } from "../Wingbot953.js"
+import { SendMessage } from "../Integrations/Twitch.js"
 
 ///
 /// Await sleep(milliseconds) to wait for the given amount of time.
