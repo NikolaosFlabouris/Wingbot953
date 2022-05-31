@@ -1,7 +1,7 @@
-import { Between } from "./Utils.mjs"
-import { SendMessage } from "./../Integrations/Twitch.js"
+import { Between } from "./Utils"
+import { SendMessage } from "./../Integrations/Twitch"
 
-export function CheckForVipWelcome(messageUsername) {
+export function CheckForVipWelcome(messageUsername: string) {
     for (var i = 0; i < vipWelcome.length; i++) {
         if (
             !vipWelcome[i].Arrived &&
@@ -13,7 +13,12 @@ export function CheckForVipWelcome(messageUsername) {
 
             vipWelcome[i].Arrived = true
 
-            SendMessage("VIP Welcome", vipWelcome[i].Message[greetingIndex])
+            SendMessage(
+                "VIP Welcome",
+                vipWelcome[i].Message[greetingIndex],
+                1000,
+                2000
+            )
         }
     }
 }
@@ -56,7 +61,11 @@ var vipWelcome = [
     },
     {
         Username: ["eggplanthydra53"],
-        Message: ["Egggrant hype!", "OOOOO Eggplant OOOOO"],
+        Message: [
+            "Egggrant hype!",
+            "OOOOO Eggplant OOOOO",
+            "Hello Marge Simpson!",
+        ],
         Arrived: false,
     },
     {
@@ -98,7 +107,7 @@ var vipWelcome = [
         Arrived: false,
     },
     {
-        Username: ["AsterQuasimoto"],
+        Username: ["AsterVeles"],
         Message: ["hi cutie ;)"],
         Arrived: false,
     },
@@ -109,7 +118,7 @@ var vipWelcome = [
     },
     {
         Username: ["Alextremo08"],
-        Message: ["Alextremo08 hello!"],
+        Message: ["Hola amiguito!"],
         Arrived: false,
     },
     {
@@ -135,6 +144,36 @@ var vipWelcome = [
     {
         Username: ["goatrope"],
         Message: ["Goatrope hello!"],
+        Arrived: false,
+    },
+    {
+        Username: ["anoobis_117"],
+        Message: ["ඞ6️⃣9️⃣4️⃣2️⃣0️⃣👁️👄👁️anoobis was here lol"],
+        Arrived: false,
+    },
+    {
+        Username: ["rcrx27"],
+        Message: ["@rcrx27 hello!"],
+        Arrived: false,
+    },
+    {
+        Username: ["BarkBevastation"],
+        Message: ["OhMyDog"],
+        Arrived: false,
+    },
+    {
+        Username: ["mindman2121"],
+        Message: ["G'day mindman", "G'night mindman"],
+        Arrived: false,
+    },
+    {
+        Username: ["FatherPickle4BC"],
+        Message: ["Tickle my Pickle FatherPickle"],
+        Arrived: false,
+    },
+    {
+        Username: ["1_qup"],
+        Message: ["Exodus", "Forerunner ILs"],
         Arrived: false,
     },
 ]

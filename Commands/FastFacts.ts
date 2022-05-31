@@ -1,7 +1,8 @@
-import { SelectFromList, Between } from "./Utils.mjs"
-import { SendMessage } from "../Integrations/Twitch.js"
+import { SelectFromList, Between } from "./Utils"
+import { SendMessage } from "../Integrations/Twitch"
+import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
 
-export function HandleFastFact(originalMessage) {
+export function HandleFastFact(originalMessage: TwitchPrivateMessage) {
     SelectFromList(fastFactList, originalMessage)
 }
 

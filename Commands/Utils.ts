@@ -1,14 +1,30 @@
-import { SendMessage } from "../Integrations/Twitch.js"
+import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
+import { SendMessage } from "../Integrations/Twitch"
+
+export function SecondsToDuration(numIn: number) {
+    var d = Math.floor(numIn / 60 / 60 / 24)
+    var h = Math.floor((numIn % (60 * 60 * 24)) / 60 / 60)
+    var m = Math.floor((numIn % (60 * 60)) / 60)
+    var s = Math.floor((numIn % (60 * 60)) % 60)
+
+    var result = `${h}hrs ${("0" + m).slice(-2)}mins ${("0" + s).slice(-2)}secs`
+
+    if (d > 0) {
+        result = `${d}days ` + result
+    }
+
+    return result
+}
 
 ///
 /// Await sleep(milliseconds) to wait for the given amount of time.
 ///
-export const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 ///
 /// Randomly returns a number between the two given numbers (inclusive)
 ///
-export function Between(min, max) {
+export function Between(min: number, max: number) {
     if (min > max) {
         // swapping
         // min = (initial_min - initial_max)
@@ -26,9 +42,10 @@ export function Between(min, max) {
 /// Selects a random item from the list or the specified item
 /// at the human-readable index given as an argument.
 ///
-export function SelectFromList(list, originalMessage) {
+export function SelectFromList(list: Array<string>, msg: TwitchPrivateMessage) {
+    var originalMessage = msg.content.value
     var command = originalMessage.split(" ")[0].trim().toLowerCase()
-    var index = (index = Between(0, list.length - 1))
+    var index = Between(0, list.length - 1)
 
     // Check if at least one argument have been given
     if (originalMessage.split(" ").length >= 2) {

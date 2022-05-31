@@ -1,13 +1,8 @@
-import { SendMessage } from "../Integrations/Twitch.js"
-import { Between } from "./Utils.mjs"
+import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
+import { SendMessage } from "../Integrations/Twitch"
+import { Between } from "./Utils"
 
 export var commandMap = [
-    {
-        Command: ["!update"],
-        Message: [
-            "Channel has a new look, added more sub badges, added bit badges, added more ways to support the stream, added follower emotes, added !quiz, added periodic 'did you know facts'.",
-        ],
-    },
     {
         Command: ["!quiz"],
         Message: [
@@ -123,6 +118,18 @@ export var commandMap = [
         Command: ["!noreset"],
         Message: ["I lied"],
     },
+    {
+        Command: ["!randomiser", "!randomizer"],
+        Message: [
+            "Scales has created a website for creating a MCC playlist with random levels. If I am playing a custom playlist I probably used this tool to generate it: https://randomizer.scal.es/",
+        ],
+    },
+    {
+        Command: ["!relay"],
+        Message: [
+            "2022 HaloRuns Easy Relay Race is on June 25th 7am PST. I'll be running ODST for Green Team. Tune in here for the race: https://www.twitch.tv/haloraces",
+        ],
+    },
     // FAQ
     {
         Command: ["!faq"],
@@ -234,18 +241,6 @@ export var commandMap = [
         Message: ["2009 Video Game"],
     },
     {
-        Command: ["!bot"],
-        Message: ["Where?"],
-    },
-    {
-        Command: ["!subcount"],
-        Message: ["!subcount = !subgoal - 1"],
-    },
-    {
-        Command: ["!subgoal"],
-        Message: ["!subgoal = !subcount + 1"],
-    },
-    {
         Command: ["!lurk"],
         Message: [
             "I'm not sure that's how lurking works.",
@@ -261,7 +256,8 @@ export var commandMap = [
 ///
 /// Handles the command to produce random number.
 ///
-export function HandleRandomNumberGeneration(originalMessage) {
+export function HandleRandomNumberGeneration(msg: TwitchPrivateMessage) {
+    var originalMessage = msg.content.value
     var command = originalMessage.split(" ")[0].trim().toLowerCase()
 
     // Check if 2 arguments have been given
@@ -271,17 +267,17 @@ export function HandleRandomNumberGeneration(originalMessage) {
         var upper = parseInt(originalMessage.split(" ")[2].trim(), 10)
 
         if (lower != NaN && upper != NaN) {
-            var num = Between(lower, upper)
+            var num = Between(lower, upper).toString()
 
-            if (num == 15) {
+            if (num == "15") {
                 num = `${num} moment`
             }
 
-            if (num == 953) {
+            if (num == "953") {
                 num = `${num} hype`
             }
 
-            if (num == 2019) {
+            if (num == "2019") {
                 num = `${num}, the Year of ODST!`
             }
 
