@@ -10,6 +10,7 @@ let categoryIndex: number
 let categoryName: string
 let question: string
 let answer: string
+var usedQuestions: number[] = []
 var leaderboards: any[] = []
 var leaderboardsFilePath = "./Data/"
 var leaderboardsFileName = "QuizLeaderboards.json"
@@ -31,7 +32,15 @@ export async function QuizSetup() {
 
 export async function StartQuiz() {
     if (!quizActive) {
-        questionIndex = Between(0, totalQuestionCount - 1)
+        var findingNumber = true
+        while (findingNumber) {
+            questionIndex = Between(0, totalQuestionCount - 1)
+
+            if (!usedQuestions.includes(questionIndex)) {
+                usedQuestions.push(questionIndex)
+                findingNumber = false
+            }
+        }
 
         for (var i = 0; i < quizCategories.length; i++) {
             if (questionIndex < quizCategories[i].CategoryLength) {
@@ -50,7 +59,7 @@ export async function StartQuiz() {
 
         SendMessage(
             "!quizcontroller",
-            `/announce QUIZ: The next Quiz Question is in 20secs! Be the first to answer to earn a point. The topic will be ${categoryName}! Good luck!`
+            `/announce wingma14Think The next Quiz Question is in 20secs! Be the first to answer to earn a point. The topic will be ${categoryName}! Good luck!`
         )
 
         await sleep(17000)
@@ -63,7 +72,7 @@ export async function StartQuiz() {
 
         quizActive = true
 
-        SendMessage("!quizcontroller", `/announce QUIZ: ${question}`)
+        SendMessage("!quizcontroller", `/announce wingma14Think ${question}`)
 
         await sleep(30000)
 
@@ -72,7 +81,7 @@ export async function StartQuiz() {
 
             SendMessage(
                 "!quizcontroller",
-                `/announce QUIZ: No one successfully answered the question. The answer was: ${answer}`
+                `/announce No one successfully answered the question. The answer was: ${answer}`
             )
 
             await sleep(1000)
@@ -136,9 +145,12 @@ export function GetMyQuizScore(msg: TwitchPrivateMessage) {
     }
 
     for (var i = 0; i < leaderboards.length; i++) {
-        if (leaderboards[i].Username == user) {
+        if (leaderboards[i].Username.toLowerCase() == user.toLowerCase()) {
             score = leaderboards[i].Score
-            SendMessage("!quizscore", `${user}'s Quiz Score is: ` + score)
+            SendMessage(
+                "!quizscore",
+                `${leaderboards[i].Username}'s Quiz Score is: ` + score
+            )
             return
         }
     }
@@ -198,8 +210,14 @@ var halo2Questions = [
 
 var halo3Questions = [
     {
-        Question: "",
-        Answers: [],
+        Question:
+            "When carrying over a Skull from Tsavo Highway to The Storm, which weapon is given to the player in place of the skull?",
+        Answers: ["Plasma Pistol"],
+    },
+    {
+        Question:
+            "When carrying over a Skull from Cortana to Halo, which weapon is given to the player in place of the skull?",
+        Answers: ["Spartan Laser"],
     },
 ]
 
@@ -211,7 +229,7 @@ var odstQuestions = [
     {
         Question:
             "When watching Adversary and Heroic_Robb streams, Wingman953 coined what term?",
-        Answers: ["Oni Pog"],
+        Answers: ["Oni Pog", "onipog"],
     },
     // Characters
     {
@@ -373,11 +391,11 @@ var odstQuestions = [
         Answers: ["72", "seventy-two", "seventytwo", "seventy two"],
     },
     // Lore/World Building/Meta-trivia
-    {
-        Question:
-            "When was Halo 3:ODST released on the Xbox 360? (Answer in YYYY-MM-DD format)",
-        Answers: ["2009-09-22", "2009-9-22"],
-    },
+    // {
+    //     Question:
+    //         "When was Halo 3:ODST released on the Xbox 360? (Answer in YYYY-MM-DD format)",
+    //     Answers: ["2009-09-22", "2009-9-22"],
+    // },
     {
         Question:
             "What was the name originally given to game Halo 3:ODST before release?",
@@ -703,16 +721,16 @@ var odstQuestions = [
         Answers: ["metaphor"],
     },
     {
-        Question: `Complete this quote (5 words): "I'll draw the turret's fire, ___ ___ ___ ___ ___"`,
-        Answers: ["you take out the operator"],
+        Question: `Complete this quote (4 words): "I'll draw the turret's fire, ___ ___ ___ ___"`,
+        Answers: ["you kill the operator"],
     },
     {
         Question: `Complete this quote (3 words): "Gunny, I can fly a Pelican, ___ ___ ___?"`,
         Answers: ["but a Phantom"],
     },
     {
-        Question: `Complete this quote (3 words): "Ah! This is the ___ ___ ___"`,
-        Answers: ["best mission ever"],
+        Question: `Complete this quote (2 words): "Ah! This is the best ___ ___"`,
+        Answers: ["mission ever"],
     },
     {
         Question: `Complete this quote (3 words): "Too busy building ___ ___ ___"`,
@@ -747,12 +765,12 @@ var reachQuestions = [
     },
     {
         Question:
-            "What is the name of the achievement for performing an assassination against an Elite to survive a fall that would've been fatal.",
+            "What is the name of the achievement for performing an assassination against an Elite to survive a fall that would've been fatal?",
         Answers: ["If They Came to Hear Me Beg"],
     },
     {
         Question:
-            "What is the name of the achievement for keeping the Scorpion intact in the mission The Package on Legendary.",
+            "What is the name of the achievement for keeping the Scorpion intact in the mission The Package on Legendary?",
         Answers: ["Tank Beats Everything"],
     },
     {
@@ -775,17 +793,17 @@ var reachQuestions = [
     {
         Question:
             "Which Halo: Reach level is the only level in the game to feature the Gauss Warthog.",
-        Answers: ["ONI: Sword Base", "Oni Sword Base"],
+        Answers: ["ONI: Sword Base", "Oni Sword Base", "Oni"],
     },
     {
         Question:
             "Which Halo: Reach level is the only level in the game to feature the Troop Transport Warthog.",
-        Answers: ["ONI: Sword Base", "Oni Sword Base"],
+        Answers: ["ONI: Sword Base", "Oni Sword Base", "Oni"],
     },
     {
         Question:
-            "How much total Sniper bullets do you start with on the mission Nightfall?",
-        Answers: ["60", "Sixty"],
+            "On which mission does your starting ammo change depending on the difficulty?",
+        Answers: ["Nightfall"],
     },
     {
         Question:
@@ -825,7 +843,7 @@ var reachQuestions = [
     },
     {
         Question: `Complete this quote (2 words): "Listen up, Noble Team. We're looking at a downed relay outpost, ____ ____ from Visegrad."`,
-        Answers: ["fifty klicks"],
+        Answers: ["fifty klicks", "50 klicks", "50 clicks", "fifty clicks"],
     },
     {
         Question: `Complete this quote (7 words): "Kat, Six: ___ ___ ___ ___ ___ ___ ___, find out what we're dealing with."`,
@@ -836,8 +854,8 @@ var reachQuestions = [
         Answers: ["teleportation terminals"],
     },
     {
-        Question: `Complete this quote (3 words): "Romeo Company, be advised: we have reports of _____ _____ _____."`,
-        Answers: ["Covenant suicide squads"],
+        Question: `Complete this quote (2 words): "Romeo Company, be advised: we have reports of Covenant _____ _____."`,
+        Answers: ["suicide squads"],
     },
     {
         Question: `Complete this quote (5 words): "Command: ___ ___ ___ ___ ___ with the 11th ODST, over."`,
@@ -873,7 +891,7 @@ var reachQuestions = [
     },
     {
         Question: `Who says the following quote: "Affirmative. It's the Winter Contingency."`,
-        Answers: ["Carter", "Nobel One", "Nobel 1"],
+        Answers: ["Carter", "Noble One", "Noble 1"],
     },
     {
         Question: `Who says the following quote: "A Zealot? We're onto something big, Commander."`,
@@ -894,8 +912,8 @@ var reachQuestions = [
     {
         Question: `Who says the following quote: "Negative. I have the gun."`,
         Answers: [
-            "Nobel Six",
-            "Nobel 6",
+            "Noble Six",
+            "Noble 6",
             "SPARTAN-B312",
             "SPARTAN B312",
             "B312",
@@ -903,7 +921,16 @@ var reachQuestions = [
     },
     {
         Question: `Who says the following quote: "Yes, well, as they say... news of my death has been greatly exaggerated."`,
-        Answers: ["Halsey"],
+        Answers: [
+            "Catherine Halsey",
+            "Halsey",
+            "Dr. Halsey",
+            "Dr Halsey",
+            "Dr Catherine Halsey",
+            "Dr. Catherine Halsey",
+            "Doctor Catherine Halsey",
+            "Doctor Halsey",
+        ],
     },
     {
         Question: `Who says the following quote: "They'll be remembered."`,
@@ -918,17 +945,17 @@ var reachQuestions = [
         Answers: ["Spade"],
     },
     {
-        Question: "What is the name of first Nobel Six?",
+        Question: "What is the name of first Noble Six?",
         Answers: ["Thom"],
     },
     {
         Question:
-            "What is the name of the tusked creater native to the planet Reach?",
+            "What is the name of the tusked creature native to the planet Reach?",
         Answers: ["Guta"],
     },
     {
         Question:
-            "What is the name of the AI that assists Nobel Team during the Fall of Reach?",
+            "What is the name of the AI that assists Noble Team during the Fall of Reach?",
         Answers: ["Auntie Dot"],
     },
     {
@@ -947,7 +974,7 @@ var reachQuestions = [
         Answers: ["Bullfrogs", "the bullfrogs", "bull-frogs", "bull frogs"],
     },
     {
-        Question: "Who in Nobel Team was a SPARTAN-II?",
+        Question: "Who in Noble Team was a SPARTAN-II?",
         Answers: ["Jorge"],
     },
     {
@@ -995,12 +1022,36 @@ var reachQuestions = [
         Answers: ["7", "seven"],
     },
     {
-        Question: `The Grunt in a Barrel Easter Egg is found on which Multiplayer map?`,
-        Answers: ["Penance"],
+        Question: `How many Ally Fireteam names are there in the original version of Halo: Reach?`,
+        Answers: ["193"], // 8 added in MCC, 1 added then removed?
+    },
+    {
+        Question: `To the nearest whole number, the Long Night of Solace is approximately how many kilometers long?`,
+        Answers: ["29km", "29", "twenty-nine", "twenty nine"], // 18miles
+    },
+    {
+        Question: `How many missile strike the designated area from a Target Locator?`,
+        Answers: ["7", "seven"],
+    },
+    {
+        Question: `From all modes, how many medals are there in Halo: Reach?`,
+        Answers: ["113"],
     },
     {
         Question: `Exodus`,
         Answers: ["Exodus"],
+    },
+    {
+        Question: `On the mission The Packager, activiting the two switches spawns of 4 of which vehicle?`,
+        Answers: ["Banshee", "Banshees"],
+    },
+    {
+        Question: `How many dead Spartans can be found on the mission Lone Wolf?`,
+        Answers: ["13", "Thirteen"],
+    },
+    {
+        Question: `The Grunt in a Barrel Easter Egg is found on which Multiplayer map?`,
+        Answers: ["Penance"],
     },
     {
         Question: `In the original release of Halo: Reach, what is the name of the highest Multiplayer rank?`,
@@ -1073,9 +1124,294 @@ var reachQuestions = [
 ]
 
 var halo4Questions = [
+    // Characters
     {
-        Question: "",
-        Answers: [],
+        Question: "What is Lasky's first name?",
+        Answers: ["Thomas", "Tom"],
+    },
+    {
+        Question: "What is Captain Del Rio's first name?",
+        Answers: ["Andrew"],
+    },
+    {
+        Question: "What is Palmer's first name?",
+        Answers: ["Sarah"],
+    },
+    {
+        Question: "What is the Didact's birth name?",
+        Answers: ["Shadow-of-Sundered-Star"],
+    },
+    {
+        Question:
+            "What is the name of the Researcher Master Chief meets in the mission Composer?",
+        Answers: [
+            "Doctor Tillson",
+            "Doctor Tilson",
+            "Dr Tillson",
+            "Dr Tilson",
+            "Sandra Tillson",
+        ],
+    },
+    // Weapons and Vehicles
+    {
+        Question: "What does SAW stand for?",
+        Answers: ["Squad Automatic Weapon"],
+    },
+    {
+        Question:
+            "The Energy Sword and which other weapon prevents slowdown when sprinting?",
+        Answers: ["Gravity Hammer", "Hammer"],
+    },
+    {
+        Question:
+            "The Gravity Hammer and which other weapon prevents slowdown when sprinting?",
+        Answers: ["Energy Sword", "Sword"],
+    },
+    {
+        Question:
+            "What is the name of the vehicle you fly at the start of Midnight?",
+        Answers: ["Broadsword", "Broad sword"],
+    },
+    {
+        Question: "How many Armour Abilities are there in Halo 4?",
+        Answers: ["8", "eight"],
+    },
+    {
+        Question:
+            "During the campaign, what is the first Armour Ability availble to the player to use?",
+        Answers: ["Active Camouflage", "Active Camo", "Active Camou"],
+    },
+    {
+        Question:
+            "A Legendary-only Easter Egg on Forerunner lets the player spawn in 9 of which weapon?",
+        Answers: ["Incineration Cannon", "Incineration Cannons"],
+    },
+    {
+        Question:
+            "A Legendary-only Easter Egg on Shutdown lets the player spawn in 4 of which weapon?",
+        Answers: ["Gravity Hammer", "Gravity Hammers", "Hammer", "Hammers"],
+    },
+    {
+        Question:
+            "On Legendary difficulty, on the mission Midnight, how many pillars must the player destroy to spawn in a bonus Gravity Hammer?",
+        Answers: ["8", "eight"],
+    },
+    {
+        Question:
+            "What is the name of the Covenant vehicle that temporarily disables the Mammoth in the level Reclaimer?",
+        Answers: ["Lich"],
+    },
+    // General
+    {
+        Question:
+            "How long does in cryosleep for? (Format: X years, Y months, Z days)",
+        Answers: [
+            "4 years, 7 months, 10 days",
+            "4 years 7 months 10 days",
+            "4years, 7months, 10days",
+            "4years 7months 10days",
+        ],
+    },
+    {
+        Question:
+            "What condition does Cortana suffer from during the events of Halo 4?",
+        Answers: ["Rampancy"],
+    },
+    {
+        Question: "Who composed the music for Halo 4?",
+        Answers: ["Neil Davidge", "Davidge"],
+    },
+    {
+        Question: "What is the only Halo 4 mission to not have a terminal?",
+        Answers: ["Dawn"],
+    },
+    {
+        Question:
+            "What is the name of the five episode live-action series released alongside Halo 4?",
+        Answers: ["Forward Unto Dawn"],
+    },
+    {
+        Question: "Which Halo ring is seen at the start of Composer?",
+        Answers: [
+            "Installation 03",
+            "Gamma Halo",
+            "Gamma",
+            "Installation 3",
+            "03",
+        ],
+    },
+    {
+        Question: "What is the name of shield world in Halo 4?",
+        Answers: ["Requiem"],
+    },
+    {
+        Question:
+            "What is the name of the Forerunner artifact that the Didact was held captive in?",
+        Answers: ["Cryptum"],
+    },
+    {
+        Question: "What is the name of the Didact's personal flagship?",
+        Answers: ["Mantle's Approach", "Mantles Approach"],
+    },
+    {
+        Question: "What does IFF stand for?",
+        Answers: ["Identification Friend or Foe", "Identification Friend Foe"],
+    },
+    {
+        Question:
+            "What is the name of the UNSC Research Facility that has the Composer?",
+        Answers: ["Ivanoff Station"],
+    },
+    {
+        Question:
+            "In which mission does Master Chief not start with an Assault Rifle?",
+        Answers: ["Midnight"],
+    },
+    {
+        Question: "In which mission does Master Chief not fight any Covenant?",
+        Answers: ["Midnight"],
+    },
+    {
+        Question:
+            "MCC launches with a glitched that told the player to press which button at the end of Midnight?",
+        Answers: ["RT", "Right trigger"],
+    },
+    {
+        Question: "What city gets composed?",
+        Answers: ["New Phoenix"],
+    },
+    {
+        Question:
+            "The final cutscene of the mission Reclaimer was remade for the 2012 Spike Video Game Awards. with which actor taking the place of Cortana?",
+        Answers: [
+            "Samuel L. Jackson",
+            "Samuel L Jackson",
+            "Samuel Jackson",
+            "Sam Jackson",
+        ], //https://www.youtube.com/watch?v=iCLFu_Gt25Q
+    },
+    // Achievements
+    {
+        Question:
+            "What is the name of the MCC Achievement for completing Halo 4 on Legendary in under 3hrs?",
+        Answers: ["You're Joking", "You are Joking"],
+    },
+    // Spartan Ops
+    {
+        Question:
+            "What is the name of the Fireteam you play in during the Spartan Ops campaign?",
+        Answers: ["Fireteam Crimson", "Crimson"],
+    },
+    {
+        Question:
+            "Name a Fireteam that you meet (and do not play as) in the Spartan Ops campaign.",
+        Answers: [
+            "Castle, Magestic, Ivy, Domino, Tower",
+            "Castle",
+            "Magestic",
+            "Ivy",
+            "Domino",
+            "Tower",
+        ],
+    },
+    {
+        Question: "How many Spartan Ops missions are there?",
+        Answers: ["50", "Fifty"],
+    },
+    {
+        Question:
+            "What episode from Spartan Ops shares an name with a main mission from the Halo FPS series?",
+        Answers: ["Exodus"],
+    },
+    // Quotes
+    {
+        Question: `Complete this quote (2 words): "Uh, I'm sorry - did I miss orbiting a ______ _____ at some point?"`,
+        Answers: ["Forerunner planet"],
+    },
+    {
+        Question: `Complete this quote (2 words):  "So far, I've pulled multiple strings referring to the big ones as "_____ _____"`,
+        Answers: ["Promethean Knights"],
+    },
+    {
+        Question: `Complete this quote (1 word):  "I thought you'd be ____."`,
+        Answers: ["taller"],
+    },
+    {
+        Question: `Complete this quote (4 word):  "It worked. You did it. Just ___ ___ ___ ___."`,
+        Answers: ["like you always do"],
+    },
+    {
+        Question: `Who says the following quote: "So fades the great harvest of my betrayal."`,
+        Answers: ["Didact", "Ur-Didact"],
+    },
+    {
+        Question: `Who says the following quote: "Afraid we'll have to give you an IOU on that welcome home party."`,
+        Answers: ["Thomas Lasky", "Lasky", "Tom Lasky"],
+    },
+    {
+        Question: `Who says the following quote: "Well. Someone's overcompensating."`,
+        Answers: ["Cortana"],
+    },
+    // Multiplayer
+    {
+        Question: `In the original version of the game, how many Commendations were there?`,
+        Answers: ["121"],
+    },
+    {
+        Question: `In Halo 4, what was the name of the highest Commendation rank?"`,
+        Answers: ["Master"],
+    },
+    {
+        Question: `In Halo 4, what was the highest Spartan (Multiplayer) Rank?"`,
+        Answers: ["SR130", "130"],
+    },
+    {
+        Question: `In Halo 4 multiplayer, how many Specialisations were there?"`,
+        Answers: ["8"],
+    },
+    {
+        Question: `How many medals are there in Halo 4 Multiplayer?"`,
+        Answers: ["176"],
+    },
+    {
+        Question: `What is the name of the Oddball-variant gametype that first appeared in Halo 4 DLC?"`,
+        Answers: ["Ricochet"],
+    },
+    {
+        Question: `What is the name of the CTF gametype unique to Halo 4?"`,
+        Answers: ["Mini CTF"],
+    },
+    {
+        Question: `In Halo 4, the gametype typically known as 'Infection' is given what name?"`,
+        Answers: ["Flood"],
+    },
+    {
+        Question: `In Halo 4, what is the name of the FFA-variant gametype that declares the leading scorer the "king" until they are killed?"`,
+        Answers: ["Regicide"],
+    },
+    {
+        Question: `In Halo 4, what is the name of the 5v5 gametype that requires players to plant beacons to secure Slipspace crates?"`,
+        Answers: ["Extraction"],
+    },
+    {
+        Question: `In Halo 4, what is the name of the 6v6 gametype that requires players to capture and hold bases from the opposite team?"`,
+        Answers: ["Dominion"],
+    },
+    {
+        Question: `How many multiplayer maps are there in Halo 4?"`,
+        Answers: ["25"],
+    },
+    {
+        Question: `Which multiplayer map is the setting for the cutscene where Master Chief meets the Librarian?"`,
+        Answers: ["Haven"],
+    },
+    {
+        Question: `Halo 3's multiplayer map 'The Pit' was remade and given what name in Halo 4 Multiplayer?"`,
+        Answers: ["Pitfall"],
+    },
+    {
+        Question: `Halo 3's multiplayer map 'Valhalla' was remade and given what name in Halo 4 Multiplayer?"`,
+        Answers: ["Ragnarok"],
     },
 ]
 
@@ -1101,6 +1437,14 @@ var franchiseQuestions = [
 ]
 
 var halorunsQuestions = [
+    {
+        Question: "What year was HaloRuns founded?",
+        Answers: ["2014"],
+    },
+    {
+        Question: "Did someone say...?",
+        Answers: ["Haloruns.com", "Haloruns dot com"],
+    },
     // Submissions & WR Stats
     {
         Question:
@@ -1199,7 +1543,7 @@ var halorunsQuestions = [
     },
     {
         Question: "In 2016 Halo 4 was run at AGDQ by which speedrunner?",
-        Answers: ["ProAceJoker", "Joker"],
+        Answers: ["ProAceJoker", "Joker", "ProAcedJoker"],
     },
     {
         Question: "In 2015 Halo 3 was run at SGDQ by which speedrunner?",
@@ -1330,6 +1674,47 @@ var halorunsQuestions = [
         Question: "In Halo: Reach Speedrunning, what does TEIDFSEF stand for?",
         Answers: ["Two EEzy's Improved Dyse's Faster Slow Early Falcon"],
     },
+    {
+        Question: "In Halo 4 Speedrunning, what does ASS POD stand for?",
+        Answers: [
+            "Area Specific Standing Point Of Despawn",
+            "Alley Specific Standing Point Of Despawn",
+            "Ally Specific Standing Point Of Despawn",
+        ],
+    },
+    {
+        Question:
+            "In Halo 4 Speedrunning, if I was performing the Button Jump I would be on which level?",
+        Answers: ["Forerunner"],
+    },
+    // Achievements
+    {
+        Question:
+            "The achievement 'Easy as One Two Three' is named after which speedrunner?",
+        Answers: ["c0ry123", "cory123", "cory", "c0ry"],
+    },
+    {
+        Question:
+            "The achievement 'Piece of Cake' is named after which speedrunner?",
+        Answers: ["HaoleCake"],
+    },
+    // Other
+    {
+        Question: "Which game in MCC has the longest sum of par times?",
+        Answers: ["Halo 2", "Halo2"],
+    },
+    {
+        Question: "Which game in MCC has the shortest sum of par times?",
+        Answers: ["Halo 3:ODST", "ODST"],
+    },
+    {
+        Question: "Which mission in Halo 2 has the longest par time?",
+        Answers: ["The Oracle", "Oracle"],
+    },
+    {
+        Question: "Which mission in Halo CE has the longest par time?",
+        Answers: ["The Library", "Library"],
+    },
 ]
 
 var quizCategories = [
@@ -1358,11 +1743,11 @@ var quizCategories = [
         CategoryName: "Halo: Reach",
         CategoryLength: reachQuestions.length,
     },
-    // {
-    //     CategoryQuestions: halo4Questions,
-    //     CategoryName: "Halo 4",
-    //     CategoryLength: halo4Questions.length,
-    // },
+    {
+        CategoryQuestions: halo4Questions,
+        CategoryName: "Halo 4",
+        CategoryLength: halo4Questions.length,
+    },
     // {
     //     CategoryQuestions: halo5Questions,
     //     CategoryName: "Halo 5",
@@ -1384,3 +1769,9 @@ var quizCategories = [
         CategoryLength: halorunsQuestions.length,
     },
 ]
+
+// {
+//     Question:
+//         "With introduction of Dawn skip, Hobo beat which runners time?",
+//     Answers: ["Bless Revenge"],
+// },

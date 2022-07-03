@@ -51,7 +51,10 @@ var vipWelcome = [
     },
     {
         Username: ["zomb1e343"],
-        Message: ["yea jon"],
+        Message: [
+            "yea jon",
+            "Jon, you've been out for 4 years 7 months and 10 days! ",
+        ],
         Arrived: false,
     },
     {
@@ -113,7 +116,7 @@ var vipWelcome = [
     },
     {
         Username: ["thiccElite"],
-        Message: ["thiccElite hello!"],
+        Message: ["thiccElite hello!", "wort wort wort"],
         Arrived: false,
     },
     {
@@ -148,7 +151,12 @@ var vipWelcome = [
     },
     {
         Username: ["anoobis_117"],
-        Message: ["ඞ6️⃣9️⃣4️⃣2️⃣0️⃣👁️👄👁️anoobis was here lol"],
+        Message: [
+            "ඞ6️⃣9️⃣4️⃣2️⃣0️⃣👁️👄👁️anoobis was here lol",
+            "GL strimer also anooby do be vibing",
+            "anUwUbis an0w0bis anOwObis",
+            "vegetal is goated also remember to hydration",
+        ],
         Arrived: false,
     },
     {
@@ -174,6 +182,21 @@ var vipWelcome = [
     {
         Username: ["1_qup"],
         Message: ["Exodus", "Forerunner ILs"],
+        Arrived: false,
+    },
+    {
+        Username: ["Makko_____"],
+        Message: ["Salutations chatter"],
+        Arrived: false,
+    },
+    {
+        Username: ["FamilyGuy0395"],
+        Message: ["Oh, hey... it's FamilyGuy again!"],
+        Arrived: false,
+    },
+    {
+        Username: ["danosw"],
+        Message: ["BatChest"],
         Arrived: false,
     },
 ]

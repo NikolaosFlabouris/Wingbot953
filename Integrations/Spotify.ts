@@ -3,12 +3,15 @@ import open from "open"
 import readline from "readline"
 import { SendMessage } from "./Twitch.js"
 import "dotenv/config"
+import axios from "axios"
+
+import express = require("express")
 
 var scopes: Array<string> = ["user-read-currently-playing"]
 
 let spotifyApi: SpotifyWebApi
 
-export async function SpotifySetup() {
+export async function SpotifySetup(server: express.Application) {
     spotifyApi = new SpotifyWebApi({
         clientId: process.env.SPOTIFY_CLIENT_ID,
         clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
@@ -19,18 +22,13 @@ export async function SpotifySetup() {
         scopes,
         "Wingbot953Integration"
     )
-    var authWindow = open(authorizeURL)
 
-    var rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-    })
+    server.get(
+        "/spotify/callback",
+        function (req: express.Request, res: express.Response) {
+            console.log("Spotify Callback received")
 
-    await new Promise((response) =>
-        rl.question("Please enter in the Spotify token: ", (ans) => {
-            rl.close()
-
-            spotifyApi.authorizationCodeGrant(ans).then(
+            spotifyApi.authorizationCodeGrant(req.query.code as string).then(
                 function (data) {
                     // Set the access token on the API object to use it in later calls
                     spotifyApi.setAccessToken(data.body["access_token"])
@@ -49,10 +47,19 @@ export async function SpotifySetup() {
                     )
                 }
             )
-
-            response(ans)
-        })
+        }
     )
+
+    var authWindow = open(authorizeURL)
+
+    // axios
+    //     .get(authorizeURL)
+    //     .then((res) => {
+    //         console.log(`Spotify statusCode: ${res.status}`)
+    //     })
+    //     .catch((error) => {
+    //         console.error(error)
+    //     })
 }
 
 function RefreshToken() {

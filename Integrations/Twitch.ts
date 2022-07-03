@@ -5,7 +5,13 @@ import {
 } from "@twurple/auth"
 import { ChatClient } from "@twurple/chat"
 import { ApiClient } from "@twurple/api"
+import {
+    EventSubChannelRedemptionAddEvent,
+    EventSubListener,
+} from "@twurple/eventsub"
+import { NgrokAdapter } from "@twurple/eventsub-ngrok"
 import { PubSubClient, PubSubRedemptionMessage } from "@twurple/pubsub"
+import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
 import open from "open"
 import readline from "readline"
 
@@ -24,7 +30,9 @@ import {
 } from "../Commands/Quiz"
 import { SendDidYouKnowFact, HandleFastFact } from "../Commands/FastFacts"
 import { GetCurrentSong } from "./Spotify"
-import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
+import axios from "axios"
+
+import express = require("express")
 
 var debug = false
 
@@ -48,30 +56,37 @@ var authorizeURL =
     `channel:read:polls+` +
     `channel:read:goals`
 
-export async function TwitchSetup() {
+export async function TwitchSetup(server: express.Application) {
     GenerateCommandsList()
 
-    var rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-    })
-
-    var authWindow = open(authorizeURL, { app: { name: "msedge" } })
-
-    await new Promise((response) =>
-        rl.question("Please enter in the Twitch token: ", async (ans) => {
-            rl.close()
-
+    server.get(
+        "/twitch/callback",
+        async function (req: express.Request, res: express.Response) {
+            console.log("Twitch Callback received")
             twitchAccessToken = await exchangeCode(
                 process.env.TWITCH_CLIENT_ID!,
                 process.env.TWITCH_CLIENT_SECRET!,
-                ans,
+                req.query.code as string,
                 process.env.TWITCH_REDIRECT_URI!
             )
-            response(ans)
-        })
+            ContinueTwitchSetup()
+        }
     )
 
+    var authWindow = open(authorizeURL, { app: { name: "msedge" } })
+
+    // axios
+    //     .get(authorizeURL)
+    //     .then((res) => {
+    //         console.log(`Twitch statusCode: ${res.status}`)
+    //     })
+    //     .catch((error) => {
+    //         console.error(error)
+    //     })
+}
+
+async function ContinueTwitchSetup() {
+    console.log("Continuing Setup")
     authProvider = new RefreshingAuthProvider(
         {
             clientId: process.env.TWITCH_CLIENT_ID!,
@@ -99,11 +114,19 @@ export async function TwitchSetup() {
     await chatClient.connect()
 
     const pubSubClient = new PubSubClient()
+    const userId = await pubSubClient.registerUserListener(authProvider)
+
+    const listener = await pubSubClient.onRedemption(
+        userId,
+        (message: PubSubRedemptionMessage) => {
+            HandleRedemption(message)
+        }
+    )
 
     // Automatic messages on timers
-    var quizInterval = setInterval(StartQuiz, 2100000) // 35mins
+    var quizInterval = setInterval(StartQuiz, Between(2100000, 2700000)) // 35-45mins
     //var didYouKnowInterval = setInterval(SendDidYouKnowFact, 2580000) // 43mins
-    var periodicMessagesInterval = setInterval(PeriodicMessages, 2580000) // 43mins
+    var periodicMessagesInterval = setInterval(PeriodicMessages, 3300000) // 55mins
 
     chatClient.onMessage(async (channel, user, message, msg) => {
         // Ignore messages from the bot
@@ -124,16 +147,6 @@ export async function TwitchSetup() {
         CheckForVipWelcome(msg.userInfo.displayName)
 
         onQuizHandler(user, msg)
-
-        // MONITOR PERFORMANCE, IF POOR UNCOMMENT BELOW TO FILTER MESSAGES
-
-        // Remove whitespace and make lowercase.
-        // const command = msg.split(" ")[0].trim().toLowerCase()
-
-        // Ignore messages that don't begin with an exclamation mark.
-        // if (command.charAt(0) != "!") {
-        //     return
-        // }
 
         if (debug) console.log("DEBUG: Command handling")
 
@@ -181,18 +194,6 @@ export async function TwitchSetup() {
             1000
         )
     })
-
-    const userId = await pubSubClient.registerUserListener(authProvider)
-
-    const listener = await pubSubClient.onRedemption(
-        userId,
-        (message: PubSubRedemptionMessage) => {
-            console.log(message)
-            if (message.rewardTitle === "Start a Quiz Round") {
-                StartQuiz()
-            }
-        }
-    )
 }
 
 export function SendMessage(
@@ -224,6 +225,7 @@ export function SendMessage(
 var periodicMessages = [
     "/me Enjoying the stream? Watching, chatting, following, cheering or subscribing are all great ways to support the stream. Your support allows me to continue investing time into the channel and it is greatly appreciated!",
     "/me Got a song suggestion? Feel free to share it with the streamer and it may be added to the stream playlist!",
+    "/me Join Wingman953's Discord Server here: https://discord.gg/6KPBTApkJ8",
 ]
 
 function PeriodicMessages() {
@@ -231,6 +233,12 @@ function PeriodicMessages() {
         "channelsupport",
         periodicMessages[Between(0, periodicMessages.length - 1)]
     )
+}
+
+function HandleRedemption(message: PubSubRedemptionMessage) {
+    if (message.rewardTitle === "Start a Quiz Round") {
+        StartQuiz()
+    }
 }
 
 async function HandleFollowAge(msg: TwitchPrivateMessage) {
@@ -388,7 +396,7 @@ var functionMap = [
         Function: HandleCommandsList,
     },
     {
-        Command: ["!random"],
+        Command: ["!random", "!range"],
         Function: HandleRandomNumberGeneration,
     },
     {
@@ -396,7 +404,7 @@ var functionMap = [
         Function: HandleOdstQuote,
     },
     {
-        Command: ["!fastfact"],
+        Command: ["!fastfact", "!odstfact"],
         Function: HandleFastFact,
     },
     // Twitch

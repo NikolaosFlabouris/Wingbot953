@@ -16,7 +16,7 @@ export var commandMap = [
     },
     {
         Command: ["!discord"],
-        Message: ["Wingman953#3623"],
+        Message: ["Server link: https://discord.gg/6KPBTApkJ8"],
     },
     {
         Command: ["!hrprofile", "!pb"],
@@ -27,13 +27,13 @@ export var commandMap = [
     {
         Command: ["!wr", "!fgwr"],
         Message: [
-            "ODST Easy FG: 57:38 by Wingman953 | ODST Leg FG: 1:04:35 by Wingman953",
+            "ODST Easy FG: 57:36 by Wingman953 | ODST Leg FG: 1:04:35 by Wingman953",
         ],
     },
     {
         Command: ["!youtube", "!yt", "!pbvid"],
         Message: [
-            "Wingman953's YoutTube: www.youtube.com/channel/UCOwR4betNPOGARQqHUBFQRw/videos",
+            "Wingman953's YouTube: www.youtube.com/channel/UCOwR4betNPOGARQqHUBFQRw/videos",
         ],
     },
     {

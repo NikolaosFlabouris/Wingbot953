@@ -37,7 +37,7 @@ export var quoteMap = [
             '"They opened a gym in the bathroom" - EggplantHydra the 53rd edition',
             '"too much bonking :(" - Wingman953 April 2020',
             '"I\'m doing pretty good." - iTheReptiliani',
-            '"i\'m planning on going to marry mcthumbs" - eggranthydra53',
+            '"i\'m planning on going to marry mcthumbs" - egggranthydra53',
             '"Hello my fellow compatriots, I have noticed that one of our acquaintances named Nik, otherwise known under the online pseudonym "Wingman953", is similar in his composure to that of a brick." - McThumbs',
             '"They should put capybaras in this game, expect I would be mad to see them killed" - SkilledGames_',
             "\"I can't kill baby animals, that's my limit.\" - _GamesSkilled",
@@ -48,6 +48,7 @@ export var quoteMap = [
     {
         Command: ["!upliftmarine"],
         AllMessages: true,
+        Username: ["Wingman953", "CameraDancer"],
         Message: [
             "Crazed Marine: \"No, no, no! You're not listening! It's a zoo, okay?\"",
             'Medic: "Well, technically it\'s a corporate-funded wildlife reserve."',
@@ -64,6 +65,7 @@ export var quoteMap = [
     {
         Command: ["!datahiveengineers", "!dhengineers"],
         AllMessages: true,
+        Username: ["Wingman953", "CameraDancer"],
         Message: [
             'Buck: "I\'ve seen hundreds of these things today! Why is this one so important?"',
             'Dare: "This Engineer knows what the Covenant is after. If I could safely capture more of them I would. What they know can win the war!"',
@@ -88,7 +90,7 @@ export var quoteMap = [
     // VIP
     {
         Command: ["!cutscene"],
-        Username: ["wingman953", "cameradancer"],
+        Username: ["Wingman953", "CameraDancer"],
         AllMessages: true,
         Message: [
             "/me View of the Highway at dawn opens. Cut to Dare, The Rookie, Buck, and Vergil moving forward. Covenant CCS-class battlecruisers fly above. Dare points to one.",
