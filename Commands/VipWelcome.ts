@@ -63,7 +63,7 @@ var vipWelcome = [
         Arrived: false,
     },
     {
-        Username: ["eggplanthydra53"],
+        Username: ["eggplanthydra53", "eggplanthr"],
         Message: [
             "Egggrant hype!",
             "OOOOO Eggplant OOOOO",
@@ -73,7 +73,7 @@ var vipWelcome = [
     },
     {
         Username: ["Two_EEzy"],
-        Message: ["Two_EEzy hype!"],
+        Message: ["Two_EEzy hype!", "Woah, eezy does it, Rookie!"],
         Arrived: false,
     },
     {
@@ -197,6 +197,16 @@ var vipWelcome = [
     {
         Username: ["danosw"],
         Message: ["BatChest"],
+        Arrived: false,
+    },
+    {
+        Username: ["June_s2"],
+        Message: ["i love halo speedruns"],
+        Arrived: false,
+    },
+    {
+        Username: ["desperdxd"],
+        Message: ["ahh hell nah its that nerd emoji irl"],
         Arrived: false,
     },
 ]

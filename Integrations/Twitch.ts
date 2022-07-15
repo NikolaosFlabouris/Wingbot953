@@ -4,13 +4,7 @@ import {
     AccessToken,
 } from "@twurple/auth"
 import { ChatClient } from "@twurple/chat"
-import { ApiClient } from "@twurple/api"
-import {
-    EventSubChannelRedemptionAddEvent,
-    EventSubListener,
-} from "@twurple/eventsub"
-import { NgrokAdapter } from "@twurple/eventsub-ngrok"
-import { PubSubClient, PubSubRedemptionMessage } from "@twurple/pubsub"
+import { ApiClient, HelixCustomReward, HelixUser } from "@twurple/api"
 import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
 import open from "open"
 import readline from "readline"
@@ -30,17 +24,28 @@ import {
 } from "../Commands/Quiz"
 import { SendDidYouKnowFact, HandleFastFact } from "../Commands/FastFacts"
 import { GetCurrentSong } from "./Spotify"
-import axios from "axios"
 
 import express = require("express")
 
 var debug = false
 
-let twitchAccessToken: AccessToken
-var authProvider
+let Wingman953: HelixUser | null
 
+let botTwitchAccessToken: AccessToken
+let streamerTwitchAccessToken: AccessToken
+var botAuthProvider
+var streamerAuthProvider
+let server: express.Application
 let chatClient: ChatClient
 let apiClient: ApiClient
+
+let commandsList: string
+
+// Flags
+let isFirstAuth: boolean = true
+let isLive: boolean = false
+let quizStartReward: HelixCustomReward
+let latestRedemptionDate: number = Date.now()
 
 var authorizeURL =
     `https://id.twitch.tv/oauth2/authorize?` +
@@ -48,32 +53,79 @@ var authorizeURL =
     `&redirect_uri=${process.env.TWITCH_REDIRECT_URI}` +
     `&response_type=code` +
     `&scope=chat:read+` +
-    `chat:edit+` +
-    `channel:read:redemptions+` +
-    `channel:moderate+` +
-    `channel:read:subscriptions+` +
-    `channel:read:predictions+` +
+    `analytics:read:extensions+` +
+    `analytics:read:games+` +
+    `bits:read+` +
+    //`channel:edit:commercial+` +
+    `channel:manage:broadcast+` +
+    `channel:manage:extensions+` +
+    `channel:manage:polls+` +
+    `channel:manage:predictions+` +
+    `channel:manage:raids+` +
+    `channel:manage:redemptions+` +
+    //`channel:manage:schedule+` +
+    //`channel:manage:videos+` +
+    `channel:read:editors+` +
+    `channel:read:goals+` +
+    `channel:read:hype_train+` +
     `channel:read:polls+` +
-    `channel:read:goals`
+    `channel:read:predictions+` +
+    `channel:read:redemptions+` +
+    `channel:read:stream_key+` +
+    `channel:read:subscriptions+` +
+    //`clips:edit+` +
+    `moderation:read+` +
+    //`moderator:manage:banned_users+` +
+    //`moderator:read:blocked_terms+` +
+    //`moderator:manage:blocked_terms+` +
+    //`moderator:manage:automod+` +
+    //`moderator:read:automod_settings+` +
+    //`moderator:manage:automod_settings+` +
+    `moderator:read:chat_settings+` +
+    `moderator:manage:chat_settings+` +
+    //`user:edit+` +
+    //`user:edit:follows+` +
+    //`user:manage:blocked_users+` +
+    `user:read:blocked_users+` +
+    `user:read:broadcast+` +
+    `user:read:email+` +
+    `user:read:follows+` +
+    `user:read:subscriptions+` +
+    `channel:moderate+` +
+    //`whispers:edit+` +
+    `chat:edit`
 
-export async function TwitchSetup(server: express.Application) {
+export async function TwitchSetup(app: express.Application) {
     GenerateCommandsList()
+
+    server = app
 
     server.get(
         "/twitch/callback",
         async function (req: express.Request, res: express.Response) {
             console.log("Twitch Callback received")
-            twitchAccessToken = await exchangeCode(
-                process.env.TWITCH_CLIENT_ID!,
-                process.env.TWITCH_CLIENT_SECRET!,
-                req.query.code as string,
-                process.env.TWITCH_REDIRECT_URI!
-            )
-            ContinueTwitchSetup()
+            if (isFirstAuth) {
+                isFirstAuth = false
+                botTwitchAccessToken = await exchangeCode(
+                    process.env.TWITCH_CLIENT_ID!,
+                    process.env.TWITCH_CLIENT_SECRET!,
+                    req.query.code as string,
+                    process.env.TWITCH_REDIRECT_URI!
+                )
+                var streamerAuthWindow = open(authorizeURL)
+            } else {
+                streamerTwitchAccessToken = await exchangeCode(
+                    process.env.TWITCH_CLIENT_ID!,
+                    process.env.TWITCH_CLIENT_SECRET!,
+                    req.query.code as string,
+                    process.env.TWITCH_REDIRECT_URI!
+                )
+                ContinueTwitchSetup()
+            }
         }
     )
 
-    var authWindow = open(authorizeURL, { app: { name: "msedge" } })
+    var botAuthWindow = open(authorizeURL, { app: { name: "msedge" } })
 
     // axios
     //     .get(authorizeURL)
@@ -86,20 +138,30 @@ export async function TwitchSetup(server: express.Application) {
 }
 
 async function ContinueTwitchSetup() {
-    console.log("Continuing Setup")
-    authProvider = new RefreshingAuthProvider(
+    botAuthProvider = new RefreshingAuthProvider(
         {
             clientId: process.env.TWITCH_CLIENT_ID!,
             clientSecret: process.env.TWITCH_CLIENT_SECRET!,
             onRefresh: async (newTokenData) => {
-                twitchAccessToken = newTokenData
+                botTwitchAccessToken = newTokenData
             },
         },
-        twitchAccessToken
+        botTwitchAccessToken
+    )
+
+    streamerAuthProvider = new RefreshingAuthProvider(
+        {
+            clientId: process.env.TWITCH_CLIENT_ID!,
+            clientSecret: process.env.TWITCH_CLIENT_SECRET!,
+            onRefresh: async (newTokenData) => {
+                streamerTwitchAccessToken = newTokenData
+            },
+        },
+        streamerTwitchAccessToken
     )
 
     chatClient = new ChatClient({
-        authProvider,
+        authProvider: botAuthProvider,
         channels: ["Wingman953"],
     })
 
@@ -108,35 +170,43 @@ async function ContinueTwitchSetup() {
     })
 
     apiClient = new ApiClient({
-        authProvider,
+        authProvider: streamerAuthProvider,
     })
 
-    await chatClient.connect()
+    Wingman953 = await apiClient.users.getUserByName("Wingman953")
 
-    const pubSubClient = new PubSubClient()
-    const userId = await pubSubClient.registerUserListener(authProvider)
-
-    const listener = await pubSubClient.onRedemption(
-        userId,
-        (message: PubSubRedemptionMessage) => {
-            HandleRedemption(message)
-        }
+    // Find Reward Info
+    var rewardsWingman953 = await apiClient.channelPoints.getCustomRewards(
+        Wingman953?.id!,
+        false
     )
+
+    for (var reward = 0; reward < rewardsWingman953.length; reward++) {
+        if (rewardsWingman953[reward].title == "Start a Quiz Round") {
+            quizStartReward = rewardsWingman953[reward]
+        }
+    }
+
+    var redemptionsWingman953 =
+        await apiClient.channelPoints.getRedemptionsForBroadcaster(
+            Wingman953?.id as string,
+            quizStartReward.id,
+            "UNFULFILLED",
+            { newestFirst: true }
+        )
+
+    await chatClient.connect()
 
     // Automatic messages on timers
     var quizInterval = setInterval(StartQuiz, Between(2100000, 2700000)) // 35-45mins
     //var didYouKnowInterval = setInterval(SendDidYouKnowFact, 2580000) // 43mins
     var periodicMessagesInterval = setInterval(PeriodicMessages, 3300000) // 55mins
+    var twitchApiPollingInterval = setInterval(TwitchApiPolling, 5000) // 7secs
 
     chatClient.onMessage(async (channel, user, message, msg) => {
         // Ignore messages from the bot
         if (msg.userInfo.displayName === "Wingbot953") {
             return
-        }
-
-        if (msg.isRedemption) {
-            console.log("Redemption redeemed")
-            console.log(msg)
         }
 
         if (debug)
@@ -145,6 +215,8 @@ async function ContinueTwitchSetup() {
             )
 
         CheckForVipWelcome(msg.userInfo.displayName)
+
+        Converse(user, msg)
 
         onQuizHandler(user, msg)
 
@@ -196,6 +268,45 @@ async function ContinueTwitchSetup() {
     })
 }
 
+async function TwitchApiPolling() {
+    var streamWingman953 = await apiClient.streams.getStreamByUserId(
+        Wingman953?.id as string
+    )
+
+    // Gone Live!
+    const currentTimestamp = Date.now()
+    if (isLive && streamWingman953?.startDate == null) {
+        isLive = false
+        console.log("Streamer went live!")
+    } else if (
+        !isLive &&
+        streamWingman953?.startDate != null &&
+        streamWingman953?.startDate.getTime() > currentTimestamp
+    ) {
+        isLive = true
+        console.log("Streamer went offline!")
+    }
+
+    // Quiz Start!
+    var redemptionsWingman953 =
+        await apiClient.channelPoints.getRedemptionsForBroadcaster(
+            Wingman953?.id as string,
+            quizStartReward.id,
+            "UNFULFILLED",
+            { newestFirst: true }
+        )
+
+    if (
+        redemptionsWingman953.data.length > 0 &&
+        redemptionsWingman953.data[0].redemptionDate.getTime() >
+            latestRedemptionDate
+    ) {
+        latestRedemptionDate =
+            redemptionsWingman953.data[0].redemptionDate.getTime()
+        HandleRedemption(redemptionsWingman953.data[0].rewardTitle)
+    }
+}
+
 export function SendMessage(
     command: string,
     message: string,
@@ -223,9 +334,10 @@ export function SendMessage(
 }
 
 var periodicMessages = [
-    "/me Enjoying the stream? Watching, chatting, following, cheering or subscribing are all great ways to support the stream. Your support allows me to continue investing time into the channel and it is greatly appreciated!",
+    "/me Enjoying the stream? Watching, chatting, following, cheering, subscribing or donating are all great ways to support the stream. Your support allows me to continue investing time into the channel and it is greatly appreciated!",
     "/me Got a song suggestion? Feel free to share it with the streamer and it may be added to the stream playlist!",
     "/me Join Wingman953's Discord Server here: https://discord.gg/6KPBTApkJ8",
+    "You got this streamer! Keep up the good work!",
 ]
 
 function PeriodicMessages() {
@@ -235,8 +347,29 @@ function PeriodicMessages() {
     )
 }
 
-function HandleRedemption(message: PubSubRedemptionMessage) {
-    if (message.rewardTitle === "Start a Quiz Round") {
+function Converse(user: string, msg: TwitchPrivateMessage) {
+    var msgWords = msg.content.value.split(" ")[0].trim().toLowerCase()
+    if (msgWords[0] == "is" && Between(0, 99) < 40) {
+        var responses = [
+            "yea jon",
+            "correct jacob",
+            "truthful sean",
+            "definitely joseph",
+            "exactly hurricane",
+            "precisely vance",
+            "affirmative nik",
+            "absolutely andrew",
+            "agreed matt",
+            "excellent jack",
+            "splendid grant",
+            "unquestionably neil",
+        ]
+        SendMessage("converse", responses[Between(0, responses.length - 1)])
+    }
+}
+
+function HandleRedemption(rewardTitle: string) {
+    if (rewardTitle === "Start a Quiz Round") {
         StartQuiz()
     }
 }
@@ -348,8 +481,6 @@ function SearchCommandDictionary(
     return false
 }
 
-let commandsList: string
-
 // Generates and the commands list
 function GenerateCommandsList() {
     var list = []
@@ -388,6 +519,19 @@ function GenerateCommandsList() {
 function HandleCommandsList() {
     // Commands list too long, split somehow
     SendMessage("!commandslist", commandsList)
+}
+
+async function CreateQuizReward() {
+    // await apiClient.channelPoints.createCustomReward(Wingman953?.id as string, {
+    //     autoFulfill: false,
+    //     backgroundColor: "#392e5c",
+    //     cost: 1800,
+    //     globalCooldown: 60,
+    //     isEnabled: true,
+    //     title: "Start a Quiz Round",
+    //     userInputRequired: false,
+    // })
+    // console.log("Reward created!")
 }
 
 var functionMap = [
@@ -439,5 +583,10 @@ var functionMap = [
             "!leaderboard",
         ],
         Function: DisplayQuizLeaderboards,
+    },
+    {
+        Command: ["!createquiz"],
+        Username: ["Wingman953"],
+        Function: CreateQuizReward,
     },
 ]

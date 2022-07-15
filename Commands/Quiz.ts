@@ -3,6 +3,7 @@ import { SendMessage } from "../Integrations/Twitch"
 import fs from "fs"
 import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
 
+var blockQuiz = false
 var quizActive = false
 let totalQuestionCount: number
 let questionIndex: number
@@ -10,6 +11,8 @@ let categoryIndex: number
 let categoryName: string
 let question: string
 let answer: string
+var QuizAnswerHandler: Function
+var correctUsers: any[]
 var usedQuestions: number[] = []
 var leaderboards: any[] = []
 var leaderboardsFilePath = "./Data/"
@@ -31,7 +34,17 @@ export async function QuizSetup() {
 }
 
 export async function StartQuiz() {
-    if (!quizActive) {
+    if (Between(0, 99) > 32) {
+        StartBasicQuiz()
+    } else {
+        StartMultiUserQuiz()
+    }
+}
+
+export async function StartBasicQuiz() {
+    if (!blockQuiz) {
+        blockQuiz = true
+
         var findingNumber = true
         while (findingNumber) {
             questionIndex = Between(0, totalQuestionCount - 1)
@@ -70,11 +83,12 @@ export async function StartQuiz() {
 
         await sleep(3000)
 
+        QuizAnswerHandler = BasicQuizAnswer
         quizActive = true
 
         SendMessage("!quizcontroller", `/announce wingma14Think ${question}`)
 
-        await sleep(30000)
+        await sleep(25000)
 
         if (quizActive) {
             quizActive = false
@@ -87,31 +101,136 @@ export async function StartQuiz() {
             await sleep(1000)
 
             SendMessage("!quizcontroller", `/slowoff`)
+
+            blockQuiz = false
+        }
+    }
+}
+
+async function BasicQuizAnswer(user: string, msg: TwitchPrivateMessage) {
+    var username = msg.userInfo.displayName
+
+    if (
+        quizCategories[categoryIndex].CategoryQuestions[
+            questionIndex
+        ].Answers.findIndex((element) => {
+            return element.toLowerCase() == msg.content.value.toLowerCase()
+        }) >= 0
+    ) {
+        quizActive = false
+        UpdateQuizScore(username, 1)
+        SendMessage(
+            "!quizcontroller",
+            `/announce Congratulations ${username}! You answered the question correctly! The answer was: ${answer}.`
+        )
+
+        await sleep(1000)
+
+        SendMessage("!quizcontroller", `/slowoff`)
+
+        blockQuiz = false
+    }
+}
+
+export async function StartMultiUserQuiz() {
+    if (!blockQuiz) {
+        blockQuiz = true
+
+        var findingNumber = true
+        while (findingNumber) {
+            questionIndex = Between(0, totalQuestionCount - 1)
+
+            if (!usedQuestions.includes(questionIndex)) {
+                usedQuestions.push(questionIndex)
+                findingNumber = false
+            }
+        }
+
+        for (var i = 0; i < quizCategories.length; i++) {
+            if (questionIndex < quizCategories[i].CategoryLength) {
+                question =
+                    quizCategories[i].CategoryQuestions[questionIndex].Question
+                answer =
+                    quizCategories[i].CategoryQuestions[questionIndex]
+                        .Answers[0]
+                categoryName = quizCategories[i].CategoryName
+                categoryIndex = i
+                break
+            }
+
+            questionIndex -= quizCategories[i].CategoryLength
+        }
+
+        SendMessage(
+            "!quizcontroller",
+            `/announce wingma14Think The next Quiz Question is in 20secs! ALL USERS who answer correctly before time runs out will earn a point! The topic will be ${categoryName}! Good luck!`
+        )
+
+        await sleep(17000)
+
+        SendMessage("!quizcontroller", `/slow 3`)
+
+        ReadLeaderboardsFromFile()
+
+        await sleep(3000)
+
+        correctUsers = []
+        QuizAnswerHandler = MultiUserQuizAnswer
+        quizActive = true
+
+        SendMessage("!quizcontroller", `/announce wingma14Think ${question}`)
+
+        await sleep(25000)
+
+        quizActive = false
+
+        if (correctUsers.length > 0) {
+            var plural = correctUsers.length > 1 ? "users" : "user"
+
+            SendMessage(
+                "!quizcontroller",
+                `/announce ${correctUsers.length} ${plural} successfully answered the question. The answer was: ${answer}`
+            )
+        } else {
+            SendMessage(
+                "!quizcontroller",
+                `/announce No one successfully answered the question. The answer was: ${answer}`
+            )
+        }
+
+        for (var i = 0; i < correctUsers.length; i++) {
+            UpdateQuizScore(correctUsers[i], 1)
+        }
+
+        await sleep(1000)
+
+        SendMessage("!quizcontroller", `/slowoff`)
+
+        correctUsers = []
+
+        blockQuiz = false
+    }
+}
+
+async function MultiUserQuizAnswer(user: string, msg: TwitchPrivateMessage) {
+    var username = msg.userInfo.displayName
+
+    if (
+        quizCategories[categoryIndex].CategoryQuestions[
+            questionIndex
+        ].Answers.findIndex((element) => {
+            return element.toLowerCase() == msg.content.value.toLowerCase()
+        }) >= 0
+    ) {
+        if (!correctUsers.includes(username)) {
+            correctUsers.push(username)
         }
     }
 }
 
 export async function onQuizHandler(user: string, msg: TwitchPrivateMessage) {
-    var username = msg.userInfo.displayName
     if (quizActive) {
-        if (
-            quizCategories[categoryIndex].CategoryQuestions[
-                questionIndex
-            ].Answers.findIndex((element) => {
-                return element.toLowerCase() == msg.content.value.toLowerCase()
-            }) >= 0
-        ) {
-            quizActive = false
-            UpdateQuizScore(username, 1)
-            SendMessage(
-                "!quizcontroller",
-                `/announce Congratulations ${username}! You answered the question correctly! The answer was: ${answer}.`
-            )
-
-            await sleep(1000)
-
-            SendMessage("!quizcontroller", `/slowoff`)
-        }
+        QuizAnswerHandler(user, msg)
     }
 }
 
@@ -1204,7 +1323,7 @@ var halo4Questions = [
     // General
     {
         Question:
-            "How long does in cryosleep for? (Format: X years, Y months, Z days)",
+            "How long does Master Chief stay in cryosleep for? (Format: X years, Y months, Z days)",
         Answers: [
             "4 years, 7 months, 10 days",
             "4 years 7 months 10 days",

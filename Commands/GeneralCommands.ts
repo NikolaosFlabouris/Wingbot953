@@ -204,25 +204,12 @@ export var commandMap = [
 
     // Random
     {
-        Command: ["is"],
-        Message: [
-            "yea jon",
-            "correct jacob",
-            "truthful sean",
-            "definitely joseph",
-            "exactly hurricane",
-            "precisely vance",
-            "affirmative nik",
-            "absolutely andrew",
-            "agreed matt",
-            "excellent jack",
-            "splendid grant",
-            "unquestionably neil",
-        ],
-    },
-    {
         Command: ["!bars"],
-        Message: ['"yo nik is like a brick"', "https://youtu.be/Q6i8YXykzwE"],
+        Message: [
+            '"yo nik is like a brick"',
+            "https://youtu.be/Q6i8YXykzwE",
+            "https://youtu.be/WL2iT_bADoQ",
+        ],
     },
     {
         Command: ["!happened"],
