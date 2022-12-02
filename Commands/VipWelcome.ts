@@ -73,7 +73,13 @@ var vipWelcome = [
     },
     {
         Username: ["Two_EEzy"],
-        Message: ["Two_EEzy hype!", "Woah, eezy does it, Rookie!"],
+        Message: [
+            "Woah, eezy does it, Rookie!",
+            "Well maybe one or... Two EEzy",
+            "Wingman bopped 2ez's ONI leg by 22 seconds, with blind on, first try",
+            '"supersonic speed thinking emoji man, shoot a couple beams at a couple brute feet and..."',
+            "GET THE WAY",
+        ],
         Arrived: false,
     },
     {
@@ -82,6 +88,11 @@ var vipWelcome = [
             "Camera is back to have a blast of a time!",
             "CameraDancer hello!",
         ],
+        Arrived: false,
+    },
+    {
+        Username: ["AsterVeles"],
+        Message: ["is that THE Armory world record holder?"],
         Arrived: false,
     },
     {
@@ -110,13 +121,12 @@ var vipWelcome = [
         Arrived: false,
     },
     {
-        Username: ["AsterVeles"],
-        Message: ["hi cutie ;)"],
-        Arrived: false,
-    },
-    {
         Username: ["thiccElite"],
-        Message: ["thiccElite hello!", "wort wort wort"],
+        Message: [
+            "thiccElite hello!",
+            "wort wort wort",
+            "Veronica, what's with all the thicc Elites?",
+        ],
         Arrived: false,
     },
     {
@@ -126,7 +136,7 @@ var vipWelcome = [
     },
     {
         Username: ["yeV_cM"],
-        Message: ["yeV_cM hello!"],
+        Message: ["howdy partner 🤠"],
         Arrived: false,
     },
     {
@@ -156,6 +166,10 @@ var vipWelcome = [
             "GL strimer also anooby do be vibing",
             "anUwUbis an0w0bis anOwObis",
             "vegetal is goated also remember to hydration",
+            "One greeting added per redemption also hi UwU",
+            "Add Custom Greeting | +1 to GREETINGS pool | This card adds itself to the GREETINGS pool after use. Add one Greeting. +1 RNG -1000 Channel Points ",
+            "Kazinga",
+            "(slash)timeout @anoobis_117 69",
         ],
         Arrived: false,
     },
@@ -186,12 +200,12 @@ var vipWelcome = [
     },
     {
         Username: ["Makko_____"],
-        Message: ["Salutations chatter"],
+        Message: ["Salutations chatter", "G'day Makko"],
         Arrived: false,
     },
     {
         Username: ["FamilyGuy0395"],
-        Message: ["Oh, hey... it's FamilyGuy again!"],
+        Message: ["Oh, hey... it's @FamilyGuy0395 again!"],
         Arrived: false,
     },
     {
@@ -206,7 +220,72 @@ var vipWelcome = [
     },
     {
         Username: ["desperdxd"],
-        Message: ["ahh hell nah its that nerd emoji irl"],
+        Message: [
+            "ahh hell nah its that nerd emoji irl",
+            "im with stupid ->@asa_kitsune",
+        ],
+        Arrived: false,
+    },
+    {
+        Username: ["MrJoshua1610"],
+        Message: ["Go to sleep 😴"],
+        Arrived: false,
+    },
+    {
+        Username: ["foveGateTwitch"],
+        Message: ["foveGate is back in chat!"],
+        Arrived: false,
+    },
+    {
+        Username: ["l4nthxnyl"],
+        Message: ["top of the morning"],
+        Arrived: false,
+    },
+    {
+        Username: ["devastator7d"],
+        Message: [
+            "The one and only Devastator7d has joined",
+            "Hello streamer and GL with the runs",
+        ],
+        Arrived: false,
+    },
+    {
+        Username: ["asa_kitsune"],
+        Message: ["yeet", "the yeeting", "5555"],
+        Arrived: false,
+    },
+    {
+        Username: ["Seclusive_"],
+        Message: [
+            "The next Quiz Question is in 20secs! ALL USERS who answer correctly before time runs out will earn a point! The topic will be Halo 3:ODST! Good luck!",
+        ],
+        Arrived: false,
+    },
+    {
+        Username: ["Bilbo_Saggins01"],
+        Message: ["...how do your greetings keep getting worse?!"],
+        Arrived: false,
+    },
+    {
+        Username: ["bolioli4448"],
+        Message: ["Hi"],
+        Arrived: false,
+    },
+    {
+        Username: ["Bdle"],
+        Message: ["( ͡° ͜ʖ ͡°)"],
+        Arrived: false,
+    },
+    {
+        Username: ["Mr_MiniStefan"],
+        Message: ["Hey Stefan, thanks for the good luck"],
+        Arrived: false,
+    },
+    {
+        Username: ["Weatley_"],
+        Message: [
+            "Look it's the core from portal that's a moron designed to make you an idiot",
+        ],
         Arrived: false,
     },
 ]

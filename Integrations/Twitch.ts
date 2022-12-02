@@ -39,7 +39,7 @@ let server: express.Application
 let chatClient: ChatClient
 let apiClient: ApiClient
 
-let commandsList: string
+let commandsList: Array<string> = ["", ""]
 
 // Flags
 let isFirstAuth: boolean = true
@@ -246,7 +246,7 @@ async function ContinueTwitchSetup() {
     chatClient.onSub((channel, user) => {
         SendMessage(
             "subthanks",
-            `Thank you @${user} for subscribing to the channel!`,
+            `wingma14Blush Thank you @${user} for subscribing to the channel! wingma14Blush `,
             1000
         )
     })
@@ -254,7 +254,7 @@ async function ContinueTwitchSetup() {
     chatClient.onResub((channel, user, subInfo) => {
         SendMessage(
             "resubthanks",
-            `Thank you @${user} for subscribing to the channel for a total of ${subInfo.months} months!`,
+            `wingma14Blush Thank you @${user} for subscribing to the channel for a total of ${subInfo.months} months! wingma14Blush`,
             1000
         )
     })
@@ -262,7 +262,7 @@ async function ContinueTwitchSetup() {
     chatClient.onSubGift((channel, user, subInfo) => {
         SendMessage(
             "giftsubthanks",
-            `Thank you ${subInfo.gifter} for gifting a subscription to ${user}!`,
+            `wingma14Blush Thank you ${subInfo.gifter} for gifting a subscription to ${user}! wingma14Blush`,
             1000
         )
     })
@@ -277,14 +277,14 @@ async function TwitchApiPolling() {
     const currentTimestamp = Date.now()
     if (isLive && streamWingman953?.startDate == null) {
         isLive = false
-        console.log("Streamer went live!")
+        console.log("Streamer went offline!")
     } else if (
         !isLive &&
-        streamWingman953?.startDate != null &&
-        streamWingman953?.startDate.getTime() > currentTimestamp
+        streamWingman953?.startDate != undefined /* &&
+        streamWingman953?.startDate.getTime() > currentTimestamp*/
     ) {
         isLive = true
-        console.log("Streamer went offline!")
+        console.log("Streamer went live!")
     }
 
     // Quiz Start!
@@ -509,16 +509,19 @@ function GenerateCommandsList() {
 
     list.sort()
 
-    commandsList = list[0]
+    for (var i = 0; i < Math.floor(list.length / 2); i++) {
+        commandsList[0] = commandsList[0] + " " + list[i]
+    }
 
-    for (var i = 1; i < list.length; i++) {
-        commandsList = commandsList + " " + list[i]
+    for (var i = Math.floor(list.length / 2); i < list.length; i++) {
+        commandsList[1] = commandsList[1] + " " + list[i]
     }
 }
 
 function HandleCommandsList() {
     // Commands list too long, split somehow
-    SendMessage("!commandslist", commandsList)
+    SendMessage("!commandslist", commandsList[0])
+    SendMessage("!commandslist", commandsList[1])
 }
 
 async function CreateQuizReward() {

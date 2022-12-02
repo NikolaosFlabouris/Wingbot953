@@ -27,7 +27,7 @@ export var commandMap = [
     {
         Command: ["!wr", "!fgwr"],
         Message: [
-            "ODST Easy FG: 57:36 by Wingman953 | ODST Leg FG: 1:04:35 by Wingman953",
+            "ODST Easy FG: 57:14 by Wingman953 | ODST Leg FG: 1:02:23 by Wingman953", // | The Good Ones: 3:18:17 by Chronos",
         ],
     },
     {
@@ -40,12 +40,12 @@ export var commandMap = [
         Command: ["!twitch"],
         Message: ["Wingman953's Twitch: www.twitch.tv/wingman953"],
     },
-    // {
-    //     Command: ["!newvid"],
-    //     Message: [
-    //         "ODST Fast Facts Ep8: https://www.youtube.com/watch?v=B6zOijtYQfk",
-    //     ],
-    // },
+    {
+        Command: ["!newvid"],
+        Message: [
+            "ONI Alpha Site - Legendary + Blind Skull Challenge!! https://www.youtube.com/watch?v=hSlM6J9N4Nc",
+        ],
+    },
     {
         Command: ["!fastfactplaylist"],
         Message: [
@@ -99,6 +99,26 @@ export var commandMap = [
         ],
     },
     {
+        Command: ["!laso"],
+        AllMessages: true,
+        Message: [
+            "Hardest part is just the randomness of explosions (and Coastal). Grenades from from friends or foes can get you or cause lots of chain reactions. This makes ONI and Data Hive hard. However Coastal is the worst cause it's an escort mission, OOB is plausible but requires 1st try launches and then some good RNG. Plan is to not use a digital crosshair (or similar).",
+        ],
+    },
+    {
+        Command: ["!trilogy", "!goodones"],
+        AllMessages: true,
+        Message: [
+            "'The Good Ones' Trilogy is H3, ODST & Reach in any order. Name is self explanatory.",
+        ],
+    },
+    {
+        Command: ["!coaching"],
+        Message: [
+            "If you want to learn to run Halo: Reach go subscribe to Two EEzy and he'll give you a 1hr coaching session via Discord: https://www.twitch.tv/Two_EEzy/subscribe",
+        ],
+    },
+    {
         Command: ["!addcom", "!addcommand"],
         Message: [
             "You cannot add commands but you can suggest commands for the streamer to add.",
@@ -115,6 +135,10 @@ export var commandMap = [
         ],
     },
     {
+        Command: ["!holdW", "!w"],
+        Message: ["I'll quite happily hold W while you hold this L"],
+    },
+    {
         Command: ["!noreset"],
         Message: ["I lied"],
     },
@@ -127,7 +151,7 @@ export var commandMap = [
     {
         Command: ["!relay"],
         Message: [
-            "2022 HaloRuns Easy Relay Race is on June 25th 7am PST. I'll be running ODST for Green Team. Tune in here for the race: https://www.twitch.tv/haloraces",
+            "My bi-annual 3am wake up call will be happening on Dec 4th. I'll be running ODST Legendary for Blue Team. Tune in here for the race: https://www.twitch.tv/haloraces",
         ],
     },
     // FAQ
@@ -199,7 +223,11 @@ export var commandMap = [
     },
     {
         Command: ["!adversary", "!adversaryy", "!sean", "!reraised"],
-        Message: ["https://youtu.be/SVrhxQ5imM0"],
+        Message: [
+            "https://youtu.be/SVrhxQ5imM0",
+            "https://youtu.be/TGsbKhYe_Vk",
+            "https://youtu.be/5un5_nR3sI8",
+        ],
     },
 
     // Random

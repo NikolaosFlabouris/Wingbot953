@@ -14,7 +14,8 @@ let answer: string
 var QuizAnswerHandler: Function
 var correctUsers: any[]
 var usedQuestions: number[] = []
-var leaderboards: any[] = []
+var leaderboardsAllTime: any[] = []
+var leaderboardsCurrentTime: any[] = []
 var leaderboardsFilePath = "./Data/"
 var leaderboardsFileName = "QuizLeaderboards.json"
 
@@ -34,7 +35,7 @@ export async function QuizSetup() {
 }
 
 export async function StartQuiz() {
-    if (Between(0, 99) > 32) {
+    if (Between(0, 99) > 80) {
         StartBasicQuiz()
     } else {
         StartMultiUserQuiz()
@@ -72,7 +73,7 @@ export async function StartBasicQuiz() {
 
         SendMessage(
             "!quizcontroller",
-            `/announce wingma14Think The next Quiz Question is in 20secs! Be the first to answer to earn a point. The topic will be ${categoryName}! Good luck!`
+            `wingma14Think The next Quiz Question is in 20secs! Be the FIRST to answer correctly to earn a point. The topic will be ${categoryName}! Good luck!`
         )
 
         await sleep(17000)
@@ -86,7 +87,7 @@ export async function StartBasicQuiz() {
         QuizAnswerHandler = BasicQuizAnswer
         quizActive = true
 
-        SendMessage("!quizcontroller", `/announce wingma14Think ${question}`)
+        SendMessage("!quizcontroller", `wingma14Think ${question}`)
 
         await sleep(25000)
 
@@ -95,7 +96,7 @@ export async function StartBasicQuiz() {
 
             SendMessage(
                 "!quizcontroller",
-                `/announce No one successfully answered the question. The answer was: ${answer}`
+                `No one successfully answered the question. The answer was: ${answer}`
             )
 
             await sleep(1000)
@@ -121,7 +122,7 @@ async function BasicQuizAnswer(user: string, msg: TwitchPrivateMessage) {
         UpdateQuizScore(username, 1)
         SendMessage(
             "!quizcontroller",
-            `/announce Congratulations ${username}! You answered the question correctly! The answer was: ${answer}.`
+            `Congratulations ${username}! You answered the question correctly! The answer was: ${answer}.`
         )
 
         await sleep(1000)
@@ -163,7 +164,7 @@ export async function StartMultiUserQuiz() {
 
         SendMessage(
             "!quizcontroller",
-            `/announce wingma14Think The next Quiz Question is in 20secs! ALL USERS who answer correctly before time runs out will earn a point! The topic will be ${categoryName}! Good luck!`
+            `wingma14Think The next Quiz Question is in 20secs! ALL USERS who answer correctly before time runs out will earn a point! The topic will be ${categoryName}! Good luck!`
         )
 
         await sleep(17000)
@@ -178,7 +179,7 @@ export async function StartMultiUserQuiz() {
         QuizAnswerHandler = MultiUserQuizAnswer
         quizActive = true
 
-        SendMessage("!quizcontroller", `/announce wingma14Think ${question}`)
+        SendMessage("!quizcontroller", `wingma14Think ${question}`)
 
         await sleep(25000)
 
@@ -187,14 +188,23 @@ export async function StartMultiUserQuiz() {
         if (correctUsers.length > 0) {
             var plural = correctUsers.length > 1 ? "users" : "user"
 
+            var userList = ""
+            for (var i = 0; i < correctUsers.length; i++) {
+                if (i > 0) {
+                    userList += ", " + correctUsers[i]
+                } else {
+                    userList += correctUsers[i]
+                }
+            }
+
             SendMessage(
                 "!quizcontroller",
-                `/announce ${correctUsers.length} ${plural} successfully answered the question. The answer was: ${answer}`
+                `${correctUsers.length} ${plural} (${userList}) successfully answered the question. The answer was: ${answer}`
             )
         } else {
             SendMessage(
                 "!quizcontroller",
-                `/announce No one successfully answered the question. The answer was: ${answer}`
+                `No one successfully answered the question. The answer was: ${answer}`
             )
         }
 
@@ -237,17 +247,21 @@ export async function onQuizHandler(user: string, msg: TwitchPrivateMessage) {
 export function DisplayQuizLeaderboards() {
     ReadLeaderboardsFromFile()
 
-    leaderboards.sort(
+    leaderboardsAllTime.sort(
         (firstItem, secondItem) => secondItem.Score - firstItem.Score
     )
 
     var message = "QUIZ LEADERBOARDS Top 5: "
 
-    var learboardSize = 5 > leaderboards.length ? leaderboards.length : 5
+    var learboardSize =
+        5 > leaderboardsAllTime.length ? leaderboardsAllTime.length : 5
 
     for (var i = 0; i < learboardSize; i++) {
         message +=
-            leaderboards[i].Username + " - " + leaderboards[i].Score + "pts | "
+            leaderboardsAllTime[i].Username +
+            " - " +
+            leaderboardsAllTime[i].Score +
+            "pts | "
     }
     SendMessage("!quizleaderboard", message)
 }
@@ -263,12 +277,14 @@ export function GetMyQuizScore(msg: TwitchPrivateMessage) {
         user = originalMessage.split(" ")[1].trim()
     }
 
-    for (var i = 0; i < leaderboards.length; i++) {
-        if (leaderboards[i].Username.toLowerCase() == user.toLowerCase()) {
-            score = leaderboards[i].Score
+    for (var i = 0; i < leaderboardsAllTime.length; i++) {
+        if (
+            leaderboardsAllTime[i].Username.toLowerCase() == user.toLowerCase()
+        ) {
+            score = leaderboardsAllTime[i].Score
             SendMessage(
                 "!quizscore",
-                `${leaderboards[i].Username}'s Quiz Score is: ` + score
+                `${leaderboardsAllTime[i].Username}'s Quiz Score is: ` + score
             )
             return
         }
@@ -278,15 +294,15 @@ export function GetMyQuizScore(msg: TwitchPrivateMessage) {
 }
 
 function UpdateQuizScore(user: string, pointsChange: number) {
-    for (var i = 0; i < leaderboards.length; i++) {
-        if (leaderboards[i].Username == user) {
-            leaderboards[i].Score += pointsChange
+    for (var i = 0; i < leaderboardsAllTime.length; i++) {
+        if (leaderboardsAllTime[i].Username == user) {
+            leaderboardsAllTime[i].Score += pointsChange
             WriteLeaderboardsToFile()
             return
         }
     }
 
-    leaderboards.push({ Username: user, Score: pointsChange })
+    leaderboardsAllTime.push({ Username: user, Score: pointsChange })
     WriteLeaderboardsToFile()
 }
 
@@ -296,7 +312,7 @@ function ReadLeaderboardsFromFile() {
             leaderboardsFilePath + leaderboardsFileName,
             "utf8"
         )
-        leaderboards = JSON.parse(data)
+        leaderboardsAllTime = JSON.parse(data)
     } catch (err) {
         console.error(err)
     }
@@ -306,7 +322,7 @@ function WriteLeaderboardsToFile() {
     try {
         const data = fs.writeFileSync(
             leaderboardsFilePath + leaderboardsFileName,
-            JSON.stringify(leaderboards)
+            JSON.stringify(leaderboardsAllTime)
         )
     } catch (err) {
         console.error(err)
@@ -315,15 +331,386 @@ function WriteLeaderboardsToFile() {
 
 var halo1Questions = [
     {
-        Question: "",
-        Answers: [],
+        Question: "Which Halo ring is discovered at the start of Halo CE?",
+        Answers: [
+            "Installation 04",
+            "Alpha Halo",
+            "Alpha",
+            "Installation 4",
+            "04",
+            "4",
+        ],
+    },
+    {
+        Question:
+            "What is the name of the grunt found at the very end of the level The Maw?",
+        Answers: ["Thirsty Grunt", "Thirsty"],
     },
 ]
 
 var halo2Questions = [
     {
-        Question: "",
-        Answers: [],
+        Question: "What year was Halo 2 released on the Xbox?",
+        Answers: ["2004"],
+    },
+    {
+        Question:
+            'Who made the following quote about Halo 2? "Halo 2 is a lot like Halo 1, only it\'s Halo 1 on fire, going 130 miles per hour through a hospital zone, being chased by helicopters and ninjas. And, the ninjas are all on fire, too."',
+        Answers: ["Jason Jones", "Jones"],
+    },
+    {
+        Question: "Which Halo ring is seen during the Halo 2 Campaign?",
+        Answers: [
+            "Installation 05",
+            "Delta Halo",
+            "Delta",
+            "Installation 5",
+            "05",
+            "5",
+        ],
+    },
+    {
+        Question: `The "HI BEN" easter-egg is found on which level?`,
+        Answers: ["Regret"],
+    },
+    {
+        Question: `How many terminals are there in Halo 2: Anniversary?`,
+        Answers: ["15", "Fifteen"],
+    },
+    {
+        Question: `How many dolls are there in Halo 2: Anniversary?`,
+        Answers: ["8", "Eight"],
+    },
+    {
+        Question: `How many Jackal Snipers are there in level Outskirts?`,
+        Answers: ["22", "twenty-two", "twenty two"],
+    },
+    {
+        Question: `In how many missions can the Master Chief drive a vehicle?`,
+        Answers: ["3", "Three"],
+    },
+    {
+        Question: `Upon picking up the IWHBYD Skull the player must fight how a total of how many Elites?`,
+        Answers: ["28", "twenty-eight", "twenty eight"],
+    },
+    {
+        Question: `What does Tartarus brand the Arbiter with?`,
+        Answers: ["the Mark of Shame", "Mark of Shame"],
+    },
+    {
+        Question: `How many waves of attacks are required to kill Regret on the Legendary difficulty?`,
+        Answers: ["5", "Five"],
+    },
+    {
+        Question: `What weapon drops from the Prophet of Regret after his death?`,
+        Answers: ["Plasma Pistol"],
+    },
+    {
+        Question: `Only on which level can Jackals be found as allies?`,
+        Answers: ["Sacred Icon", "SI"],
+    },
+    {
+        Question: `On the mission Quarantine Zone a Sentinel can be found wielding not a Sentinel beam but which weapon?`,
+        Answers: ["Needler"],
+    },
+    {
+        Question: `By distance from start to end, which is the longest level?`,
+        Answers: ["Quarantine Zone", "QZ"],
+    },
+    {
+        Question: `How many Hunters are there in the level Gravemind?`,
+        Answers: ["8", "eight"],
+    },
+    {
+        Question: `In which level does Master Chief fight the flood?`,
+        Answers: ["High Charity", "HC"],
+    },
+    {
+        Question: `Two Sergeants are with Johnson during the events of The Great Journey, one is Sergeant Banks, who is the other?`,
+        Answers: ["Sergeant Stacker", "Stacker"],
+    },
+    {
+        Question: `How many Halo 2 levels feature endless enemy spawns?`,
+        Answers: ["8", "Eight"],
+    },
+    {
+        Question: `Name a level which feature a ladder?`,
+        Answers: [
+            "Outskirts, Metropolis, High Charity",
+            "Metropolis",
+            "Metro",
+            "High Charity",
+            "HC",
+            "Outskirts",
+        ],
+    },
+    // Achievements
+    {
+        Question:
+            "What is the name of the MCC Achievement for completing Halo 2 on Legendary in under 3hrs?",
+        Answers: ["Monopolized", "Monopolised"],
+    },
+    {
+        Question: `The "Betcha can't stick it" achievement is awarded once the player sticks a Stealth Elite with a plasma grenade on which level?`,
+        Answers: ["Outskirts"],
+    },
+    {
+        Question: "On what level can you find a large soccer ball?",
+        Answers: ["Metropolis", "Metro"],
+    },
+    {
+        Question: `The "YOLO Strats" achievement is awarded once the player beats the par time on which level?`,
+        Answers: ["The Arbiter", "Arbiter"],
+    },
+    {
+        Question: `The "Needs More Whammy Bar" achievement is awarded once the player beats the mission Regret with which skull active?`,
+        Answers: ["Prophet Birthday Skull", "Prophet Birthday"],
+    },
+    // Characters
+    {
+        Question: `What is the name of the Arbiter in Halo 2?`,
+        Answers: ["Thel 'Vadam", "Thel Vadam", "Thel 'Vadamee", "Thel Vadamee"],
+    },
+    {
+        Question: `Who voices the Arbiter?`,
+        Answers: ["Keith David"],
+    },
+    {
+        Question: `Rtas 'Vadumee is given what nickname?`,
+        Answers: ["Half-Jaw", "Half Jaw", "Halfjaw"],
+    },
+    {
+        Question: `The Cowardly Grunt is found on which level?`,
+        Answers: ["Uprising"],
+    },
+    {
+        Question: `Which member of the UNSC speaks in Halo 2:Anniversary part of The Heretic cutscene?`,
+        Answers: ["Locke", "Jameson Locke", "Spartan Locke"],
+    },
+    {
+        Question: `Who is the monitor of Installation 05?`,
+        Answers: ["2401 Penitent Tangent", "Penitent Tangent"],
+    },
+    // Weapons
+    {
+        Question: `What is the name of Tartarus' Hammer?`,
+        Answers: ["Fist of Rukt"],
+    },
+    {
+        Question: `What is the name of the hidden easter-egg weapon on Metropolis?`,
+        Answers: ["Scarab Gun", "the Scarab Gun"],
+    },
+    {
+        Question: `What is the name of the easter-egg Energy Sword found on the mission Outskirts?`,
+        Answers: ["Rex Sword", "Rex", "Excalibur"],
+    },
+    {
+        Question: `In which Halo 2 level can you find Elites wielding Plasma Pistols?`,
+        Answers: ["Cairo Station", "Cairo"],
+    },
+    // Vehicles/Location
+    {
+        Question: `What is the name of the Forerunner ship that Master Chief travels back to Earth on?`,
+        Answers: [
+            "Dreadnought/Anodyne Spirit",
+            "Dreadnought",
+            "Anodyne Spirit",
+            "Forerunner Dreadnought",
+        ],
+    },
+    {
+        Question: `What is the name of the hotel found in the mission Outskirts?`,
+        Answers: ["Hotel Zanzibar", "Zanzibar"],
+    },
+    {
+        Question: `What is the name of the vehicle only found on the mission Outskirts?`,
+        Answers: ["Shadow", "Ruwaa-pattern Shadow"],
+    },
+    {
+        Question: `How many Shadows can be found on the mission Outskirts?`,
+        Answers: ["7", "Seven"],
+    },
+    {
+        Question: `The first instance in the franchise of the Gauss Hog is on which Halo 2 level?`,
+        Answers: ["Metropolis", "Metro"],
+    },
+    {
+        Question: `The Forerunner Gas mine set in the levels The Arbiter and The Oracle is mining gas from which planet?`,
+        Answers: ["Threshold", "Soell VII", "Soell"],
+    },
+    {
+        Question: `In which level can you drive a UNSC vehicle as the Arbiter?`,
+        Answers: ["Quarantine Zone"],
+    },
+    {
+        Question: `The Spectre is a usable vehicle in how many levels?`,
+        Answers: ["3"],
+    },
+    // Quotes
+    {
+        Question: `Complete this quote (6 words): "When you first saw Halo, ___ ___ ___ ___ ___ ___?"`,
+        Answers: ["were you blinded by its majesty"],
+    },
+    {
+        Question: `Complete this quote (7 words): "Well, ___ ___ ___ ___ ___ ___ ___"`,
+        Answers: ["I guess it was all obsolete anyway"],
+    },
+    {
+        Question: `Complete this quote (2 words): "Alert! ___ ___!"`,
+        Answers: ["Boarders inbound"],
+    },
+    {
+        Question: `Complete this quote (1 word): "Come on, is that a weapon or a _____?"`,
+        Answers: ["flashlight"],
+    },
+    {
+        Question: `Complete this quote (2 words): "For a brick... ___ ___ ___ ___!"`,
+        Answers: ["he flew pretty good"],
+    },
+    {
+        Question: `Complete this quote (1 word): "Could we possibly make any more ____?!"`,
+        Answers: ["noise"],
+    },
+    {
+        Question: `Complete this quote (4 words): "I...? I am a monument ___ ___ ___ ___."`,
+        Answers: ["to all your sins"],
+    },
+    {
+        Question: `Complete this quote (4 words): "Take ___ ___ ___."`,
+        Answers: ["my banshee Arbiter"],
+    },
+    {
+        Question: `Complete this quote (4 words): "Sir. ___ ___ ___."`,
+        Answers: ["Finishing this fight"],
+    },
+    {
+        Question: `Who says the following quote: "When you first saw Halo, were you blinded by its majesty?"`,
+        Answers: ["Prophet of Regret", "Regret"],
+    },
+    {
+        Question: `Who says the following quote: "Would it help if I said 'Please'?"`,
+        Answers: [
+            "Sergeant Avery Johnson",
+            "Sergeant Johnson",
+            "Avery Johnson",
+            "Johnson",
+        ],
+    },
+    {
+        Question: `Who says the following quote: "If they came to hear me beg, they will be disappointed."`,
+        Answers: [
+            "the Arbiter",
+            "Arbiter",
+            "Thel 'Vadamee",
+            "Thel 'Vadam",
+            "Thel Vadamee",
+            "Thel Vadam",
+        ],
+    },
+    {
+        Question: `Who says the following quote: "When I joined the Corps, we didn't have any fancy-shmancy tanks. We had sticks! Two sticks, and a rock for the whole platoon - and we had to share the rock! Buck up, boy, you're one very lucky Marine!"`,
+        Answers: [
+            "Sergeant Avery Johnson",
+            "Sergeant Johnson",
+            "Avery Johnson",
+            "Johnson",
+            "Sgt Johnson",
+        ],
+    },
+    {
+        Question: `Who says the following quote: "The tasks you must undertake as the Arbiter are perilous, suicidal. You will die, as each Arbiter has before you. The Council will have their corpse."`,
+        Answers: ["Prophet of Mercy", "Mercy"],
+    },
+    {
+        Question: `Who says the following quote: "We are the arm of the Prophets, Arbiter, and you are the blade. Be silent and swift, and we shall quell this heresy without incident."`,
+        Answers: [
+            "Half-Jaw",
+            "Half Jaw",
+            "Halfjaw",
+            "Rtas 'Vadumee",
+            "Rtas Vadumee",
+            "Rtas 'Vadum",
+            "Rtas Vadum",
+        ],
+    },
+    {
+        Question: `Who says the following quote: "That... is another Halo."`,
+        Answers: ["Cortana"],
+    },
+    {
+        Question: `Who says the following quote: "Whoa...it's like a postcard! 'Dear Sarge: kicking ass in outer space, wish you were here.'"`,
+        Answers: [
+            "Chips Dubbo",
+            "Chips",
+            "Chipps Dubbo",
+            "Chipps Dubo",
+            "Chips Dubo",
+        ],
+    },
+    {
+        Question: `Who says the following quote: "Forward, warriors! And fear not pain nor death."`,
+        Answers: [
+            "Half-Jaw",
+            "Half Jaw",
+            "Halfjaw",
+            "Rtas 'Vadumee",
+            "Rtas Vadumee",
+            "Rtas 'Vadum",
+            "Rtas Vadum",
+        ],
+    },
+    {
+        Question: `Who says the following quote: "By the rings, Arbiter!?"`,
+        Answers: [
+            "Half-Jaw",
+            "Half Jaw",
+            "Halfjaw",
+            "Rtas 'Vadumee",
+            "Rtas Vadumee",
+            "Rtas 'Vadum",
+            "Rtas Vadum",
+        ],
+    },
+    {
+        Question: `Who says the following quote: "Fool. They ordered me to do it."`,
+        Answers: ["Tartarus"],
+    },
+    {
+        Question: `Who says the following quote: "Fate had us meet as foes, but this ring will make us brothers."`,
+        Answers: ["Gravemind", "the Gravemind"],
+    },
+    {
+        Question: `Who says the following quote: "Boo."`,
+        Answers: ["Master Chief", "Chief", "John-117", "John", "John 117"],
+    },
+    {
+        Question: `Who says the following quote: "There are those who said this day would never come. What have they to say now?"`,
+        Answers: ["Prophet of Truth", "Truth"],
+    },
+    // Multiplayer
+    {
+        Question: `Including DLC, how many Halo 2 Multiplayer maps are there for the original version of the game?"`,
+        Answers: ["23", "twenty-three", "twenty three"],
+    },
+    {
+        Question: `What was the name of Martin O'Donnell's sound studio at Bungie?`,
+        Answers: ["Ivory Tower"],
+    },
+    {
+        Question: `The words "Why am I here" can be found on which Halo 2 Multiplayer map?`,
+        Answers: ["Beaver Creek"],
+    },
+    {
+        Question: `Rooster Teeth logos can be found on which Multiplayer map?`,
+        Answers: ["Turf"],
+    },
+    {
+        Question: `What Halo 2 map is the only map to feature 8 territory locations?`,
+        Answers: ["Tombstone"],
+    },
+    {
+        Question: `Name one of the two Halo 2 Vista only maps.`,
+        Answers: ["District, Uplift", "District", "Uplift"],
     },
 ]
 
@@ -338,6 +725,18 @@ var halo3Questions = [
             "When carrying over a Skull from Cortana to Halo, which weapon is given to the player in place of the skull?",
         Answers: ["Spartan Laser"],
     },
+    {
+        Question:
+            "What is the name of the grunt found at the very end of the level Halo?",
+        Answers: [
+            "Final Grunt",
+            "jerk store Grunt",
+            "Seinfeld Grunt",
+            "Final",
+            "jerk store",
+            "Seinfeld",
+        ],
+    },
 ]
 
 var odstQuestions = [
@@ -351,11 +750,11 @@ var odstQuestions = [
         Answers: ["Oni Pog", "onipog"],
     },
     // Characters
-    {
-        Question:
-            "During the events of Halo 3:ODST what is Buck's military rank?",
-        Answers: ["Gunnery Sergeant"],
-    },
+    // {
+    //     Question:
+    //         "During the events of Halo 3:ODST what is Buck's military rank?",
+    //     Answers: ["Gunnery Sergeant"],
+    // },
     {
         Question: "On what planet was Buck born?",
         Answers: ["Draco III", "Draco", "Draco 3"],
@@ -401,29 +800,29 @@ var odstQuestions = [
             "Corporal Taylor Henry Miles",
         ],
     },
-    {
-        Question:
-            "During the events of Halo 3:ODST what is Dutch's military rank?",
-        Answers: ["Corporal"],
-    },
+    // {
+    //     Question:
+    //         "During the events of Halo 3:ODST what is Dutch's military rank?",
+    //     Answers: ["Corporal"],
+    // },
     {
         Question: "What is Mickey's name?",
         Answers: ["Michael Crespo", "Private First Class Michael Crespo"],
     },
-    {
-        Question:
-            "During the events of Halo 3:ODST what is Mickey's military rank?",
-        Answers: ["Private First Class"],
-    },
+    // {
+    //     Question:
+    //         "During the events of Halo 3:ODST what is Mickey's military rank?",
+    //     Answers: ["Private First Class"],
+    // },
     {
         Question: "What is Romeo's name?",
         Answers: ["Kojo Agu", "Lance Corporal Kojo Agu"],
     },
-    {
-        Question:
-            "During the events of Halo 3:ODST what is Romeo's military rank?",
-        Answers: ["Lance Corporal"],
-    },
+    // {
+    //     Question:
+    //         "During the events of Halo 3:ODST what is Romeo's military rank?",
+    //     Answers: ["Lance Corporal"],
+    // },
     {
         Question:
             "What is the full name of the engineer that goes by 'Virgil'?",
@@ -439,15 +838,15 @@ var odstQuestions = [
     },
     {
         Question: "Who is the voice actress for Dare?",
-        Answers: ["Tricia Helfer"],
+        Answers: ["Tricia Helfer", "Helfer"],
     },
     {
         Question: "Who is the voice actor for Dutch?",
-        Answers: ["Adam Baldwin"],
+        Answers: ["Adam Baldwin", "Baldwin"],
     },
     {
         Question: "Who is the voice actor for Mickey?",
-        Answers: ["Alan Tudyk"],
+        Answers: ["Alan Tudyk", "Tudyk"],
     },
     {
         Question: "Who is the voice actor for Romeo?",
@@ -509,12 +908,18 @@ var odstQuestions = [
         Question: "An Automag with full ammo has how many bullets?",
         Answers: ["72", "seventy-two", "seventytwo", "seventy two"],
     },
+    {
+        Question: "What does VISR stand for?",
+        Answers: [
+            "Visual Intelligence System, Reconnaissance",
+            "Visual Intelligence System Reconnaissance",
+        ],
+    },
     // Lore/World Building/Meta-trivia
-    // {
-    //     Question:
-    //         "When was Halo 3:ODST released on the Xbox 360? (Answer in YYYY-MM-DD format)",
-    //     Answers: ["2009-09-22", "2009-9-22"],
-    // },
+    {
+        Question: "What year was Halo 3:ODST released on the Xbox 360?",
+        Answers: ["2009"],
+    },
     {
         Question:
             "What was the name originally given to game Halo 3:ODST before release?",
@@ -536,7 +941,7 @@ var odstQuestions = [
     },
     {
         Question:
-            "Nathan Fillion (voice of Buck) and Tricia Helfer (voice of Dare) both stare in a TV series called what?",
+            "Nathan Fillion (voice of Buck) and Tricia Helfer (voice of Dare) both star in a TV series called what?",
         Answers: ["The Rookie"], //The Rookie (Season 4, Episode 2) https://youtu.be/bHmRHWdnKP0
     },
     // Gameplay
@@ -874,6 +1279,10 @@ var odstQuestions = [
 
 var reachQuestions = [
     {
+        Question: "What year was Halo: Reach released on the Xbox 360?",
+        Answers: ["2010"],
+    },
+    {
         Question:
             "What is the name of the MCC Achievement for completing Halo: Reach on Legendary in under 3hrs?",
         Answers: ["Keep Your Foot on the Pedrogas"],
@@ -902,7 +1311,7 @@ var reachQuestions = [
     },
     {
         Question: `The achievement "Collection Eligibility Confirmed" is award once the player sees which character?`,
-        Answers: ["Master Chief", "Chief"],
+        Answers: ["Master Chief", "Chief", "John-117", "John", "John 117"],
     },
     {
         Question:
@@ -927,7 +1336,7 @@ var reachQuestions = [
     {
         Question:
             "All together, how many Main and Side Objectives are there in the mission New Alexandria?",
-        Answers: ["13", "Thirteen"],
+        Answers: ["15", "Fifteen"],
     },
     {
         Question:
@@ -1093,6 +1502,11 @@ var reachQuestions = [
         Answers: ["Bullfrogs", "the bullfrogs", "bull-frogs", "bull frogs"],
     },
     {
+        Question:
+            "What is the name given to the only member of the Covenant to speak English during the Halo: Reach campaign?",
+        Answers: ["Dreaming Grunt"],
+    },
+    {
         Question: "Who in Noble Team was a SPARTAN-II?",
         Answers: ["Jorge"],
     },
@@ -1161,7 +1575,7 @@ var reachQuestions = [
         Answers: ["Exodus"],
     },
     {
-        Question: `On the mission The Packager, activiting the two switches spawns of 4 of which vehicle?`,
+        Question: `On the mission The Package, activiting the two switches spawns 4 of which vehicle?`,
         Answers: ["Banshee", "Banshees"],
     },
     {
@@ -1243,6 +1657,10 @@ var reachQuestions = [
 ]
 
 var halo4Questions = [
+    {
+        Question: "What year was Halo 4 released on the Xbox 360?",
+        Answers: ["2012"],
+    },
     // Characters
     {
         Question: "What is Lasky's first name?",
@@ -1268,6 +1686,7 @@ var halo4Questions = [
             "Doctor Tilson",
             "Dr Tillson",
             "Dr Tilson",
+            "Tilson",
             "Sandra Tillson",
         ],
     },
@@ -1298,7 +1717,13 @@ var halo4Questions = [
     {
         Question:
             "During the campaign, what is the first Armour Ability availble to the player to use?",
-        Answers: ["Active Camouflage", "Active Camo", "Active Camou"],
+        Answers: [
+            "Active Camouflage",
+            "Active Camo",
+            "Active Camou",
+            "Camouflage",
+            "Camo",
+        ],
     },
     {
         Question:
@@ -1357,6 +1782,7 @@ var halo4Questions = [
             "Gamma",
             "Installation 3",
             "03",
+            "3",
         ],
     },
     {
@@ -1425,9 +1851,9 @@ var halo4Questions = [
         Question:
             "Name a Fireteam that you meet (and do not play as) in the Spartan Ops campaign.",
         Answers: [
-            "Castle, Magestic, Ivy, Domino, Tower",
+            "Castle, Majestic, Ivy, Domino, Tower",
             "Castle",
-            "Magestic",
+            "Majestic",
             "Ivy",
             "Domino",
             "Tower",
@@ -1441,6 +1867,15 @@ var halo4Questions = [
         Question:
             "What episode from Spartan Ops shares an name with a main mission from the Halo FPS series?",
         Answers: ["Exodus"],
+    },
+    {
+        Question: "Who shot Halsey causing the lose of her left arm?",
+        Answers: [
+            "Commander Palmer",
+            "Palmer",
+            "Sarah Palmer",
+            "Commander Sarah Palmer",
+        ],
     },
     // Quotes
     {
@@ -1535,9 +1970,271 @@ var halo4Questions = [
 ]
 
 var halo5Questions = [
+    // General
+    {
+        Question: "What year was Halo 5 released on the Xbox One?",
+        Answers: ["2015"],
+    },
+    {
+        Question: `What was the name of the Halo 5 marketing campaign featuring audio logs, blog posts and other media posted online?`,
+        Answers: ["Hunt the Truth"],
+    },
+    {
+        Question: `The mission 'Osiris' is set on which planet?`,
+        Answers: ["Kamchatka", "Caspar V"],
+    },
+    {
+        Question: `Osiris team utilise the prototype ATS tool during the events of Halo 5, what does ATS stand for?`,
+        Answers: ["Artemis Tracking System"],
+    },
+    {
+        Question: `How many Mission Intel pieces are there in the Halo 5 campaign?`,
+        Answers: ["117"],
+    },
+    {
+        Question: `What is the first mission in which the player can fight the Warden Eternal?`,
+        Answers: ["Osiris"],
+    },
+    {
+        Question: `A soccer ball can be spawned on which level?`,
+        Answers: ["Meridian Station"],
+    },
+    {
+        Question: `Who attacked first, Chief or Locke?`,
+        Answers: ["Master Chief", "Chief"],
+    },
+    {
+        Question: `On which level can the Halo Kart Easter Egg be activated?`,
+        Answers: ["Evacuation"],
+    },
+    {
+        Question: `On which level can the player interact with a friendly Unggoy (Grunt)?`,
+        Answers: ["Alliance"],
+    },
+    {
+        Question: `Exuberant Witness will aid the player in combat after the player teabags a Crawler how many times?`,
+        Answers: ["117"],
+    },
+    {
+        Question: `How many missions are played as Fireteam Osiris?`,
+        Answers: ["12"],
+    },
+    {
+        Question: `How many missions are played as Blue Team?`,
+        Answers: ["3"],
+    },
+    {
+        Question: `2 missions are tied for the longest Par Time, name one?`,
+        Answers: ["Blue Team", "Battle of Sunaion", "BoS"],
+    },
+    {
+        Question: `Which mission has the shortest Par Time?`,
+        Answers: ["Osiris"],
+    },
+    // Characters
+    {
+        Question: `What is Locke's first name?`,
+        Answers: ["Jameson"],
+    },
+    {
+        Question: `Which actor plays as Spartan Locke?`,
+        Answers: ["Ike Amadi"],
+    },
+    {
+        Question: `What is Tanaka's first name?`,
+        Answers: ["Holly"],
+    },
+    {
+        Question: `What is Vale's first name?`,
+        Answers: ["Olympia"],
+    },
+    {
+        Question: `During development which Spartan did Buck replace on Fireteam Osiris?`,
+        Answers: ["Gabriel Thorne", "Thorne", "Gabriel"],
+    },
+    {
+        Question: `What is the name of the monitor of the Genesis Installation?`,
+        Answers: ["031 Exuberant Witness", "Exuberant Witness"],
+    },
+    {
+        Question: `How many Wardens can the player encounter through all of the Halo 5 campaign?`,
+        Answers: ["10", "Ten"],
+    },
+    // Weapons
+    {
+        Question: `In Halo 5, what is the name of Arbiter Thel 'Vadam's personal energy sword?`,
+        Answers: [
+            "Prophets' Bane",
+            "Prophet's Bane",
+            "Prophets Bane",
+            "End of Night",
+        ],
+    },
+    {
+        Question: `Which weapon/weapon type gives the player a movement speed buff when held?`,
+        Answers: ["Energy Sword", "Sword"],
+    },
+    {
+        Question: `In the campaign, which weapon can be picked up from the ground with 0 ammo?`,
+        Answers: ["Energy Sword", "Sword"],
+    },
+    {
+        Question: `What is the name of Kelly's Shotgun?`,
+        Answers: ["Oathsworn"],
+    },
+    {
+        Question: `What is the name of Linda's Sniper Rifle?`,
+        Answers: ["Nornfang", "Norn fang", "Norn-fang"],
+    },
+    {
+        Question: `The Nornfang Sniper Rifle allows the user to see which HUD element while scoped in?`,
+        Answers: ["Motion Tracker", "Radar"],
+    },
+    {
+        Question: `The 'Pro Pipe' is a variant of which weapon?`,
+        Answers: [
+            "Grenade Launcher",
+            "Individual Grenade Launcher",
+            "M319 Individual Grenade Launcher",
+            "M319 grenade launcher",
+        ],
+    },
+    {
+        Question: `What is the name of the burst fire magnum in Halo 5?`,
+        Answers: ["Whispered Truth"],
+    },
+    // Vehicles
+    {
+        Question: `What is the name of the airborne Forerunner weapon-ship?`,
+        Answers: ["Phaeton"],
+    },
+    // Achievements
+    {
+        Question: `The Halo 5 achievement "Worms Don't Surf" is awarded once the player knocks two of which enemy into the ocean?`,
+        Answers: ["Hunter", "Hunters"],
+    },
+    {
+        Question: `The Halo 5 achievement "Fire Drill" is awarded once the player completes which mission on Heroic, deathless and under 18mins?`,
+        Answers: ["Evacuation"],
+    },
     {
         Question: `The Halo 5 achievement "Tank Still Beats Everything" is a call-back to an achievement in which game?`,
         Answers: ["Halo: Reach", "Halo Reach", "Reach"],
+    },
+    // Multiplayer
+    {
+        Question: `In total, how many multiplayer maps were released for Halo 5?`,
+        Answers: ["39"],
+    },
+    {
+        Question: `Halo 4's multiplayer map 'Haven' was remade and given what name in Halo 5 Multiplayer?"`,
+        Answers: ["Mercy"],
+    },
+    {
+        Question: `Halo 5's multiplayer map 'Mercy' was remixed and given what name in Halo 5 Multiplayer?"`,
+        Answers: ["Regret"],
+    },
+    {
+        Question: `Halo 2's multiplayer map 'Midship' was remade and given what name in Halo 5 Multiplayer?"`,
+        Answers: ["Truth"],
+    },
+    {
+        Question: `'Oscar's House' is a callout in which Halo 5 Multiplayer map?"`,
+        Answers: ["Plaza"],
+    },
+    {
+        Question: `The 'sand monster' Easter Egg can be activated on which Halo 5 Multiplayer map?"`,
+        Answers: ["The Rig", "Rig"],
+    },
+    {
+        Question: `What was the max Spartan Rank in Halo 5 multiplayer?"`,
+        Answers: ["SR152", "152"],
+    },
+    {
+        Question: `What was the name of the 4v4 CTF game mode where each player was given one life per round?`,
+        Answers: ["Breakout", "Arena Breakout", "Community Breakout"],
+    },
+    {
+        Question: `What was the name of the 12v12 game mode where each players raced to capture bases, kill bosses, and destroy the oppising side's core?"`,
+        Answers: ["Warzone", "Warzone Assault", "Warzone Turbo"],
+    },
+    // Quotes
+    {
+        Question: `Complete this quote (4 words):  "Negative, Infinity. ___ ___ ___ ___."`,
+        Answers: ["I don't like it"],
+    },
+    {
+        Question: `Complete this quote (2 words):  "If it's gonna fall, won't be because Spartans are using it as a ____ ___."`,
+        Answers: ["jungle gym"],
+    },
+    {
+        Question: `Complete this quote (1 word):  "Welcome. Have you also come to stop Cortana from claiming the _____?"`,
+        Answers: ["Mantle"],
+    },
+    {
+        Question: `Who says the following quote: "We could've taken 'em."`,
+        Answers: ["Edward Buck", "Buck", "Spartan Edward Buck", "Spartan Buck"],
+    },
+    {
+        Question: `Who says the following quote: "This might be hard to believe, seeing as how I'm a model of stoicism and courage today, but... When I was a kid, I-I was afraid of heights. So...there's that."`,
+        Answers: ["Edward Buck", "Buck", "Spartan Edward Buck", "Spartan Buck"],
+    },
+    {
+        Question: `Who says the following quote: "The Covenant glassed this planet in '48. It was a UNSC colony then, but we never came back. Run by a private corp now. Chipping away the glass, making her livable."`,
+        Answers: [
+            "Holly Tanaka",
+            "Tanaka",
+            "Spartan Holly Tanaka",
+            "Spartan Tanaka",
+        ],
+    },
+    {
+        Question: `Who says the following quote: "They have a tank. Why do they have a tank?"`,
+        Answers: [
+            "Olympia Vale",
+            "Vale",
+            "Spartan Olympia Vale",
+            "Spartan Vale",
+        ],
+    },
+    {
+        Question: `Who says the following quote: "I have welcomed you to my home. Do not be so rude as to make my health a point of conversation."`,
+        Answers: ["Governor Sloan", "Sloan"],
+    },
+    {
+        Question: `Who says the following quote: "The other humans are approved for passage. Regretfully, you are not."`,
+        Answers: ["Warden Eternal", "Warden"],
+    },
+    {
+        Question: `Who says the following quote: "You're not the only one here because of him."`,
+        Answers: [
+            "Jameson Locke",
+            "Locke",
+            "Spartan Jameson Locke",
+            "Spartan Locke",
+        ],
+    },
+    {
+        Question: `Who says the following quote: "No one is entitled to honor. You earn it."`,
+        Answers: [
+            "Jameson Locke",
+            "Locke",
+            "Spartan Jameson Locke",
+            "Spartan Locke",
+        ],
+    },
+    {
+        Question: `Who says the following quote: "Stop her. But please. Bring John home to me."`,
+        Answers: [
+            "Catherine Halsey",
+            "Halsey",
+            "Dr. Halsey",
+            "Dr Halsey",
+            "Dr Catherine Halsey",
+            "Dr. Catherine Halsey",
+            "Doctor Catherine Halsey",
+            "Doctor Halsey",
+        ],
     },
 ]
 
@@ -1550,8 +2247,44 @@ var haloInfiniteQuestions = [
 
 var franchiseQuestions = [
     {
-        Question: "",
-        Answers: [],
+        Question:
+            "What is the name of the species commonly referred to as the Prophets?",
+        Answers: ["San'Shyuum", "San Shyuum", "SanShyuum", "San 'Shyuum"],
+    },
+    {
+        Question:
+            "What is the name of the species commonly referred to as Elites?",
+        Answers: ["Sangheili"],
+    },
+    {
+        Question:
+            "What is the name of the species commonly referred to as Grunts?",
+        Answers: ["Unggoy"],
+    },
+    {
+        Question:
+            "What is the name of the species commonly referred to as Jackals?",
+        Answers: ["Kig-Yar", "Kigyar", "Kig Yar"],
+    },
+    {
+        Question:
+            "What is the name of the species commonly referred to as Hunters?",
+        Answers: ["Mgalekgolo", "Lekgolo"],
+    },
+    {
+        Question:
+            "What is the name of the species commonly referred to as Brutes?",
+        Answers: ["Jiralhanae"],
+    },
+    {
+        Question:
+            "What is the name of the species commonly referred to as Drones?",
+        Answers: ["Yanme'e", "Yanmee", "Yanme"],
+    },
+    {
+        Question:
+            "The vehicle called the Wasp was first introduced in which Halo game?",
+        Answers: ["Halo 5: Guardians", "Halo 5", "H5", "Halo 5 Guadrians"],
     },
 ]
 
@@ -1621,6 +2354,11 @@ var halorunsQuestions = [
         Question:
             "Wingman953, SkilledGames_ & Zombie343 set the ONI Alpha Site Easy Co-op WR in an RTA time of 10:42, what was the In-Game time?",
         Answers: ["7:46"],
+    },
+    {
+        Question:
+            "Whow as the first person to achieve a sub-9min on H2A Regret Legendary?",
+        Answers: ["Synyster"],
     },
     // GDQ
     {
@@ -1735,6 +2473,11 @@ var halorunsQuestions = [
     },
     {
         Question:
+            "Who was the first person to get the Two Bertrayals IL WR with the Banshee out of Level strategy?",
+        Answers: ["Sorix", "TehSorix"],
+    },
+    {
+        Question:
             "In 2016 a_royal_hobo battled out with which other runner for Kikowani Station WR?",
         Answers: ["Hoshka"],
     },
@@ -1753,9 +2496,13 @@ var halorunsQuestions = [
     },
     // Strats
     {
+        Question: "For Halo 2, what does AUP stand for?",
+        Answers: ["Arbitrary Unit Possession"],
+    },
+    {
         Question:
             'The trick known as "The Charpet" is named after which speedrunner?',
-        Answers: ["Chappified", "Chappy"],
+        Answers: ["Chappified", "Chappy", "Chapp"],
     },
     {
         Question: "In Halo 3:ODST Speedrunning, what does BPL stand for?",
@@ -1809,6 +2556,43 @@ var halorunsQuestions = [
     // Achievements
     {
         Question:
+            "The achievement 'Goatroped' is named after which speedrunner?",
+        Answers: ["Goatrope", "Goat"],
+    },
+    {
+        Question:
+            "The achievement 'Monopolized' is named after which speedrunner?",
+        Answers: ["Monopoli", "Mister Monopoli", "Mr Monopoli", "Mono"],
+    },
+    {
+        Question:
+            "The achievement 'Devastating' is named after which speedrunner?",
+        Answers: [
+            "Dark Devastation",
+            "DarkDevastation",
+            "Dark",
+            "Bark Bevastation",
+            "BarkBevastation",
+            "Bark",
+        ],
+    },
+    {
+        Question:
+            "The achievement 'You're Joking' is named after which speedrunner?",
+        Answers: ["ProAceJoker", "Joker", "ProAcedJoker"],
+    },
+    {
+        Question:
+            "The achievement 'Keep You're Foot on the Pedrogas' is named after which speedrunner?",
+        Answers: ["Pedrogas", "Pedro"],
+    },
+    {
+        Question:
+            "The achievement 'Nagato Makes Moving Easy' is named after which speedrunner?",
+        Answers: ["Nagato", "HLGNagato"],
+    },
+    {
+        Question:
             "The achievement 'Easy as One Two Three' is named after which speedrunner?",
         Answers: ["c0ry123", "cory123", "cory", "c0ry"],
     },
@@ -1816,6 +2600,18 @@ var halorunsQuestions = [
         Question:
             "The achievement 'Piece of Cake' is named after which speedrunner?",
         Answers: ["HaoleCake"],
+    },
+    {
+        Question: `The "Force of Will" achievement for beating the Gravemind Par Time is named after which speedrunner?`,
+        Answers: ["Willzorss", "Willzors"],
+    },
+    {
+        Question: `The "Reed the Strategy" achievement for beating The Oracle Par Time is named after which speedrunner?`,
+        Answers: ["Stylo", "Reed Tiburon", "Tiburon"],
+    },
+    {
+        Question: `What is the name of the achievement for beating all the par times on all Halo 2:Anniversary levels?`,
+        Answers: ["Going Nowhere Fast"],
     },
     // Other
     {
@@ -1842,11 +2638,11 @@ var quizCategories = [
     //     CategoryName: "Halo CE",
     //     CategoryLength: halo1Questions.length,
     // },
-    // {
-    //     CategoryQuestions: halo2Questions,
-    //     CategoryName: "Halo 2",
-    //     CategoryLength: halo2Questions.length,
-    // },
+    {
+        CategoryQuestions: halo2Questions,
+        CategoryName: "Halo 2",
+        CategoryLength: halo2Questions.length,
+    },
     // {
     //     CategoryQuestions: halo3Questions,
     //     CategoryName: "Halo 3",
@@ -1867,11 +2663,11 @@ var quizCategories = [
         CategoryName: "Halo 4",
         CategoryLength: halo4Questions.length,
     },
-    // {
-    //     CategoryQuestions: halo5Questions,
-    //     CategoryName: "Halo 5",
-    //     CategoryLength: halo5Questions.length,
-    // },
+    {
+        CategoryQuestions: halo5Questions,
+        CategoryName: "Halo 5",
+        CategoryLength: halo5Questions.length,
+    },
     // {
     //     CategoryQuestions: haloInfiniteQuestions,
     //     CategoryName: "Halo Infinite",

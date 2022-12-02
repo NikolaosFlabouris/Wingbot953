@@ -43,6 +43,7 @@ export var quoteMap = [
             "\"I can't kill baby animals, that's my limit.\" - _GamesSkilled",
             '"Out of all the fire emblem characters, falco is my favorite"- Skilled',
             '"what if they ask you that on a job offerview" - ben',
+            '"Far out" - Wingman953',
         ],
     },
     {
@@ -173,8 +174,8 @@ const odstQuotesList = [
     '"Low on ammo." - Buck',
     '"Special delivery from kick your ass express!" - Buck',
     '"Putting the pineapple in there!" - Buck',
-    '"That\'s right, right back to mommy" - Buck',
-    '"The corp doesn\'t pay me enough for this kind of garbage collection," - Buck',
+    '"That\'s right, right back to mommy." - Buck',
+    '"The corp doesn\'t pay me enough for this kind of garbage collection." - Buck',
     '"You must be the stupidest apes in the whole damn \'verse!" - Buck',
     // Dare
     "\"That's what I miss most about you, Buck. The way your mouth's always move a little faster than your brain. - Dare\"",
@@ -310,7 +311,7 @@ const odstQuotesList = [
     '"ATTENTION, TRAVELER! LOST ITEM CAN BE CLAIMED ON...LOWER LEVELS." - Superintendent',
     '"SPAY AND NEUTER YOUR PETS. ALL DOGS MUST BE KEPT ON LEASH!" - Superintendent',
     '"HELLO, TRAVELLER, MOMBASA WELCOMES YOU!" - Superintendent',
-    '"ALL ABOARD LAST RAIN NOW DEPARTING. NEXT STOP -- MAKUPA, NAIROBI ROAD, HOPE STATION... And beyond." - Superintendent',
+    '"ALL ABOARD LAST TRAIN NOW DEPARTING. NEXT STOP -- MAKUPA, NAIROBI ROAD, HOPE STATION... And beyond." - Superintendent',
     // Sadie
     '"Vergil, I\'m going to enlist!" - Sadie',
     '"I think I\'m the only one in this car that needs to be thinking about my ass!" - Sadie',
@@ -359,6 +360,7 @@ const odstQuotesList = [
     '"This one\'s for your momma!" - Grunt',
     '"My spidey sense is tingling!" - Grunt',
     '"It\'s the adversary!" - Grunt',
+    '"Fist...Rukt...Merry Christmas" - Grunt',
     // Brute
     '"Place the charge, before I lose my grip!" - Brute',
     '"Let no humans escape, to say what they have seen!" - Brute',

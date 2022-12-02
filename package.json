@@ -16,7 +16,7 @@
         "@twurple/chat": "^5.1.6",
         "@twurple/ebs-helper": "^5.1.6",
         "@twurple/eventsub": "^5.1.6",
-        "@twurple/eventsub-ngrok": "^5.1.6",
+        "@twurple/eventsub-ngrok": "^5.2.3",
         "@twurple/pubsub": "^5.1.6",
         "axios": "^0.27.2",
         "dotenv": "^16.0.0",
