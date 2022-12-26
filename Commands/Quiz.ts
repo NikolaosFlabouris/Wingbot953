@@ -17,7 +17,8 @@ var usedQuestions: number[] = []
 var leaderboardsAllTime: any[] = []
 var leaderboardsCurrentTime: any[] = []
 var leaderboardsFilePath = "./Data/"
-var leaderboardsFileName = "QuizLeaderboards.json"
+var leaderboardsAllTimeFileName = "QuizLeaderboards.json"
+var leaderboardsCurrentTimeFileName = "2023JanFeb-QuizLeaderboards.json"
 
 export async function QuizSetup() {
     totalQuestionCount = 0
@@ -273,6 +274,9 @@ export function GetMyQuizScore(msg: TwitchPrivateMessage) {
     var score = 0
     var user = msg.userInfo.displayName
 
+    var scoreMessage = ""
+    var scoreFound = false
+
     if (originalMessage.split(" ").length >= 2) {
         user = originalMessage.split(" ")[1].trim()
     }
@@ -281,38 +285,79 @@ export function GetMyQuizScore(msg: TwitchPrivateMessage) {
         if (
             leaderboardsAllTime[i].Username.toLowerCase() == user.toLowerCase()
         ) {
-            score = leaderboardsAllTime[i].Score
-            SendMessage(
-                "!quizscore",
-                `${leaderboardsAllTime[i].Username}'s Quiz Score is: ` + score
-            )
-            return
+            scoreMessage =
+                `${leaderboardsAllTime[i].Username}'s All-time Quiz Score is: ` +
+                leaderboardsAllTime[i].Score
+            scoreFound = true
         }
     }
 
-    SendMessage("!quizscore", `No score found for user: ${user}`)
+    for (var i = 0; i < leaderboardsCurrentTime.length; i++) {
+        if (
+            leaderboardsCurrentTime[i].Username.toLowerCase() ==
+            user.toLowerCase()
+        ) {
+            scoreMessage +=
+                ` | Bi-Monthly Quiz Score is: ` +
+                leaderboardsCurrentTime[i].Score
+        }
+    }
+
+    if (!scoreFound) {
+        scoreMessage = `No score found for user: ${user}`
+    }
+
+    SendMessage("!quizscore", scoreMessage)
 }
 
 function UpdateQuizScore(user: string, pointsChange: number) {
-    for (var i = 0; i < leaderboardsAllTime.length; i++) {
-        if (leaderboardsAllTime[i].Username == user) {
-            leaderboardsAllTime[i].Score += pointsChange
-            WriteLeaderboardsToFile()
-            return
+    var currentTimeFound = false
+    var allTimeFound = false
+
+    for (var i = 0; i < leaderboardsCurrentTime.length; i++) {
+        if (leaderboardsCurrentTime[i].Username == user) {
+            leaderboardsCurrentTime[i].Score += pointsChange
+            currentTimeFound = true
+            break
         }
     }
 
-    leaderboardsAllTime.push({ Username: user, Score: pointsChange })
+    for (var i = 0; i < leaderboardsAllTime.length; i++) {
+        if (leaderboardsAllTime[i].Username == user) {
+            leaderboardsAllTime[i].Score += pointsChange
+            allTimeFound = true
+            break
+        }
+    }
+
+    if (!currentTimeFound) {
+        leaderboardsCurrentTime.push({ Username: user, Score: pointsChange })
+    }
+
+    if (!allTimeFound) {
+        leaderboardsAllTime.push({ Username: user, Score: pointsChange })
+    }
+
     WriteLeaderboardsToFile()
 }
 
 function ReadLeaderboardsFromFile() {
     try {
         const data = fs.readFileSync(
-            leaderboardsFilePath + leaderboardsFileName,
+            leaderboardsFilePath + leaderboardsAllTimeFileName,
             "utf8"
         )
         leaderboardsAllTime = JSON.parse(data)
+    } catch (err) {
+        console.error(err)
+    }
+
+    try {
+        const data = fs.readFileSync(
+            leaderboardsFilePath + leaderboardsCurrentTimeFileName,
+            "utf8"
+        )
+        leaderboardsCurrentTime = JSON.parse(data)
     } catch (err) {
         console.error(err)
     }
@@ -321,8 +366,17 @@ function ReadLeaderboardsFromFile() {
 function WriteLeaderboardsToFile() {
     try {
         const data = fs.writeFileSync(
-            leaderboardsFilePath + leaderboardsFileName,
+            leaderboardsFilePath + leaderboardsAllTimeFileName,
             JSON.stringify(leaderboardsAllTime)
+        )
+    } catch (err) {
+        console.error(err)
+    }
+
+    try {
+        const data = fs.writeFileSync(
+            leaderboardsFilePath + leaderboardsCurrentTimeFileName,
+            JSON.stringify(leaderboardsCurrentTime)
         )
     } catch (err) {
         console.error(err)
@@ -594,6 +648,7 @@ var halo2Questions = [
             "Sergeant Johnson",
             "Avery Johnson",
             "Johnson",
+            "Sgt Johnson",
         ],
     },
     {
@@ -709,12 +764,16 @@ var halo2Questions = [
         Answers: ["Tombstone"],
     },
     {
-        Question: `Name one of the two Halo 2 Vista only maps.`,
+        Question: `Name one of the two multiplayer maps that were only included with Halo 2 Vista.`,
         Answers: ["District, Uplift", "District", "Uplift"],
     },
 ]
 
 var halo3Questions = [
+    {
+        Question: "What year was Halo 3 released on the Xbox 360?",
+        Answers: ["2007"],
+    },
     {
         Question:
             "When carrying over a Skull from Tsavo Highway to The Storm, which weapon is given to the player in place of the skull?",
@@ -723,11 +782,39 @@ var halo3Questions = [
     {
         Question:
             "When carrying over a Skull from Cortana to Halo, which weapon is given to the player in place of the skull?",
-        Answers: ["Spartan Laser"],
+        Answers: ["Spartan Laser", "Laser"],
     },
     {
         Question:
-            "What is the name of the grunt found at the very end of the level Halo?",
+            "The mission Sierra 117 takes place on the slopes of which mountain?",
+        Answers: [
+            "Mount Kilimanjaro",
+            "Kilimanjaro",
+            "Mt Kilimanjaro",
+            "Mt. Kilimanjaro",
+            "Shira Peak",
+        ],
+    },
+    {
+        Question: "Nathan Fillion voices which character in Halo 3?",
+        Answers: ["Gunnery Sergeant Reynolds", "Reynolds", "Sergeant Reynolds"],
+    },
+    {
+        Question:
+            "The Caveman Easter egg is a series of ape-like figures bearing a face resembling who?",
+        Answers: ["Marcus Lehto", "Lehto"],
+    },
+    {
+        Question:
+            "In Halo 3, what is the only level in which the player does not start with a weapon?",
+        Answers: ["Crows Nest", "Crows"],
+    },
+    {
+        Question: "In which Halo 3 level is the Arbiter never seen?",
+        Answers: ["Tsavo Highway", "Tsavo"],
+    },
+    {
+        Question: "What is the name of the only grunt found on the level Halo?",
         Answers: [
             "Final Grunt",
             "jerk store Grunt",
@@ -736,6 +823,269 @@ var halo3Questions = [
             "jerk store",
             "Seinfeld",
         ],
+    },
+    {
+        Question:
+            "An internal Halo 3 build released to Microsoft employees in August 2007 was given what name?",
+        Answers: ["Halo 3 Epsilon", "Epsilon", "H3 Epsilon"],
+    },
+    {
+        Question:
+            "Excluding Arrival, how many Cortana and Gravemind Moments are there?",
+        Answers: ["28"],
+    },
+    {
+        Question: "The mission The Storm is set in which city?",
+        Answers: ["Voi"],
+    },
+    {
+        Question: "On what mission does the player defeat Cethegus?",
+        Answers: ["The Ark", "Ark"],
+    },
+    {
+        Question: "The Microsoft Sam Easter egg is found on which level?",
+        Answers: ["The Covenant", "Covenant", "Covie"],
+    },
+    {
+        Question: "The Siege of Madrigal Easter egg is found on which level?",
+        Answers: ["The Covenant", "Covenant", "Covie"],
+    },
+    {
+        Question:
+            "The Warthog, Ghost and which other vehicle can be driven on the mission Halo?",
+        Answers: ["Mongoose", "Goose"],
+    },
+    {
+        Question:
+            "The Password-lacking Marine Easter egg is found on which level?",
+        Answers: ["Crows Nest", "Crows"],
+    },
+    {
+        Question: "How many terminals are the in the Halo 3 campaign?",
+        Answers: ["7", "seven"],
+    },
+    {
+        Question:
+            "How many Cortana/Gravemind 'slowdown' moments are there in the Halo 3 campaign?",
+        Answers: ["24"],
+    },
+    {
+        Question:
+            "How many Skulls were included in the original release of Halo 3?",
+        Answers: ["13", "Thirteen"],
+    },
+    {
+        Question: "How many unique pieces of Equipment are there in Halo 3?",
+        Answers: ["11", "Eleven"],
+    },
+    {
+        Question:
+            "Which Covenant vehicle did not return to the series after it's inclusion in Halo 3?",
+        Answers: ["Prowler"],
+    },
+    {
+        Question:
+            "What was the name of the Halo 3 Multiplayer disc included alongside Halo 3:ODST?",
+        Answers: [
+            "Halo 3: Mythic",
+            "Halo 3 Mythic",
+            "H3 Mythic",
+            "Halo 3:Mythic",
+        ],
+    },
+    {
+        Question:
+            "Access to the Halo 3 Beta was granted through purchase of specially marked copies of which video game?",
+        Answers: ["Crackdown"],
+    },
+    {
+        Question:
+            "What is the name given to the set of 3 promotional live-action shorts released prior to the launch of Halo 3?",
+        Answers: ["Halo: Landfall", "Halo Landfall", "Landfall"],
+    },
+    // Music
+    {
+        Question:
+            "What is the name of the music track that plays when the player faces 2 Scarabs on the mission The Covenant?",
+        Answers: ["One Final Effort"],
+    },
+    // Achievements
+    {
+        Question: "How many achievements launched with Halo 3?",
+        Answers: ["49"],
+    },
+    {
+        Question:
+            "The Vidmaster Challenge: Annual required all 4 co-op players to be in what vehicle at the end of the mission Halo?",
+        Answers: ["Ghost", "Ghosts"],
+    },
+    {
+        Question:
+            "Completing the Vidmaster Challenges unlocked what multiplayer armour piece?",
+        Answers: ["Recon Helmet", "Recon", "Recon Armour", "Recon Armor"],
+    },
+    {
+        Question: `The MCC achievement "Can't Keep Him Down" requires the player to fight alongside which character?`,
+        Answers: [
+            "Chips Dubbo",
+            "Chips",
+            "Chipps Dubbo",
+            "Chipps Dubo",
+            "Chips Dubo",
+        ],
+    },
+    // Quotes
+    {
+        Question: `On what mission is the following quote said: "What's that sound?"`,
+        Answers: ["The Storm", "Storm"],
+    },
+    {
+        Question:
+            'Who says the following quote: "They let me pick. Did I ever tell you that? Choose whichever Spartan I wanted."',
+        Answers: ["Cortana"],
+    },
+    {
+        Question:
+            'Who says the following quote: "This place will become your tomb."',
+        Answers: ["Cortana"],
+    },
+    {
+        Question: 'Who says the following quote: "Were it so easy."',
+        Answers: [
+            "the Arbiter",
+            "Arbiter",
+            "Thel 'Vadamee",
+            "Thel 'Vadam",
+            "Thel Vadamee",
+            "Thel Vadam",
+        ],
+    },
+    {
+        Question: `Who says the following quote: "First Squad, you're my scouts. Move out! Quiet as you can."`,
+        Answers: [
+            "Sergeant Avery Johnson",
+            "Sergeant Johnson",
+            "Avery Johnson",
+            "Johnson",
+            "Sgt Johnson",
+        ],
+    },
+    {
+        Question: `Who says the following quote: "Do you or do you not want to finish the fight?"`,
+        Answers: [
+            "Sergeant Avery Johnson",
+            "Sergeant Johnson",
+            "Avery Johnson",
+            "Johnson",
+            "Sgt Johnson",
+        ],
+    },
+    {
+        Question: `Who says the following quote: "Marines? The Prophet of Truth doesn't know it yet, but he's about to get kicked right off his throne. We will take our city back. And drive our enemy into the grave they've been so happily digging. One final effort is all that remains."`,
+        Answers: ["Lord Hood", "Hood", "Terrance Hood"],
+    },
+    {
+        Question: `Who says the following quote: "Chief! Hood's ships are closing fast! Destroy that gun; we're out of time."`,
+        Answers: ["Miranda Keyes", "Miranda", "Keyes"],
+    },
+    {
+        Question: `Who says the following quote: "Worse."`,
+        Answers: ["Master Chief", "Chief", "John-117", "John", "John 117"],
+    },
+    {
+        Question: `Who says the following quote: "Hail, humans, and take heed."`,
+        Answers: [
+            "Shipmaster Rtas 'Vadum",
+            "Shipmaster",
+            "Half-Jaw",
+            "Half Jaw",
+            "Halfjaw",
+            "Rtas 'Vadumee",
+            "Rtas Vadumee",
+            "Rtas 'Vadum",
+            "Rtas Vadum",
+        ],
+    },
+    {
+        Question: `Who says the following quote: "You were weak. And gods must be strong."`,
+        Answers: ["Prophet of Truth", "Truth"],
+    },
+    {
+        Question: `Who says the following quote: "Thought I'd try shooting my way out - mix things up a little."`,
+        Answers: ["Master Chief", "Chief", "John-117", "John", "John 117"],
+    },
+    {
+        Question: `Who says the following quote: "Protocol dictates action! I see now that helping you was wrong!"`,
+        Answers: ["343 Guilty Spark", "Guilty Spark"],
+    },
+    {
+        Question: `Complete this quote (3 words): "Banshees! ___ ___ ___!"`,
+        Answers: ["Fast and low"],
+    },
+    {
+        Question: `Complete this quote (1 word): "To ___."`,
+        Answers: ["war"],
+    },
+    {
+        Question: `Complete this quote (1 word): "Ma'am, I've got ____. Above and below."`,
+        Answers: ["movement"],
+    },
+    {
+        Question: `Complete this quote (2 words): "There's something in the crater, Ma'am. Something beneath ___ ___."`,
+        Answers: ["the storm"],
+    },
+    {
+        Question: `Complete this quote (2 words): "___ ___, my brothers! Only our enemies should fear this raging storm!"`,
+        Answers: ["Take heart", "They cough"],
+    },
+    {
+        Question: `Complete this quote (3 words): "Wretched parasite! Rise up and I will kill you! ___ ___ ___!"`,
+        Answers: ["Again and again", "Again and again!"],
+    },
+    {
+        Question: `Complete this quote (1 word): "Tank beats ___!"`,
+        Answers: ["Ghost/Hunter/Everything", "ghost", "hunter", "everything"],
+    },
+    {
+        Question: `Complete this quote (2 words): "I count ___ ___! Repeat: ___ ___!"`,
+        Answers: ["two Scarabs", "2 scarabs"],
+    },
+    {
+        Question: `Complete this quote (3 words): "A collection of lies; that's all I am! Stolen ___ ___ ___!"`,
+        Answers: ["thoughts and memories"],
+    },
+    {
+        Question: `Complete this quote (3 words): "Send me out ___ ___ ___"`,
+        Answers: ["with a bang"],
+    },
+    // Multiplayer
+    {
+        Question: "What is the name of the max rank in Halo 3 Multiplayer?",
+        Answers: ["5 Star General", "General"],
+    },
+    {
+        Question:
+            "In Halo 3 Multiplayer what medal is awarded when the player wins by atleast 20 kills?",
+        Answers: ["Steaktacular"],
+    },
+    {
+        Question:
+            "In Halo 3 Multiplayer what medal is awarded when the player seizes control of an enemy aircraft?",
+        Answers: ["Skyjacker", "Skyjack"],
+    },
+    {
+        Question:
+            "In Halo 3 Multiplayer what medal is awarded when the player kills the last alive player on the opposing team with at least an Overkill?",
+        Answers: ["Extermination"],
+    },
+    {
+        Question:
+            "The vehicle the 'Elephant' was initially only found on which Halo 3 multiplayer map?",
+        Answers: ["Sandtrap", "Sand Trap"],
+    },
+    {
+        Question: `Halo 2's multiplayer map 'Zanzibar' was remade and given what name in Halo 3 Multiplayer?`,
+        Answers: ["Last Resort"],
     },
 ]
 
@@ -936,13 +1286,18 @@ var odstQuestions = [
         ],
     },
     {
+        Question:
+            "Nathan Fillion (voice of Buck) and Tricia Helfer (voice of Dare) both star in a TV series called what?",
+        Answers: ["The Rookie"], //The Rookie (Season 4, Episode 2) https://youtu.be/bHmRHWdnKP0
+    },
+    {
         Question: "What is the alternative name for the Coastal Highway?",
         Answers: ["Waterfront Highway", "the Waterfront Highway"],
     },
     {
         Question:
-            "Nathan Fillion (voice of Buck) and Tricia Helfer (voice of Dare) both star in a TV series called what?",
-        Answers: ["The Rookie"], //The Rookie (Season 4, Episode 2) https://youtu.be/bHmRHWdnKP0
+            "The Covenant refer to Master Chief as the 'Demon', what name do they have for The Rookie and the other ODSTs?",
+        Answers: ["Imp", "Imps"],
     },
     // Gameplay
     {
@@ -1048,6 +1403,11 @@ var odstQuestions = [
             "Chipps Dubo",
             "Chips Dubo",
         ],
+    },
+    {
+        Question:
+            "To help complete the Deja Vu Vidmaster Challenge, players are provided with how much additional rocket ammunition?",
+        Answers: ["4004"],
     },
     // Firefight
     {
@@ -1228,11 +1588,6 @@ var odstQuestions = [
         ],
     },
     {
-        Question:
-            "The Covenant refer to Master Chief as the 'Demon', what name do they have for The Rookie and the other ODSTs?",
-        Answers: ["Imp", "Imps"],
-    },
-    {
         Question: `Complete this quote (1 word): "Wake up, _______"`,
         Answers: ["Buttercup"],
     },
@@ -1321,12 +1676,12 @@ var reachQuestions = [
     {
         Question:
             "Which Halo: Reach level is the only level in the game to feature the Gauss Warthog.",
-        Answers: ["ONI: Sword Base", "Oni Sword Base", "Oni"],
+        Answers: ["ONI: Sword Base", "Oni Sword Base", "Oni", "Sword Base"],
     },
     {
         Question:
             "Which Halo: Reach level is the only level in the game to feature the Troop Transport Warthog.",
-        Answers: ["ONI: Sword Base", "Oni Sword Base", "Oni"],
+        Answers: ["ONI: Sword Base", "Oni Sword Base", "Oni", "Sword Base"],
     },
     {
         Question:
@@ -1912,59 +2267,59 @@ var halo4Questions = [
         Answers: ["121"],
     },
     {
-        Question: `In Halo 4, what was the name of the highest Commendation rank?"`,
+        Question: `In Halo 4, what was the name of the highest Commendation rank?`,
         Answers: ["Master"],
     },
     {
-        Question: `In Halo 4, what was the highest Spartan (Multiplayer) Rank?"`,
+        Question: `In Halo 4, what was the highest Spartan (Multiplayer) Rank?`,
         Answers: ["SR130", "130"],
     },
     {
-        Question: `In Halo 4 multiplayer, how many Specialisations were there?"`,
+        Question: `In Halo 4 multiplayer, how many Specialisations were there?`,
         Answers: ["8"],
     },
     {
-        Question: `How many medals are there in Halo 4 Multiplayer?"`,
+        Question: `How many medals are there in Halo 4 Multiplayer?`,
         Answers: ["176"],
     },
     {
-        Question: `What is the name of the Oddball-variant gametype that first appeared in Halo 4 DLC?"`,
+        Question: `What is the name of the Oddball-variant gametype that first appeared in Halo 4 DLC?`,
         Answers: ["Ricochet"],
     },
     {
-        Question: `What is the name of the CTF gametype unique to Halo 4?"`,
+        Question: `What is the name of the CTF gametype unique to Halo 4?`,
         Answers: ["Mini CTF"],
     },
     {
-        Question: `In Halo 4, the gametype typically known as 'Infection' is given what name?"`,
+        Question: `In Halo 4, the gametype typically known as 'Infection' is given what name?`,
         Answers: ["Flood"],
     },
     {
-        Question: `In Halo 4, what is the name of the FFA-variant gametype that declares the leading scorer the "king" until they are killed?"`,
+        Question: `In Halo 4, what is the name of the FFA-variant gametype that declares the leading scorer the "king" until they are killed?`,
         Answers: ["Regicide"],
     },
     {
-        Question: `In Halo 4, what is the name of the 5v5 gametype that requires players to plant beacons to secure Slipspace crates?"`,
+        Question: `In Halo 4, what is the name of the 5v5 gametype that requires players to plant beacons to secure Slipspace crates?`,
         Answers: ["Extraction"],
     },
     {
-        Question: `In Halo 4, what is the name of the 6v6 gametype that requires players to capture and hold bases from the opposite team?"`,
+        Question: `In Halo 4, what is the name of the 6v6 gametype that requires players to capture and hold bases from the opposite team?`,
         Answers: ["Dominion"],
     },
     {
-        Question: `How many multiplayer maps are there in Halo 4?"`,
+        Question: `How many multiplayer maps are there in Halo 4?`,
         Answers: ["25"],
     },
     {
-        Question: `Which multiplayer map is the setting for the cutscene where Master Chief meets the Librarian?"`,
+        Question: `Which multiplayer map is the setting for the cutscene where Master Chief meets the Librarian?`,
         Answers: ["Haven"],
     },
     {
-        Question: `Halo 3's multiplayer map 'The Pit' was remade and given what name in Halo 4 Multiplayer?"`,
+        Question: `Halo 3's multiplayer map 'The Pit' was remade and given what name in Halo 4 Multiplayer?`,
         Answers: ["Pitfall"],
     },
     {
-        Question: `Halo 3's multiplayer map 'Valhalla' was remade and given what name in Halo 4 Multiplayer?"`,
+        Question: `Halo 3's multiplayer map 'Valhalla' was remade and given what name in Halo 4 Multiplayer?`,
         Answers: ["Ragnarok"],
     },
 ]
@@ -2282,9 +2637,95 @@ var franchiseQuestions = [
         Answers: ["Yanme'e", "Yanmee", "Yanme"],
     },
     {
+        Question: "Which Skull gives the largest points score multiplier?",
+        Answers: ["Iron Skull", "Iron"],
+    },
+    {
+        Question:
+            "What is the name of the community challenge for completing LASO with no deaths and no Save & Quit?",
+        Answers: ["Mythic Difficulty", "Mythic"],
+    },
+    // Gameplay Features
+    {
+        Question:
+            "The night-vision mechanic was first used in which Halo game?",
+        Answers: [
+            "Halo: Combat Evolved",
+            "Halo: CE",
+            "Halo:CE",
+            "Halo 1",
+            "H:CE",
+            "HCE",
+            "CE",
+        ],
+    },
+    {
+        Question: "Dual Wielding was first included in which Halo game?",
+        Answers: ["Halo 2", "H2"],
+    },
+    {
+        Question: "Theatre was first included in which Halo game?",
+        Answers: ["Halo 3", "H3"],
+    },
+    // Vehicles
+    {
+        Question:
+            "The vehicle called the Mongoose was first introduced in which Halo game?",
+        Answers: ["Halo 3", "H3"],
+    },
+    {
+        Question:
+            "The vehicle called the Hornet was first introduced in which Halo game?",
+        Answers: ["Halo 3", "H3"],
+    },
+    {
         Question:
             "The vehicle called the Wasp was first introduced in which Halo game?",
         Answers: ["Halo 5: Guardians", "Halo 5", "H5", "Halo 5 Guadrians"],
+    },
+    // Multiplayer
+    {
+        Question:
+            "What is the name of the variant of the multiplayer gamemode Assault where players wield a Gravity Hammer and an Energy Sword?",
+        Answers: ["Grifball"],
+    },
+    {
+        Question:
+            "King of the Hill was first included as an official multiplayer gamemode in which Halo game?",
+        Answers: [
+            "Halo: Combat Evolved",
+            "Halo: CE",
+            "Halo:CE",
+            "Halo 1",
+            "H:CE",
+            "HCE",
+            "CE",
+        ],
+    },
+    {
+        Question:
+            "SWAT/Tactical Slayer was first included as an official multiplayer gamemode in which Halo game?",
+        Answers: ["Halo 2", "H2"],
+    },
+    {
+        Question:
+            "Territories was first included as an official multiplayer gamemode in which Halo game?",
+        Answers: ["Halo 2", "H2"],
+    },
+    {
+        Question:
+            "Infection was first included as an official multiplayer gamemode in which Halo game?",
+        Answers: ["Halo 3", "H3"],
+    },
+    {
+        Question:
+            "Headhunter was first included as an official multiplayer gamemode in which Halo game?",
+        Answers: ["Halo: Reach", "Reach", "Halo:Reach"],
+    },
+    {
+        Question:
+            "What is the name of the melee weapon which is functionally identical to the Gravity Hammer?",
+        Answers: ["7 wood"],
     },
 ]
 
@@ -2338,12 +2779,18 @@ var halorunsQuestions = [
         Answers: ["HLGNagato", "Nagato"],
     },
     {
-        Question: "The first sub-1hr Halo 3:ODST time was achieved by who?",
+        Question:
+            "The first sub-1hr Halo 3:ODST solo time was achieved by who?",
         Answers: ["Harc", "HarcTehShark"],
     },
     {
-        Question: "The first sub-1hr Halo: Reach time was achieved by who?",
+        Question:
+            "The first sub-1hr Halo: Reach solo time was achieved by who?",
         Answers: ["Seclusive"],
+    },
+    {
+        Question: "The first sub-1hr Halo 3 solo time was achieved by who?",
+        Answers: ["byNailz"],
     },
     {
         Question:
@@ -2421,6 +2868,10 @@ var halorunsQuestions = [
     },
     // Relay Races
     {
+        Question: "Which team won the HaloRuns Legendary Relay Race in 2022?",
+        Answers: ["Red Team", "Red"],
+    },
+    {
         Question:
             "Which team won the HaloRuns Legendary Relay Race at the end of 2021?",
         Answers: ["Green Team", "Green"],
@@ -2434,6 +2885,10 @@ var halorunsQuestions = [
         Question:
             "Which team won the HaloRuns Legendary Relay Race at the start of 2020?",
         Answers: ["Red Team", "Red"],
+    },
+    {
+        Question: "Which team won the HaloRuns Easy Relay Race in 2022?",
+        Answers: ["Green Team", "Green"],
     },
     {
         Question: "Which team won the HaloRuns Easy Relay Race in 2021?",
@@ -2450,6 +2905,18 @@ var halorunsQuestions = [
     {
         Question: "Which team won the HaloRuns Easy Relay Race in 2018?",
         Answers: ["Red Team", "Red"],
+    },
+    {
+        Question: "Which team won the HaloRuns Easy Relay Race in 2017?",
+        Answers: ["Red Team", "Red"],
+    },
+    {
+        Question: "Which team won the HaloRuns Easy Relay Race in 2016?",
+        Answers: ["Green Team", "Green"],
+    },
+    {
+        Question: "Which team won the HaloRuns Easy Relay Race in 2015?",
+        Answers: ["Blue Team", "Blue"],
     },
     // Surpise WRs
     {
@@ -2493,6 +2960,10 @@ var halorunsQuestions = [
     {
         Question: "Wingman953 is known to be a fan of which level?",
         Answers: ["ONI Alpha Site", "Oni Pog", "Oni", "Alpha Site"],
+    },
+    {
+        Question: "Forerunner ILs",
+        Answers: ["Exodus"],
     },
     // Strats
     {
@@ -2608,6 +3079,14 @@ var halorunsQuestions = [
     {
         Question: `The "Reed the Strategy" achievement for beating The Oracle Par Time is named after which speedrunner?`,
         Answers: ["Stylo", "Reed Tiburon", "Tiburon"],
+    },
+    {
+        Question: `The "Making History" achievement for beating the Cortana Par Time is named after which speedrunner?`,
+        Answers: ["History100", "History"],
+    },
+    {
+        Question: `The "Time Shift" achievement for beating the Crow's Nest Par Time is named after which speedrunner?`,
+        Answers: ["SHIFTY", "SHIFTY time", "SHIFTY_time"],
     },
     {
         Question: `What is the name of the achievement for beating all the par times on all Halo 2:Anniversary levels?`,

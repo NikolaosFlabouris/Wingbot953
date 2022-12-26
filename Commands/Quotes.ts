@@ -49,7 +49,7 @@ export var quoteMap = [
     {
         Command: ["!upliftmarine"],
         AllMessages: true,
-        Username: ["Wingman953", "CameraDancer"],
+        Username: ["Wingman953", "CameraDancer", "thiccElite"],
         Message: [
             "Crazed Marine: \"No, no, no! You're not listening! It's a zoo, okay?\"",
             'Medic: "Well, technically it\'s a corporate-funded wildlife reserve."',
@@ -66,7 +66,7 @@ export var quoteMap = [
     {
         Command: ["!datahiveengineers", "!dhengineers"],
         AllMessages: true,
-        Username: ["Wingman953", "CameraDancer"],
+        Username: ["Wingman953", "CameraDancer", "thiccElite"],
         Message: [
             'Buck: "I\'ve seen hundreds of these things today! Why is this one so important?"',
             'Dare: "This Engineer knows what the Covenant is after. If I could safely capture more of them I would. What they know can win the war!"',
@@ -110,11 +110,6 @@ export var quoteMap = [
             'Dare: "Keep me covered. And try to keep up." | Buck: "Take my advice, Rookie. If you ever fall for a woman, (puts on his helmet) make sure she\'s got balls."',
             "/me Buck nods and moves out, as the Rookie looks on.",
         ],
-    },
-    {
-        Command: ["!cutscene"],
-        AllMessages: true,
-        Message: ["Sorry friend, no cutscene text for you."],
     },
 ]
 

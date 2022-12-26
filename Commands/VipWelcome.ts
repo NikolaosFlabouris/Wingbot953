@@ -50,7 +50,7 @@ var vipWelcome = [
         Arrived: false,
     },
     {
-        Username: ["zomb1e343"],
+        Username: ["zomb1e343", "RocketJon_"],
         Message: [
             "yea jon",
             "Jon, you've been out for 4 years 7 months and 10 days! ",
@@ -285,6 +285,13 @@ var vipWelcome = [
         Username: ["Weatley_"],
         Message: [
             "Look it's the core from portal that's a moron designed to make you an idiot",
+        ],
+        Arrived: false,
+    },
+    {
+        Username: ["fromthegrave_69"],
+        Message: [
+            "Well if it isn't Wingman's favorite viewer. Hello, fromthegrave",
         ],
         Arrived: false,
     },

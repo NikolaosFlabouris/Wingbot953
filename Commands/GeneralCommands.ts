@@ -113,12 +113,6 @@ export var commandMap = [
         ],
     },
     {
-        Command: ["!coaching"],
-        Message: [
-            "If you want to learn to run Halo: Reach go subscribe to Two EEzy and he'll give you a 1hr coaching session via Discord: https://www.twitch.tv/Two_EEzy/subscribe",
-        ],
-    },
-    {
         Command: ["!addcom", "!addcommand"],
         Message: [
             "You cannot add commands but you can suggest commands for the streamer to add.",
@@ -135,7 +129,7 @@ export var commandMap = [
         ],
     },
     {
-        Command: ["!holdW", "!w"],
+        Command: ["!holdw", "!w"],
         Message: ["I'll quite happily hold W while you hold this L"],
     },
     {
@@ -148,12 +142,12 @@ export var commandMap = [
             "Scales has created a website for creating a MCC playlist with random levels. If I am playing a custom playlist I probably used this tool to generate it: https://randomizer.scal.es/",
         ],
     },
-    {
-        Command: ["!relay"],
-        Message: [
-            "My bi-annual 3am wake up call will be happening on Dec 4th. I'll be running ODST Legendary for Blue Team. Tune in here for the race: https://www.twitch.tv/haloraces",
-        ],
-    },
+    // {
+    //     Command: ["!relay"],
+    //     Message: [
+    //         "My bi-annual 3am wake up call will be happening on Dec 4th. I'll be running ODST Legendary for Blue Team. Tune in here for the race: https://www.twitch.tv/haloraces",
+    //     ],
+    // },
     // FAQ
     {
         Command: ["!faq"],
@@ -265,6 +259,12 @@ export var commandMap = [
     {
         Command: ["!bigbrain"],
         Message: ["Kiko Ricochet Ending: https://youtu.be/1rY7vjc_a7w"],
+    },
+    {
+        Command: ["!56:45"],
+        Message: [
+            ":( https://clips.twitch.tv/TardyGiantSnoodDoggo-1XnbUJRA1WlY1pFQ",
+        ],
     },
 ]
 
