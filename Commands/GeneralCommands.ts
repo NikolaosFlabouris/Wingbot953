@@ -6,7 +6,7 @@ export var commandMap = [
     {
         Command: ["!quiz"],
         Message: [
-            "Periodically, or via channel point redemption, a quiz question will be asked in chat, be the first to answer it! See the channel description for more info.",
+            "Periodically, or via channel point redemption, a quiz question will be asked in chat. Answer the questions to earn points! See the channel description for more info.",
         ],
     },
     // Haloruns/Speedruns/Socials/Stream
@@ -27,7 +27,7 @@ export var commandMap = [
     {
         Command: ["!wr", "!fgwr"],
         Message: [
-            "ODST Easy FG: 57:14 by Wingman953 | ODST Leg FG: 1:02:23 by Wingman953", // | The Good Ones: 3:18:17 by Chronos",
+            "ODST Easy: 56:42 by Wingman953 | ODST Leg: 1:02:23 by Wingman953 | The Good Ones: 3:08:26 by yeVcM",
         ],
     },
     {
@@ -39,6 +39,17 @@ export var commandMap = [
     {
         Command: ["!twitch"],
         Message: ["Wingman953's Twitch: www.twitch.tv/wingman953"],
+    },
+    {
+        Command: [
+            "!socials",
+            "!insta",
+            "!instagram",
+            "!twitter",
+            "!onlyfans",
+            "!tiktok",
+        ],
+        Message: ["yea nah"],
     },
     {
         Command: ["!newvid"],
@@ -53,20 +64,27 @@ export var commandMap = [
         ],
     },
     {
-        Command: [
-            "!socials",
-            "!insta",
-            "!instagram",
-            "!twitter",
-            "!onlyfans",
-            "!tiktok",
+        Command: ["!tutorials"],
+        Message: [
+            "ODST Tutorial Playlist: https://www.youtube.com/playlist?list=PLg9ghMUPja2Tun8az3B5uaQf_nftx4ZwQ",
         ],
-        Message: ["yea nah"],
+    },
+    {
+        Command: ["!referenceclips", "!reference", "!refclips"],
+        Message: [
+            "ODST Reference Clip Playlist: https://www.youtube.com/playlist?list=PLg9ghMUPja2RgX1uMDgvqAkELC-rZ7Baz",
+        ],
     },
     {
         Command: ["!playlist", "!music"],
         Message: [
             "Wingman953's Stream Music Playlist: https://open.spotify.com/playlist/19iCkrwBp77MWHfDzn6klA?si=b025f7bb576e4f8f",
+        ],
+    },
+    {
+        Command: ["!emotes", "!emote"],
+        Message: [
+            "The awesome emotes were created by the amazing JustFredrik: https://www.twitch.tv/justfredrik",
         ],
     },
     {
@@ -82,7 +100,7 @@ export var commandMap = [
     {
         Command: ["!top10", "!slidejump"],
         Message: [
-            "MLG TOP 10 ODST SLIDE JUMPS LETS GOOOOO!!! https://youtu.be/9m7Jy5gTkuw",
+            "MLG TOP 10 ODST SLIDE JUMPS LET'S GOOOOO!!! https://youtu.be/9m7Jy5gTkuw",
         ],
     },
     {
@@ -154,7 +172,7 @@ export var commandMap = [
         Message: ["!ammoempty, !timer, !glyphs, !downpatch, !quiz"],
     },
     {
-        Command: ["!ammoempty", "!ammo"],
+        Command: ["!ammoempty", "!ammo", "!wasteammo"],
         Message: [
             "If you have an empty UNSC weapon at the end of a Mombasa Streets section then you start the next section with a fresh loadout which includes 3 frags, and frags are useful for movement tricks.",
         ],
@@ -259,12 +277,6 @@ export var commandMap = [
     {
         Command: ["!bigbrain"],
         Message: ["Kiko Ricochet Ending: https://youtu.be/1rY7vjc_a7w"],
-    },
-    {
-        Command: ["!56:45"],
-        Message: [
-            ":( https://clips.twitch.tv/TardyGiantSnoodDoggo-1XnbUJRA1WlY1pFQ",
-        ],
     },
 ]
 

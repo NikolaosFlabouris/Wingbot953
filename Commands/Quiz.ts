@@ -252,7 +252,11 @@ export function DisplayQuizLeaderboards() {
         (firstItem, secondItem) => secondItem.Score - firstItem.Score
     )
 
-    var message = "QUIZ LEADERBOARDS Top 5: "
+    leaderboardsCurrentTime.sort(
+        (firstItem, secondItem) => secondItem.Score - firstItem.Score
+    )
+
+    var message = "ALL-TIME QUIZ TOP 5: "
 
     var learboardSize =
         5 > leaderboardsAllTime.length ? leaderboardsAllTime.length : 5
@@ -264,6 +268,22 @@ export function DisplayQuizLeaderboards() {
             leaderboardsAllTime[i].Score +
             "pts | "
     }
+
+    SendMessage("!quizleaderboard", message)
+    
+    message = "BI-MONTHLY QUIZ TOP 5: "
+    
+    learboardSize =
+        5 > leaderboardsCurrentTime.length ? leaderboardsCurrentTime.length : 5
+
+    for (var i = 0; i < learboardSize; i++) {
+        message +=
+            leaderboardsCurrentTime[i].Username +
+            " - " +
+            leaderboardsCurrentTime[i].Score +
+            "pts | "
+    }
+
     SendMessage("!quizleaderboard", message)
 }
 
@@ -385,6 +405,14 @@ function WriteLeaderboardsToFile() {
 
 var halo1Questions = [
     {
+        Question: "What year was Halo: CE released on the Xbox?",
+        Answers: ["2001"],
+    },
+    {
+        Question: "What year was Halo: CE Anniversary released on the Xbox 360?",
+        Answers: ["2011"],
+    },
+    {
         Question: "Which Halo ring is discovered at the start of Halo CE?",
         Answers: [
             "Installation 04",
@@ -396,9 +424,206 @@ var halo1Questions = [
         ],
     },
     {
+        Question: "On which level can the Megg Easter Egg be found?",
+        Answers: ["Pillar of Autumn", "the Pillar of Autumn", "PoA"],
+    },
+    {
+        Question: "Carol Rawley is better known by what call sign?",
+        Answers: ["Foe Hammer", "FoeHammer", "Foe-Hammer"],
+    },
+    {
+        Question:
+            "Which is the only level where a player cannot use the Magnum?",
+        Answers: [
+            "The Truth and Reconciliation",
+            "Truth and Reconciliation",
+            "TNR",
+        ],
+    },
+    {
+        Question:
+            "Which is the only weapon or vehicle missing from the mission Assault on the Control Room?",
+        Answers: ["Shotgun"],
+    },
+    {
+        Question:
+            "Which is the only level to feature a drivable Scorpion tank?",
+        Answers: ["Assault on the Control Room", "AotCR"],
+    },
+    {
+        Question:
+            "In Halo: CE the Siege of Madrigal Easter Egg is found on which level?",
+        Answers: ["Assault on the Control Room", "AotCR"],
+    },
+    {
+        Question:
+            "How many Hunters are there in the mission Assault on the Control Room?",
+        Answers: ["20", "twenty"],
+    },
+    {
+        Question:
+            "How many Hunters are there in all of Halo: CE?",
+        Answers: ["47"],
+    },
+    {
+        Question:
+            "During the 'Warthog Run' on The Maw on the Legendary difficulty, how many minutes until the fusion drives detonate?",
+        Answers: ["5 minutes", "5 mins", "5mins", "5min", "5 min", "5", "five"],
+    },
+    {
         Question:
             "What is the name of the grunt found at the very end of the level The Maw?",
         Answers: ["Thirsty Grunt", "Thirsty"],
+    },
+    {
+        Question:
+            "What is the name of the Skull which removes one element of the HUD every respawn?",
+        Answers: ["Malfunction"],
+    },
+    {
+        Question:
+            "What is the name of the Skull which makes every shot use two rounds?",
+        Answers: ["Recession"],
+    },
+    {
+        Question:
+            "What is the name of the Skull which disables auto-aim?",
+        Answers: ["Eye Patch"],
+    },
+    {
+        Question:
+            "What is the name of the Skull which makes enemies drop plasma grenades with each melee?",
+        Answers: ["Piñata", "Pinata"],
+    },
+    {
+        Question:
+            "What is the name of the Skull which makes Grunts explode when killed?",
+        Answers: ["Grunt Funeral"],
+    },
+    {
+        Question:
+            "What 3 letters are written on the underside of Master Chief's boot?",
+        Answers: ["MRL"],
+    },
+    {
+        Question:
+            "How many Skulls launched with the original version of Halo: CE?",
+        Answers: ["0", "Zero"],
+    },
+    // Achievements
+    {
+        Question:
+            "What is the name of the MCC Achievement for completing Halo: CE on Legendary in under 3hrs?",
+        Answers: ["Goat Roped", "Goatroped"],
+    },
+    {
+        Question:
+            "The 'How Pedestrian' Achievement is awarded upon completing which mission without entering a vehicle?",
+        Answers: ["Halo"],
+    },
+    {
+        Question:
+            "The 'Pacifist' Achievement is awarded upon completing which mission without shooting, grenades, melee, dying or restarting?",
+        Answers: ["The Silent Cartographer", "Silent Cartographer", "SC"],
+    },
+    {
+        Question:
+            `The "Would It've Killed You To Take The Elevator" Achievement is awarded when the player beats the Par Time on which level?`,
+        Answers: ["Assault on the Control Room", "AotCR"],
+    },
+    {
+        Question:
+            `The "TLDR" Achievement is awarded when the player beats the Par Time on which level?`,
+        Answers: ["The Library", "Library"],
+    },
+    {
+        Question:
+            `The "That Just Happened" Achievement is awarded when the player beats which level on Heroic or Legendary deathless?`,
+        Answers: ["The Library", "Library"],
+    },
+    {
+        Question:
+            `The "Scurty Bump" Achievement is awarded when the player beats the Par Time on which level?`,
+        Answers: ["Keyes"],
+    },
+    {
+        Question:
+            `The "Tying Up Loose Ends" Achievement is awarded when the player kills every Elite on Heroic or Legendary on which level?`,
+        Answers: ["Keyes"],
+    },
+    {
+        Question:
+            `The "All You Can Eat" Achievement is awarded when the player beats the Par Time on which level?`,
+        Answers: ["The Maw", "Maw"],
+    },
+    {
+        Question:
+            `The "Back In the Day" Achievement was originally awarded when the player played a Capture the Flag game with 4-player splitscreen on which map?`,
+        Answers: ["Blood Gulch"],
+    },
+    // Quotes
+    {
+        Question: `Complete this quote (4 words): "Cortana, all I need to know is ___ ___ ___ ___?"`,
+        Answers: ["did we lose them", "did we lose them?"],
+    },
+    {
+        Question: `Complete this quote (5 words): "This cave ____ ____ ____ ____ ____."`,
+        Answers: ["is not a natural formation"],
+    },
+    {
+        Question: `Complete this quote (4 words): "The Corps issued me ___ ___, ___ ___."`,
+        Answers: ["a rifle, not wings", "a rifle not wings"],
+    },
+    {
+        Question: `Complete this quote (2 words): "You know our motto: ___ ___."`,
+        Answers: ["We Deliver"],
+    },
+    {
+        Question: `Complete this quote (2 words): "Greetings. I am the Monitor of Installation 04. I am ___ ___ ___."`,
+        Answers: ["343 Guilty Spark"],
+    },
+    {
+        Question: `Complete this quote (2 words): "Halo doesn't kill Flood, it kills ___ ___.`,
+        Answers: ["their food"],
+    },
+    {
+        Question: `Complete this quote (2 words): "This is it, baby. ___ ___.`,
+        Answers: ["Hold me"],
+    },
+    {
+        Question: `Who says the following quote: "Sir! The Captain needs you on the bridge, ASAP! You better follow me."`,
+        Answers: [
+            "Chips Dubbo",
+            "Chips",
+            "Chipps Dubbo",
+            "Chipps Dubo",
+            "Chips Dubo",
+        ],
+    },
+    {
+        Question: `Who says the following quote: "Don't let them lock the doors!"`,
+        Answers: ["Cortana"],
+    },
+    {
+        Question: `Who says the following quote: "You may now retrieve the Index."`,
+        Answers: ["343 Guilty Spark", "343GS", "Guilty Spark"],
+    },
+    {
+        Question: `Who says the following quote: "No... I think we're just getting started."`,
+        Answers: ["Master Chief", "Chief", "John-117", "John", "John 117"],
+    },
+    // Multiplayer
+    {
+        Question: `How many multiplayer maps launched with Halo: CE?`,
+        Answers: ["13", "Thirteen"],
+    },
+    {
+        Question: `How many sets of two-way teleporters are there on the Multiplayer map Chiron TL-34?`,
+        Answers: ["15", "Fifteen"],
+    },
+    {
+        Question: `The "DMM 2003" Easter Egg is found on which Multiplayer map?`,
+        Answers: ["Timberland"],
     },
 ]
 
@@ -424,7 +649,7 @@ var halo2Questions = [
         ],
     },
     {
-        Question: `The "HI BEN" easter-egg is found on which level?`,
+        Question: `The "HI BEN" Easter Egg is found on which level?`,
         Answers: ["Regret"],
     },
     {
@@ -518,7 +743,7 @@ var halo2Questions = [
     },
     {
         Question: `The "Needs More Whammy Bar" achievement is awarded once the player beats the mission Regret with which skull active?`,
-        Answers: ["Prophet Birthday Skull", "Prophet Birthday"],
+        Answers: ["Prophet Birthday Skull", "Prophet Birthday", "Prophets Birthday Skull"],
     },
     // Characters
     {
@@ -551,11 +776,11 @@ var halo2Questions = [
         Answers: ["Fist of Rukt"],
     },
     {
-        Question: `What is the name of the hidden easter-egg weapon on Metropolis?`,
+        Question: `What is the name of the hidden Easter Egg weapon on Metropolis?`,
         Answers: ["Scarab Gun", "the Scarab Gun"],
     },
     {
-        Question: `What is the name of the easter-egg Energy Sword found on the mission Outskirts?`,
+        Question: `What is the name of the Easter Egg Energy Sword found on the mission Outskirts?`,
         Answers: ["Rex Sword", "Rex", "Excalibur"],
     },
     {
@@ -594,7 +819,7 @@ var halo2Questions = [
     },
     {
         Question: `In which level can you drive a UNSC vehicle as the Arbiter?`,
-        Answers: ["Quarantine Zone"],
+        Answers: ["Quarantine Zone", "QZ"],
     },
     {
         Question: `The Spectre is a usable vehicle in how many levels?`,
@@ -801,7 +1026,7 @@ var halo3Questions = [
     },
     {
         Question:
-            "The Caveman Easter egg is a series of ape-like figures bearing a face resembling who?",
+            "The Caveman Easter Egg is a series of ape-like figures bearing a face resembling who?",
         Answers: ["Marcus Lehto", "Lehto"],
     },
     {
@@ -843,11 +1068,11 @@ var halo3Questions = [
         Answers: ["The Ark", "Ark"],
     },
     {
-        Question: "The Microsoft Sam Easter egg is found on which level?",
+        Question: "The Microsoft Sam Easter Egg is found on which level?",
         Answers: ["The Covenant", "Covenant", "Covie"],
     },
     {
-        Question: "The Siege of Madrigal Easter egg is found on which level?",
+        Question: "The Siege of Madrigal Easter Egg is found on which level?",
         Answers: ["The Covenant", "Covenant", "Covie"],
     },
     {
@@ -857,7 +1082,7 @@ var halo3Questions = [
     },
     {
         Question:
-            "The Password-lacking Marine Easter egg is found on which level?",
+            "The Password-lacking Marine Easter Egg is found on which level?",
         Answers: ["Crows Nest", "Crows"],
     },
     {
@@ -2727,6 +2952,56 @@ var franchiseQuestions = [
             "What is the name of the melee weapon which is functionally identical to the Gravity Hammer?",
         Answers: ["7 wood"],
     },
+    // Non-FPS Games
+    {
+        Question:
+            "What is the name of the first isometric 'twin stick' shooter Halo game developed in collaboration with Vanguard Games?",
+        Answers: ["Halo: Spartan Assualt", "Halo Spartan Assualt", "Spartan Assualt"],
+    },
+    {
+        Question:
+            "What year was Halo: Spartan Assualt released?",
+        Answers: ["2013"],
+    },
+    {
+        Question:
+            "Halo: Spartan Assault features two protagonists, Spartan Sarah Palmer and which other Spartan?",
+        Answers: ["Spartan Edward Davis", "Edward Davis", "Spartan Davis", "Davis"],
+    },
+    {
+        Question:
+            "Halo: Spartan Assault features two protagonists, Spartan Edward Davis and which other Spartan?",
+        Answers: ["Spartan Sarah Palmer", "Sarah Palmer", "Spartan Palmer", "Palmer"],
+    },
+    {
+        Question: `Complete this Halo: Spartan Assault quote (1 word): "Yeah! Nice work ____!"`,
+        Answers: ["dawg", "dawg!"],
+    },
+    {
+        Question:
+            "What is the name of the second isometric 'twin stick' shooter Halo game developed in collaboration with Vanguard Games?",
+        Answers: ["Halo: Spartan Strike", "Halo Spartan Strike", "Spartan Strike"],
+    },
+    {
+        Question:
+            "What year was Halo: Spartan Strike released?",
+        Answers: ["2015"],
+    },
+    {
+        Question:
+            "Original planned for Halo: CE, what is the name of the UNSC hover vehicle which made it's first appearance in Halo: Spartan Strike?",
+        Answers: ["AV-30 Kestrel", "Kestrel", "AV-30", "AV30 Kestrel"],
+    },
+    {
+        Question:
+            "What is the name of the Halo game that is a co-operative arcade shooter?",
+        Answers: ["Halo: Fireteam Raven", "Halo Fireteam Raven", "Fireteam Raven"],
+    },
+    {
+        Question:
+            "What year was Halo: Fireteam Raven released?",
+        Answers: ["2018"],
+    },
 ]
 
 var halorunsQuestions = [
@@ -2770,11 +3045,6 @@ var halorunsQuestions = [
     },
     {
         Question:
-            "As a percentage, which Halo 3:ODST IL WR is the fastest when compared to it's MCC Par Time?",
-        Answers: ["Kikowani Station", "Kikowani", "Kiko"],
-    },
-    {
-        Question:
             "The NMPD HQ Easy IL WR stood for 4.5yrs until Adversary beat it by 1 sec on 19th Jan 2020. Who previously held the WR?",
         Answers: ["HLGNagato", "Nagato"],
     },
@@ -2786,7 +3056,7 @@ var halorunsQuestions = [
     {
         Question:
             "The first sub-1hr Halo: Reach solo time was achieved by who?",
-        Answers: ["Seclusive"],
+        Answers: ["Seclusive", "Reculsive"],
     },
     {
         Question: "The first sub-1hr Halo 3 solo time was achieved by who?",
@@ -3027,7 +3297,7 @@ var halorunsQuestions = [
     // Achievements
     {
         Question:
-            "The achievement 'Goatroped' is named after which speedrunner?",
+            "The achievement 'Goat Roped' is named after which speedrunner?",
         Answers: ["Goatrope", "Goat"],
     },
     {
@@ -3073,6 +3343,18 @@ var halorunsQuestions = [
         Answers: ["HaoleCake"],
     },
     {
+        Question: `The "Vetro Strike" achievement for beating the Assault on the Control Room Par Score is named after which speedrunner?`,
+        Answers: ["Vetroxity", "Vetro"],
+    },
+    {
+        Question: `The "Whistle Stop Tour" achievement for beating the Two Betrayals Par Time is named after which speedrunner?`,
+        Answers: ["sub_WHISTLE", "WHISTLE", "sub", "sub WHISTLE"],
+    },
+    {
+        Question: `The "Scurty Bump" achievement for beating the Keyes Par Time is named after which speedrunner?`,
+        Answers: ["Scurty", "Scurty_"],
+    },
+    {
         Question: `The "Force of Will" achievement for beating the Gravemind Par Time is named after which speedrunner?`,
         Answers: ["Willzorss", "Willzors"],
     },
@@ -3089,7 +3371,15 @@ var halorunsQuestions = [
         Answers: ["SHIFTY", "SHIFTY time", "SHIFTY_time"],
     },
     {
-        Question: `What is the name of the achievement for beating all the par times on all Halo 2:Anniversary levels?`,
+        Question: `The "Naked Tyrant" achievement for beating the Halo 4 LASO Campaign Playlist is named after two speedrunners, name one of them.`,
+        Answers: ["Naked Eli & Mythic Tyrant", "Mythic Tyrant", "Naked Eli", "Eli", "Nak3d Eli"],
+    },
+    {
+        Question: `What is the name of the achievement for beating the par times on all Halo: CE levels?`,
+        Answers: ["Did Somebody Say...", "Did Somebody Say", "Did Someone Say...", "Did Someone Say"],
+    },
+    {
+        Question: `What is the name of the achievement for beating the par times on all Halo 2:Anniversary levels?`,
         Answers: ["Going Nowhere Fast"],
     },
     // Other
@@ -3112,21 +3402,21 @@ var halorunsQuestions = [
 ]
 
 var quizCategories = [
-    // {
-    //     CategoryQuestions: halo1Questions,
-    //     CategoryName: "Halo CE",
-    //     CategoryLength: halo1Questions.length,
-    // },
+    {
+        CategoryQuestions: halo1Questions,
+        CategoryName: "Halo: CE",
+        CategoryLength: halo1Questions.length,
+    },
     {
         CategoryQuestions: halo2Questions,
         CategoryName: "Halo 2",
         CategoryLength: halo2Questions.length,
     },
-    // {
-    //     CategoryQuestions: halo3Questions,
-    //     CategoryName: "Halo 3",
-    //     CategoryLength: halo3Questions.length,
-    // },
+    {
+        CategoryQuestions: halo3Questions,
+        CategoryName: "Halo 3",
+        CategoryLength: halo3Questions.length,
+    },
     {
         CategoryQuestions: odstQuestions,
         CategoryName: "Halo 3:ODST",
@@ -3152,20 +3442,14 @@ var quizCategories = [
     //     CategoryName: "Halo Infinite",
     //     CategoryLength: haloInfiniteQuestions.length,
     // },
-    // {
-    //     CategoryQuestions: franchiseQuestions,
-    //     CategoryName: "Halo Franchise",
-    //     CategoryLength: franchiseQuestions.length,
-    // },
+    {
+        CategoryQuestions: franchiseQuestions,
+        CategoryName: "Halo Franchise",
+        CategoryLength: franchiseQuestions.length,
+    },
     {
         CategoryQuestions: halorunsQuestions,
         CategoryName: "HaloRuns/Speedrunning",
         CategoryLength: halorunsQuestions.length,
     },
 ]
-
-// {
-//     Question:
-//         "With introduction of Dawn skip, Hobo beat which runners time?",
-//     Answers: ["Bless Revenge"],
-// },

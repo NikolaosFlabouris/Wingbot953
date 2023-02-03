@@ -44,10 +44,11 @@ export var quoteMap = [
             '"Out of all the fire emblem characters, falco is my favorite"- Skilled',
             '"what if they ask you that on a job offerview" - ben',
             '"Far out" - Wingman953',
+            '"Asking if you’re greening out is the nicest thing you can say to somebody" - qup',
         ],
     },
     {
-        Command: ["!upliftmarine"],
+        Command: ["!upliftmarine", "!crazedmarine"],
         AllMessages: true,
         Username: ["Wingman953", "CameraDancer", "thiccElite"],
         Message: [

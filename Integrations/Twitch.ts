@@ -246,25 +246,31 @@ async function ContinueTwitchSetup() {
     chatClient.onSub((channel, user) => {
         SendMessage(
             "subthanks",
-            `wingma14Blush Thank you @${user} for subscribing to the channel! wingma14Blush `,
+            `wingma14Blush Thank you @${user} for subscribing to the channel! wingma14Blush Let's celebrate with a Quiz!`,
             1000
         )
+
+        setTimeout(() => { StartQuiz() }, 2500)
     })
 
     chatClient.onResub((channel, user, subInfo) => {
         SendMessage(
             "resubthanks",
-            `wingma14Blush Thank you @${user} for subscribing to the channel for a total of ${subInfo.months} months! wingma14Blush`,
+            `wingma14Blush Thank you @${user} for subscribing to the channel for a total of ${subInfo.months} months! wingma14Blush Let's celebrate with a Quiz!`,
             1000
         )
+
+        setTimeout(() => { StartQuiz() }, 2500)
     })
 
     chatClient.onSubGift((channel, user, subInfo) => {
         SendMessage(
             "giftsubthanks",
-            `wingma14Blush Thank you ${subInfo.gifter} for gifting a subscription to ${user}! wingma14Blush`,
+            `wingma14Blush Thank you ${subInfo.gifter} for gifting a subscription to ${user}! wingma14Blush Let's celebrate with a Quiz!`,
             1000
         )
+
+        setTimeout(() => { StartQuiz() }, 2500)
     })
 }
 
@@ -338,6 +344,7 @@ var periodicMessages = [
     "/me Got a song suggestion? Feel free to share it with the streamer and it may be added to the stream playlist!",
     "/me Join Wingman953's Discord Server here: https://discord.gg/6KPBTApkJ8",
     "You got this streamer! Keep up the good work!",
+    "Bi-monthly Quiz Leaderboards are live! At the end of every 2 months the top 3 users win a gift sub!",
 ]
 
 function PeriodicMessages() {

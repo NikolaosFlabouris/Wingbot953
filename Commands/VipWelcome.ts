@@ -50,7 +50,7 @@ var vipWelcome = [
         Arrived: false,
     },
     {
-        Username: ["zomb1e343", "RocketJon_"],
+        Username: ["zomb1e343", "RocketJon_", "zomb1e343_", "zombie343_"],
         Message: [
             "yea jon",
             "Jon, you've been out for 4 years 7 months and 10 days! ",
