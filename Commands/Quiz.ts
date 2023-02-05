@@ -2,28 +2,29 @@ import { sleep, Between } from "./Utils"
 import { SendMessage } from "../Integrations/Twitch"
 import fs from "fs"
 import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
+import { PublishAlltimeLeaderboard, PublishBimonthlyLeaderboard } from "../Integrations/Discord"
 
-var blockQuiz = false
-var quizActive = false
+let blockQuiz = false
+let quizActive = false
 let totalQuestionCount: number
 let questionIndex: number
 let categoryIndex: number
 let categoryName: string
 let question: string
 let answer: string
-var QuizAnswerHandler: Function
-var correctUsers: any[]
-var usedQuestions: number[] = []
-var leaderboardsAllTime: any[] = []
-var leaderboardsCurrentTime: any[] = []
-var leaderboardsFilePath = "./Data/"
-var leaderboardsAllTimeFileName = "QuizLeaderboards.json"
-var leaderboardsCurrentTimeFileName = "2023JanFeb-QuizLeaderboards.json"
+let QuizAnswerHandler: Function
+let correctUsers: any[]
+const usedQuestions: number[] = []
+let leaderboardsAllTime: any
+let leaderboardsCurrentTime: any
+const leaderboardsFilePath = "./Data/"
+const leaderboardsAllTimeFileName = "QuizLeaderboards.json"
+const leaderboardsCurrentTimeFileName = "2023JanFeb-QuizLeaderboards.json"
 
 export async function QuizSetup() {
     totalQuestionCount = 0
 
-    for (var i = 0; i < quizCategories.length; i++) {
+    for (let i = 0; i < quizCategories.length; i++) {
         totalQuestionCount += quizCategories[i].CategoryLength
 
         console.log(
@@ -32,6 +33,7 @@ export async function QuizSetup() {
                 quizCategories[i].CategoryLength
         )
     }
+
     console.log("Total question count: " + totalQuestionCount)
 }
 
@@ -47,7 +49,7 @@ export async function StartBasicQuiz() {
     if (!blockQuiz) {
         blockQuiz = true
 
-        var findingNumber = true
+        let findingNumber = true
         while (findingNumber) {
             questionIndex = Between(0, totalQuestionCount - 1)
 
@@ -57,7 +59,7 @@ export async function StartBasicQuiz() {
             }
         }
 
-        for (var i = 0; i < quizCategories.length; i++) {
+        for (let i = 0; i < quizCategories.length; i++) {
             if (questionIndex < quizCategories[i].CategoryLength) {
                 question =
                     quizCategories[i].CategoryQuestions[questionIndex].Question
@@ -110,7 +112,7 @@ export async function StartBasicQuiz() {
 }
 
 async function BasicQuizAnswer(user: string, msg: TwitchPrivateMessage) {
-    var username = msg.userInfo.displayName
+    const username = msg.userInfo.displayName
 
     if (
         quizCategories[categoryIndex].CategoryQuestions[
@@ -120,7 +122,7 @@ async function BasicQuizAnswer(user: string, msg: TwitchPrivateMessage) {
         }) >= 0
     ) {
         quizActive = false
-        UpdateQuizScore(username, 1)
+        UpdateQuizScore([username], 1)
         SendMessage(
             "!quizcontroller",
             `Congratulations ${username}! You answered the question correctly! The answer was: ${answer}.`
@@ -138,7 +140,7 @@ export async function StartMultiUserQuiz() {
     if (!blockQuiz) {
         blockQuiz = true
 
-        var findingNumber = true
+        let findingNumber = true
         while (findingNumber) {
             questionIndex = Between(0, totalQuestionCount - 1)
 
@@ -148,7 +150,7 @@ export async function StartMultiUserQuiz() {
             }
         }
 
-        for (var i = 0; i < quizCategories.length; i++) {
+        for (let i = 0; i < quizCategories.length; i++) {
             if (questionIndex < quizCategories[i].CategoryLength) {
                 question =
                     quizCategories[i].CategoryQuestions[questionIndex].Question
@@ -187,10 +189,10 @@ export async function StartMultiUserQuiz() {
         quizActive = false
 
         if (correctUsers.length > 0) {
-            var plural = correctUsers.length > 1 ? "users" : "user"
+            const plural = correctUsers.length > 1 ? "users" : "user"
 
-            var userList = ""
-            for (var i = 0; i < correctUsers.length; i++) {
+            let userList = ""
+            for (let i = 0; i < correctUsers.length; i++) {
                 if (i > 0) {
                     userList += ", " + correctUsers[i]
                 } else {
@@ -209,9 +211,7 @@ export async function StartMultiUserQuiz() {
             )
         }
 
-        for (var i = 0; i < correctUsers.length; i++) {
-            UpdateQuizScore(correctUsers[i], 1)
-        }
+        UpdateQuizScore(correctUsers, 1)
 
         await sleep(1000)
 
@@ -224,7 +224,7 @@ export async function StartMultiUserQuiz() {
 }
 
 async function MultiUserQuizAnswer(user: string, msg: TwitchPrivateMessage) {
-    var username = msg.userInfo.displayName
+    const username = msg.userInfo.displayName
 
     if (
         quizCategories[categoryIndex].CategoryQuestions[
@@ -249,19 +249,19 @@ export function DisplayQuizLeaderboards() {
     ReadLeaderboardsFromFile()
 
     leaderboardsAllTime.sort(
-        (firstItem, secondItem) => secondItem.Score - firstItem.Score
+        (firstItem: { Score: number }, secondItem: { Score: number }) => secondItem.Score - firstItem.Score
     )
 
     leaderboardsCurrentTime.sort(
-        (firstItem, secondItem) => secondItem.Score - firstItem.Score
+        (firstItem: { Score: number }, secondItem: { Score: number }) => secondItem.Score - firstItem.Score
     )
 
-    var message = "ALL-TIME QUIZ TOP 5: "
+    let message = "ALL-TIME QUIZ TOP 5: "
 
-    var learboardSize =
+    let learboardSize =
         5 > leaderboardsAllTime.length ? leaderboardsAllTime.length : 5
 
-    for (var i = 0; i < learboardSize; i++) {
+    for (let i = 0; i < learboardSize; i++) {
         message +=
             leaderboardsAllTime[i].Username +
             " - " +
@@ -276,7 +276,7 @@ export function DisplayQuizLeaderboards() {
     learboardSize =
         5 > leaderboardsCurrentTime.length ? leaderboardsCurrentTime.length : 5
 
-    for (var i = 0; i < learboardSize; i++) {
+    for (let i = 0; i < learboardSize; i++) {
         message +=
             leaderboardsCurrentTime[i].Username +
             " - " +
@@ -290,18 +290,17 @@ export function DisplayQuizLeaderboards() {
 export function GetMyQuizScore(msg: TwitchPrivateMessage) {
     ReadLeaderboardsFromFile()
 
-    var originalMessage = msg.content.value
-    var score = 0
-    var user = msg.userInfo.displayName
+    const originalMessage = msg.content.value
+    let user = msg.userInfo.displayName
 
-    var scoreMessage = ""
-    var scoreFound = false
+    let scoreMessage = ""
+    let scoreFound = false
 
     if (originalMessage.split(" ").length >= 2) {
         user = originalMessage.split(" ")[1].trim()
     }
 
-    for (var i = 0; i < leaderboardsAllTime.length; i++) {
+    for (let i = 0; i < leaderboardsAllTime.length; i++) {
         if (
             leaderboardsAllTime[i].Username.toLowerCase() == user.toLowerCase()
         ) {
@@ -312,7 +311,7 @@ export function GetMyQuizScore(msg: TwitchPrivateMessage) {
         }
     }
 
-    for (var i = 0; i < leaderboardsCurrentTime.length; i++) {
+    for (let i = 0; i < leaderboardsCurrentTime.length; i++) {
         if (
             leaderboardsCurrentTime[i].Username.toLowerCase() ==
             user.toLowerCase()
@@ -330,33 +329,36 @@ export function GetMyQuizScore(msg: TwitchPrivateMessage) {
     SendMessage("!quizscore", scoreMessage)
 }
 
-function UpdateQuizScore(user: string, pointsChange: number) {
-    var currentTimeFound = false
-    var allTimeFound = false
+function UpdateQuizScore(users: string[], pointsChange: number) {
 
-    for (var i = 0; i < leaderboardsCurrentTime.length; i++) {
-        if (leaderboardsCurrentTime[i].Username == user) {
-            leaderboardsCurrentTime[i].Score += pointsChange
-            currentTimeFound = true
-            break
+    users.forEach(user => {
+        let currentTimeFound = false
+        let allTimeFound = false
+
+        for (let i = 0; i < leaderboardsCurrentTime.length; i++) {
+            if (leaderboardsCurrentTime[i].Username == user) {
+                leaderboardsCurrentTime[i].Score += pointsChange
+                currentTimeFound = true
+                break
+            }
         }
-    }
 
-    for (var i = 0; i < leaderboardsAllTime.length; i++) {
-        if (leaderboardsAllTime[i].Username == user) {
-            leaderboardsAllTime[i].Score += pointsChange
-            allTimeFound = true
-            break
+        for (let i = 0; i < leaderboardsAllTime.length; i++) {
+            if (leaderboardsAllTime[i].Username == user) {
+                leaderboardsAllTime[i].Score += pointsChange
+                allTimeFound = true
+                break
+            }
         }
-    }
 
-    if (!currentTimeFound) {
-        leaderboardsCurrentTime.push({ Username: user, Score: pointsChange })
-    }
+        if (!currentTimeFound) {
+            leaderboardsCurrentTime.push({ Username: user, Score: pointsChange })
+        }
 
-    if (!allTimeFound) {
-        leaderboardsAllTime.push({ Username: user, Score: pointsChange })
-    }
+        if (!allTimeFound) {
+            leaderboardsAllTime.push({ Username: user, Score: pointsChange })
+        }
+    })
 
     WriteLeaderboardsToFile()
 }
@@ -389,6 +391,8 @@ function WriteLeaderboardsToFile() {
             leaderboardsFilePath + leaderboardsAllTimeFileName,
             JSON.stringify(leaderboardsAllTime)
         )
+
+        PublishAlltimeLeaderboard(leaderboardsAllTime)
     } catch (err) {
         console.error(err)
     }
@@ -398,12 +402,14 @@ function WriteLeaderboardsToFile() {
             leaderboardsFilePath + leaderboardsCurrentTimeFileName,
             JSON.stringify(leaderboardsCurrentTime)
         )
+
+        PublishBimonthlyLeaderboard(leaderboardsCurrentTime)
     } catch (err) {
         console.error(err)
     }
 }
 
-var halo1Questions = [
+const halo1Questions = [
     {
         Question: "What year was Halo: CE released on the Xbox?",
         Answers: ["2001"],
@@ -627,7 +633,7 @@ var halo1Questions = [
     },
 ]
 
-var halo2Questions = [
+const halo2Questions = [
     {
         Question: "What year was Halo 2 released on the Xbox?",
         Answers: ["2004"],
@@ -994,7 +1000,7 @@ var halo2Questions = [
     },
 ]
 
-var halo3Questions = [
+const halo3Questions = [
     {
         Question: "What year was Halo 3 released on the Xbox 360?",
         Answers: ["2007"],
@@ -1053,11 +1059,6 @@ var halo3Questions = [
         Question:
             "An internal Halo 3 build released to Microsoft employees in August 2007 was given what name?",
         Answers: ["Halo 3 Epsilon", "Epsilon", "H3 Epsilon"],
-    },
-    {
-        Question:
-            "Excluding Arrival, how many Cortana and Gravemind Moments are there?",
-        Answers: ["28"],
     },
     {
         Question: "The mission The Storm is set in which city?",
@@ -1314,7 +1315,7 @@ var halo3Questions = [
     },
 ]
 
-var odstQuestions = [
+const odstQuestions = [
     {
         Question: "Oni",
         Answers: ["Pog"],
@@ -1857,7 +1858,7 @@ var odstQuestions = [
     },
 ]
 
-var reachQuestions = [
+const reachQuestions = [
     {
         Question: "What year was Halo: Reach released on the Xbox 360?",
         Answers: ["2010"],
@@ -2096,7 +2097,7 @@ var reachQuestions = [
     },
     {
         Question: "On which plant was Emile born on?",
-        Answers: ["Eridanus II"],
+        Answers: ["Eridanus II", "Eridanus"],
     },
     {
         Question: `In universe, who developed the Spartan Sprint Armour Ability?`,
@@ -2143,7 +2144,7 @@ var reachQuestions = [
         Answers: ["29km", "29", "twenty-nine", "twenty nine"], // 18miles
     },
     {
-        Question: `How many missile strike the designated area from a Target Locator?`,
+        Question: `How many missiles strike the designated area from a Target Locator?`,
         Answers: ["7", "seven"],
     },
     {
@@ -2236,7 +2237,7 @@ var reachQuestions = [
     },
 ]
 
-var halo4Questions = [
+const halo4Questions = [
     {
         Question: "What year was Halo 4 released on the Xbox 360?",
         Answers: ["2012"],
@@ -2549,7 +2550,7 @@ var halo4Questions = [
     },
 ]
 
-var halo5Questions = [
+const halo5Questions = [
     // General
     {
         Question: "What year was Halo 5 released on the Xbox One?",
@@ -2818,14 +2819,14 @@ var halo5Questions = [
     },
 ]
 
-var haloInfiniteQuestions = [
+const haloInfiniteQuestions = [
     {
         Question: "",
         Answers: [],
     },
 ]
 
-var franchiseQuestions = [
+const franchiseQuestions = [
     {
         Question:
             "What is the name of the species commonly referred to as the Prophets?",
@@ -2965,6 +2966,11 @@ var franchiseQuestions = [
     },
     {
         Question:
+            "Halo: Spartan Assault is set around the battle of which planet and its moon?",
+        Answers: ["Draetheus V", "Draetheus 5", "Draetheus"],
+    },
+    {
+        Question:
             "Halo: Spartan Assault features two protagonists, Spartan Sarah Palmer and which other Spartan?",
         Answers: ["Spartan Edward Davis", "Edward Davis", "Spartan Davis", "Davis"],
     },
@@ -3004,7 +3010,7 @@ var franchiseQuestions = [
     },
 ]
 
-var halorunsQuestions = [
+const halorunsQuestions = [
     {
         Question: "What year was HaloRuns founded?",
         Answers: ["2014"],
@@ -3401,7 +3407,7 @@ var halorunsQuestions = [
     },
 ]
 
-var quizCategories = [
+const quizCategories = [
     {
         CategoryQuestions: halo1Questions,
         CategoryName: "Halo: CE",

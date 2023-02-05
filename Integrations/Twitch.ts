@@ -7,7 +7,6 @@ import { ChatClient } from "@twurple/chat"
 import { ApiClient, HelixCustomReward, HelixUser } from "@twurple/api"
 import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
 import open from "open"
-import readline from "readline"
 
 import { CheckForVipWelcome } from "../Commands/VipWelcome"
 import { SecondsToDuration, Between } from "../Commands/Utils"
@@ -24,30 +23,31 @@ import {
 } from "../Commands/Quiz"
 import { SendDidYouKnowFact, HandleFastFact } from "../Commands/FastFacts"
 import { GetCurrentSong } from "./Spotify"
+import { LivestreamAlert } from "./Discord"
 
 import express = require("express")
 
-var debug = false
+const debug = false
 
 let Wingman953: HelixUser | null
 
 let botTwitchAccessToken: AccessToken
 let streamerTwitchAccessToken: AccessToken
-var botAuthProvider
-var streamerAuthProvider
+let botAuthProvider
+let streamerAuthProvider
 let server: express.Application
 let chatClient: ChatClient
 let apiClient: ApiClient
 
-let commandsList: Array<string> = ["", ""]
+const commandsList: Array<string> = ["", ""]
 
 // Flags
-let isFirstAuth: boolean = true
-let isLive: boolean = false
+let isFirstAuth = true
+let isLive = false
 let quizStartReward: HelixCustomReward
 let latestRedemptionDate: number = Date.now()
 
-var authorizeURL =
+const authorizeURL =
     `https://id.twitch.tv/oauth2/authorize?` +
     `client_id=${process.env.TWITCH_CLIENT_ID}` +
     `&redirect_uri=${process.env.TWITCH_REDIRECT_URI}` +
@@ -112,7 +112,7 @@ export async function TwitchSetup(app: express.Application) {
                     req.query.code as string,
                     process.env.TWITCH_REDIRECT_URI!
                 )
-                var streamerAuthWindow = open(authorizeURL)
+                const streamerAuthWindow = open(authorizeURL)
             } else {
                 streamerTwitchAccessToken = await exchangeCode(
                     process.env.TWITCH_CLIENT_ID!,
@@ -125,16 +125,7 @@ export async function TwitchSetup(app: express.Application) {
         }
     )
 
-    var botAuthWindow = open(authorizeURL, { app: { name: "msedge" } })
-
-    // axios
-    //     .get(authorizeURL)
-    //     .then((res) => {
-    //         console.log(`Twitch statusCode: ${res.status}`)
-    //     })
-    //     .catch((error) => {
-    //         console.error(error)
-    //     })
+    open(authorizeURL, { app: { name: "msedge" } })
 }
 
 async function ContinueTwitchSetup() {
@@ -176,18 +167,18 @@ async function ContinueTwitchSetup() {
     Wingman953 = await apiClient.users.getUserByName("Wingman953")
 
     // Find Reward Info
-    var rewardsWingman953 = await apiClient.channelPoints.getCustomRewards(
+    const rewardsWingman953 = await apiClient.channelPoints.getCustomRewards(
         Wingman953?.id!,
         false
     )
 
-    for (var reward = 0; reward < rewardsWingman953.length; reward++) {
+    for (let reward = 0; reward < rewardsWingman953.length; reward++) {
         if (rewardsWingman953[reward].title == "Start a Quiz Round") {
             quizStartReward = rewardsWingman953[reward]
         }
     }
 
-    var redemptionsWingman953 =
+    const redemptionsWingman953 =
         await apiClient.channelPoints.getRedemptionsForBroadcaster(
             Wingman953?.id as string,
             quizStartReward.id,
@@ -198,10 +189,10 @@ async function ContinueTwitchSetup() {
     await chatClient.connect()
 
     // Automatic messages on timers
-    var quizInterval = setInterval(StartQuiz, Between(2100000, 2700000)) // 35-45mins
+    const quizInterval = setInterval(StartQuiz, Between(2100000, 2700000)) // 35-45mins
     //var didYouKnowInterval = setInterval(SendDidYouKnowFact, 2580000) // 43mins
-    var periodicMessagesInterval = setInterval(PeriodicMessages, 3300000) // 55mins
-    var twitchApiPollingInterval = setInterval(TwitchApiPolling, 5000) // 7secs
+    const periodicMessagesInterval = setInterval(PeriodicMessages, 3300000) // 55mins
+    const twitchApiPollingInterval = setInterval(TwitchApiPolling, 5000) // 7secs
 
     chatClient.onMessage(async (channel, user, message, msg) => {
         // Ignore messages from the bot
@@ -275,7 +266,7 @@ async function ContinueTwitchSetup() {
 }
 
 async function TwitchApiPolling() {
-    var streamWingman953 = await apiClient.streams.getStreamByUserId(
+    const streamWingman953 = await apiClient.streams.getStreamByUserId(
         Wingman953?.id as string
     )
 
@@ -291,10 +282,12 @@ async function TwitchApiPolling() {
     ) {
         isLive = true
         console.log("Streamer went live!")
+
+        LivestreamAlert(streamWingman953.title, streamWingman953.gameName)
     }
 
     // Quiz Start!
-    var redemptionsWingman953 =
+    const redemptionsWingman953 =
         await apiClient.channelPoints.getRedemptionsForBroadcaster(
             Wingman953?.id as string,
             quizStartReward.id,
@@ -319,7 +312,7 @@ export function SendMessage(
     minDelay = 0,
     maxDelay = 0
 ) {
-    var delay = minDelay
+    let delay = minDelay
 
     if (minDelay > 0 && maxDelay > 0) {
         delay = Between(minDelay, maxDelay)
@@ -339,7 +332,7 @@ export function SendMessage(
     }, delay)
 }
 
-var periodicMessages = [
+const periodicMessages = [
     "/me Enjoying the stream? Watching, chatting, following, cheering, subscribing or donating are all great ways to support the stream. Your support allows me to continue investing time into the channel and it is greatly appreciated!",
     "/me Got a song suggestion? Feel free to share it with the streamer and it may be added to the stream playlist!",
     "/me Join Wingman953's Discord Server here: https://discord.gg/6KPBTApkJ8",
@@ -355,9 +348,9 @@ function PeriodicMessages() {
 }
 
 function Converse(user: string, msg: TwitchPrivateMessage) {
-    var msgWords = msg.content.value.split(" ")[0].trim().toLowerCase()
+    const msgWords = msg.content.value.split(" ")[0].trim().toLowerCase()
     if (msgWords[0] == "is" && Between(0, 99) < 40) {
-        var responses = [
+        const responses = [
             "yea jon",
             "correct jacob",
             "truthful sean",
@@ -434,9 +427,9 @@ function SearchCommandDictionary(
     msg: TwitchPrivateMessage,
     commandDictionary: any[]
 ) {
-    var command = msg.content.value.split(" ")[0].trim().toLowerCase()
+    const command = msg.content.value.split(" ")[0].trim().toLowerCase()
 
-    for (var i = 0; i < commandDictionary.length; i++) {
+    for (let i = 0; i < commandDictionary.length; i++) {
         // Check if the command exists.
         if (commandDictionary[i].Command.includes(command)) {
             // Check if the user is authorised.
@@ -458,7 +451,7 @@ function SearchCommandDictionary(
 
                 // Send all messages.
                 for (
-                    var commandMessageIndex = 0;
+                    let commandMessageIndex = 0;
                     commandMessageIndex < commandDictionary[i].Message.length;
                     commandMessageIndex++
                 ) {
@@ -469,7 +462,7 @@ function SearchCommandDictionary(
                 }
             } else {
                 // Pick a random message from the list and send.
-                var commandMessageIndex = Between(
+                const commandMessageIndex = Between(
                     0,
                     commandDictionary[i].Message.length - 1
                 )
@@ -490,10 +483,10 @@ function SearchCommandDictionary(
 
 // Generates and the commands list
 function GenerateCommandsList() {
-    var list = []
+    const list = []
 
     // Generate commands list
-    for (var i = 0; i < commandMap.length; i++) {
+    for (let i = 0; i < commandMap.length; i++) {
         if (
             list.indexOf(commandMap[i].Command[0]) < 0 &&
             commandMap[i].Command[0].includes("!")
@@ -502,13 +495,13 @@ function GenerateCommandsList() {
         }
     }
 
-    for (var i = 0; i < quoteMap.length; i++) {
+    for (let i = 0; i < quoteMap.length; i++) {
         if (list.indexOf(quoteMap[i].Command[0]) < 0) {
             list.push(quoteMap[i].Command[0])
         }
     }
 
-    for (var i = 0; i < functionMap.length; i++) {
+    for (let i = 0; i < functionMap.length; i++) {
         if (list.indexOf(functionMap[i].Command[0]) < 0) {
             list.push(functionMap[i].Command[0])
         }
@@ -516,11 +509,11 @@ function GenerateCommandsList() {
 
     list.sort()
 
-    for (var i = 0; i < Math.floor(list.length / 2); i++) {
+    for (let i = 0; i < Math.floor(list.length / 2); i++) {
         commandsList[0] = commandsList[0] + " " + list[i]
     }
 
-    for (var i = Math.floor(list.length / 2); i < list.length; i++) {
+    for (let i = Math.floor(list.length / 2); i < list.length; i++) {
         commandsList[1] = commandsList[1] + " " + list[i]
     }
 }
@@ -544,7 +537,7 @@ async function CreateQuizReward() {
     // console.log("Reward created!")
 }
 
-var functionMap = [
+const functionMap = [
     {
         Command: ["!commands", "!commandsList"],
         Function: HandleCommandsList,

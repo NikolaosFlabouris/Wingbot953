@@ -1,13 +1,11 @@
 import SpotifyWebApi from "spotify-web-api-node"
 import open from "open"
-import readline from "readline"
 import { SendMessage } from "./Twitch.js"
 import "dotenv/config"
-import axios from "axios"
 
 import express = require("express")
 
-var scopes: Array<string> = ["user-read-currently-playing"]
+const scopes: Array<string> = ["user-read-currently-playing"]
 
 let spotifyApi: SpotifyWebApi
 
@@ -18,7 +16,7 @@ export async function SpotifySetup(server: express.Application) {
         redirectUri: process.env.SPOTIFY_REDIRECT_URI,
     })
 
-    var authorizeURL = spotifyApi.createAuthorizeURL(
+    const authorizeURL = spotifyApi.createAuthorizeURL(
         scopes,
         "Wingbot953Integration"
     )
@@ -33,7 +31,7 @@ export async function SpotifySetup(server: express.Application) {
                     // Set the access token on the API object to use it in later calls
                     spotifyApi.setAccessToken(data.body["access_token"])
                     spotifyApi.setRefreshToken(data.body["refresh_token"])
-                    var tokenRefreshInterval = setInterval(
+                    const tokenRefreshInterval = setInterval(
                         RefreshToken,
                         data.body["expires_in"] * 1000
                     )
@@ -50,16 +48,7 @@ export async function SpotifySetup(server: express.Application) {
         }
     )
 
-    var authWindow = open(authorizeURL)
-
-    // axios
-    //     .get(authorizeURL)
-    //     .then((res) => {
-    //         console.log(`Spotify statusCode: ${res.status}`)
-    //     })
-    //     .catch((error) => {
-    //         console.error(error)
-    //     })
+    open(authorizeURL)
 }
 
 function RefreshToken() {
@@ -80,12 +69,12 @@ export function GetCurrentSong() {
     spotifyApi.getMyCurrentPlayingTrack().then(
         function (data) {
             if (data.body.item) {
-                var message = `Now playing: ${data.body.item.name} by ${
+                let message = `Now playing: ${data.body.item.name} by ${
                     (data.body.item as any).artists[0].name
                 }`
 
                 for (
-                    var i = 1;
+                    let i = 1;
                     i < (data.body.item as any).artists.length;
                     i++
                 ) {
