@@ -52,7 +52,7 @@ export function SelectFromList(list: Array<string>, msg: TwitchPrivateMessage) {
         // Parse the number, subtract one because human readable argument is accepted.
         index = parseInt(originalMessage.split(" ")[1].trim(), 10) - 1
 
-        if (index == NaN) {
+        if (Number.isNaN(index)) {
             SendMessage(
                 command,
                 "Use a number following the command to specify which result should be given."

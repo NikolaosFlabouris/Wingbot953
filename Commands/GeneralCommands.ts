@@ -293,7 +293,7 @@ export function HandleRandomNumberGeneration(msg: TwitchPrivateMessage) {
         var lower = parseInt(originalMessage.split(" ")[1].trim(), 10)
         var upper = parseInt(originalMessage.split(" ")[2].trim(), 10)
 
-        if (lower != NaN && upper != NaN) {
+        if (!Number.isNaN(lower) && !Number.isNaN(upper)) {
             var num = Between(lower, upper).toString()
 
             if (num == "15") {
