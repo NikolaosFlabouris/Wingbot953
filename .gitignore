@@ -1,5 +1,8 @@
+# Builds
 Build/*
-Data/Config/*.json
+
+# Config
+Data/Twitch/TwitchConfig.json
 
 # Logs
 logs
