@@ -8,7 +8,7 @@ import { ApiClient, HelixCustomReward, HelixUser } from "@twurple/api"
 import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
 import open from "open"
 
-import { CheckForVipWelcome } from "../Commands/VipWelcome"
+import { CheckForVipWelcome, LoadWelcomeMessages } from "../Commands/VipWelcome"
 import { SecondsToDuration, Between } from "../Commands/Utils"
 import {
     commandMap,
@@ -24,6 +24,7 @@ import {
 import { SendDidYouKnowFact, HandleFastFact } from "../Commands/FastFacts"
 import { GetCurrentSong } from "./Spotify"
 import { LivestreamAlert } from "./Discord"
+import { TwitchConfig } from "../Data/Twitch/TwitchConfig"
 
 import express = require("express")
 
@@ -40,6 +41,13 @@ let chatClient: ChatClient
 let apiClient: ApiClient
 
 const commandsList: Array<string> = ["", ""]
+
+
+// Intervals
+let quizInterval : NodeJS.Timeout
+//var didYouKnowInterval
+let periodicMessagesInterval : NodeJS.Timeout
+let twitchApiPollingInterval : NodeJS.Timeout
 
 // Flags
 let isFirstAuth = true
@@ -112,7 +120,7 @@ export async function TwitchSetup(app: express.Application) {
                     req.query.code as string,
                     process.env.TWITCH_REDIRECT_URI!
                 )
-                const streamerAuthWindow = open(authorizeURL)
+                const streamerAuthWindow = open(authorizeURL, { app: { name: TwitchConfig().StreamerBrowser }})
             } else {
                 streamerTwitchAccessToken = await exchangeCode(
                     process.env.TWITCH_CLIENT_ID!,
@@ -125,7 +133,7 @@ export async function TwitchSetup(app: express.Application) {
         }
     )
 
-    open(authorizeURL, { app: { name: "msedge" } })
+    open(authorizeURL, { app: { name: TwitchConfig().BotBrowser } })
 }
 
 async function ContinueTwitchSetup() {
@@ -188,11 +196,7 @@ async function ContinueTwitchSetup() {
 
     await chatClient.connect()
 
-    // Automatic messages on timers
-    const quizInterval = setInterval(StartQuiz, Between(2100000, 2700000)) // 35-45mins
-    //var didYouKnowInterval = setInterval(SendDidYouKnowFact, 2580000) // 43mins
-    const periodicMessagesInterval = setInterval(PeriodicMessages, 3300000) // 55mins
-    const twitchApiPollingInterval = setInterval(TwitchApiPolling, 5000) // 7secs
+    twitchApiPollingInterval = setInterval(TwitchApiPolling, 5000) // 5secs
 
     chatClient.onMessage(async (channel, user, message, msg) => {
         // Ignore messages from the bot
@@ -204,8 +208,10 @@ async function ContinueTwitchSetup() {
             console.log(
                 `DEBUG: User message received from ${msg.userInfo.displayName.toLowerCase()}: ${message}`
             )
-
-        CheckForVipWelcome(msg.userInfo.displayName)
+        
+        if(isLive) {
+            CheckForVipWelcome(msg.userInfo.displayName)
+        }
 
         Converse(user, msg)
 
@@ -275,6 +281,16 @@ async function TwitchApiPolling() {
     if (isLive && streamWingman953?.startDate == null) {
         isLive = false
         console.log("Streamer went offline!")
+
+        clearInterval(quizInterval)
+        //clearInterval(didYouKnowInterval)
+        clearInterval(periodicMessagesInterval)
+
+        SendMessage(
+            "streamend",
+            `wingma14Blush Thanks for the stream!`,
+            1000
+        )
     } else if (
         !isLive &&
         streamWingman953?.startDate != undefined /* &&
@@ -284,6 +300,18 @@ async function TwitchApiPolling() {
         console.log("Streamer went live!")
 
         LivestreamAlert(streamWingman953.title, streamWingman953.gameName)
+        LoadWelcomeMessages()
+
+        // Automatic messages on timers
+        quizInterval = setInterval(StartQuiz, Between(2100000, 2700000)) // 35-45mins
+        //didYouKnowInterval = setInterval(SendDidYouKnowFact, 2580000) // 43mins
+        periodicMessagesInterval = setInterval(PeriodicMessages, 3300000) // 55mins
+
+        SendMessage(
+            "streamstart",
+            `wingma14Arrive Good Luck Streamer! wingma14Blush`,
+            1000
+        )
     }
 
     // Quiz Start!
@@ -337,20 +365,17 @@ const periodicMessages = [
     "/me Got a song suggestion? Feel free to share it with the streamer and it may be added to the stream playlist!",
     "/me Join Wingman953's Discord Server here: https://discord.gg/6KPBTApkJ8",
     "You got this streamer! Keep up the good work!",
-    "Bi-monthly Quiz Leaderboards are live! At the end of every 2 months the top 3 users win a gift sub!",
+    "/me Bi-monthly Quiz Leaderboards are live! At the end of every 2 months the top 3 users win a gift sub!",
 ]
 
 function PeriodicMessages() {
     SendMessage(
-        "channelsupport",
+        "periodicmessage",
         periodicMessages[Between(0, periodicMessages.length - 1)]
     )
 }
 
-function Converse(user: string, msg: TwitchPrivateMessage) {
-    const msgWords = msg.content.value.split(" ")[0].trim().toLowerCase()
-    if (msgWords[0] == "is" && Between(0, 99) < 40) {
-        const responses = [
+const converseResponses = [
             "yea jon",
             "correct jacob",
             "truthful sean",
@@ -364,7 +389,11 @@ function Converse(user: string, msg: TwitchPrivateMessage) {
             "splendid grant",
             "unquestionably neil",
         ]
-        SendMessage("converse", responses[Between(0, responses.length - 1)])
+
+function Converse(user: string, msg: TwitchPrivateMessage) {
+    const msgWords = msg.content.value.split(" ")[0].trim().toLowerCase()
+    if (msgWords === "is" && Between(0, 99) < 40) {
+        SendMessage("converse", converseResponses[Between(0, converseResponses.length - 1)])
     }
 }
 
@@ -543,7 +572,7 @@ const functionMap = [
         Function: HandleCommandsList,
     },
     {
-        Command: ["!random", "!range"],
+        Command: ["!random", "!range", "!roll"],
         Function: HandleRandomNumberGeneration,
     },
     {

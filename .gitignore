@@ -1,4 +1,5 @@
 Build/*
+Data/Config/*.json
 
 # Logs
 logs
