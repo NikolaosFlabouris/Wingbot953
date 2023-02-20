@@ -124,6 +124,13 @@ export async function StartQuiz() {
     }
 }
 
+export function ResetUsedQuestions() {
+    while (usedQuestions.length > 0)
+    {
+        usedQuestions.pop()
+    }
+}
+
 export async function StartBasicQuiz() {
     if (!blockQuiz) {
         blockQuiz = true

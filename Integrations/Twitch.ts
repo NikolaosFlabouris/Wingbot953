@@ -20,6 +20,7 @@ import {
     StartQuiz,
     GetMyQuizScore,
     DisplayQuizLeaderboards,
+    ResetUsedQuestions,
 } from "../Commands/Quiz"
 import { SendDidYouKnowFact, HandleFastFact } from "../Commands/FastFacts"
 import { GetCurrentSong } from "./Spotify"
@@ -301,6 +302,7 @@ async function TwitchApiPolling() {
 
         LivestreamAlert(streamWingman953.title, streamWingman953.gameName)
         LoadWelcomeMessages()
+        ResetUsedQuestions()
 
         // Automatic messages on timers
         quizInterval = setInterval(StartQuiz, Between(2100000, 2700000)) // 35-45mins
