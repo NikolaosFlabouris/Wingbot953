@@ -21,6 +21,7 @@ import {
     GetMyQuizScore,
     DisplayQuizLeaderboards,
     ResetUsedQuestions,
+    AddQuizScore,
 } from "../Commands/Quiz"
 import { SendDidYouKnowFact, HandleFastFact } from "../Commands/FastFacts"
 import { GetCurrentSong } from "./Spotify"
@@ -51,8 +52,8 @@ let periodicMessagesInterval : NodeJS.Timeout
 let twitchApiPollingInterval : NodeJS.Timeout
 
 // Flags
+export let isLive = false
 let isFirstAuth = true
-let isLive = false
 let quizStartReward: HelixCustomReward
 let latestRedemptionDate: number = Date.now()
 
@@ -608,6 +609,11 @@ const functionMap = [
     {
         Command: ["!quizscore", "!score"],
         Function: GetMyQuizScore,
+    },
+    {
+        Command: ["!addscore"],
+        Username: ["Wingman953"],
+        Function: AddQuizScore,
     },
     {
         Command: [

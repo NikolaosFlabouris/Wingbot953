@@ -415,6 +415,17 @@ export function GetMyQuizScore(msg: TwitchPrivateMessage) {
     SendMessage("!quizscore", scoreMessage)
 }
 
+export function AddQuizScore(msg: TwitchPrivateMessage) {
+    var originalMessage = msg.content.value
+    originalMessage.split(" ")[0].trim()
+    
+    if (originalMessage.split(" ").length === 2) {
+        var user = originalMessage.split(" ")[1].trim()
+        ReadLeaderboardsFromFile()
+        UpdateQuizScore([user], 1)
+    }
+}
+
 function UpdateQuizScore(users: string[], pointsChange: number) {
 
     users.forEach(user => {
