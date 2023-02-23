@@ -1,6 +1,6 @@
 import SpotifyWebApi from "spotify-web-api-node"
 import open from "open"
-import { SendMessage } from "./Twitch.js"
+import { SendMessage, isLive } from "./Twitch.js"
 import "dotenv/config"
 
 import express = require("express")
@@ -66,6 +66,12 @@ function RefreshToken() {
 }
 
 export function GetCurrentSong() {
+
+    if (!isLive) {
+        SendMessage("!song", "No song is currently playing.")
+        return;
+    }
+
     spotifyApi.getMyCurrentPlayingTrack().then(
         function (data) {
             if (data.body.item) {
