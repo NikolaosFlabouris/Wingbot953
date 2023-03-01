@@ -1,5 +1,6 @@
 export const H4Levels_Commands: { [key: string]: string[] } = {
     Game: ["Halo 4"],
+    FullGame: ["Full Game", "Fullgame", "FG"],
     Prologue: ["Prologue"],
     Dawn: ["Dawn"],
     Requiem: ["Requiem"],

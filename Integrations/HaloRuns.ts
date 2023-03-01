@@ -90,22 +90,24 @@ export function GetHaloRunsWr(msg: TwitchPrivateMessage) {
 
     if (msgSplitArray.length === 1) {
         SendOdstFullGameWr()
+        return
     }
 
     if (msgSplitArray.length != 5) {
         SendMessage("!wr", `Failed to parse WR command`)
+        return
     }
 
-    gameName = msgSplitArray[1].trim()
-    category = msgSplitArray[2].trim()
-    runnableSegment = msgSplitArray[3].trim()
-    difficulty = msgSplitArray[4].trim()
+    gameName = msgSplitArray[1].trim().toLowerCase()
+    category = msgSplitArray[2].trim().toLowerCase()
+    runnableSegment = msgSplitArray[3].trim().toLowerCase()
+    difficulty = msgSplitArray[4].trim().toLowerCase()
 
     for (const property in GameNames) {
         if (
             GameNames[property].findIndex((element: string) => {
-                return element.toLowerCase() == gameName
-            })
+                return element.toLowerCase() === gameName
+            }) >= 0
         ) {
             hrGameName = GameNames[property][0]
         }
@@ -114,8 +116,8 @@ export function GetHaloRunsWr(msg: TwitchPrivateMessage) {
     for (const property in GameCategories) {
         if (
             GameCategories[property].findIndex((element: string) => {
-                return element.toLowerCase() == runnableSegment
-            })
+                return element.toLowerCase() === category
+            }) >= 0
         ) {
             hrCategory = GameCategories[property][0]
         }
@@ -124,16 +126,16 @@ export function GetHaloRunsWr(msg: TwitchPrivateMessage) {
     for (const propertyGame in GameLevels) {
         if (
             GameLevels[propertyGame].Game.findIndex((element: string) => {
-                return element.toLowerCase() == hrGameName
-            })
+                return element === hrGameName
+            }) >= 0
         ) {
             for (const propertyLevels in GameLevels[propertyGame]) {
                 if (
                     GameLevels[propertyGame][propertyLevels].findIndex(
                         (element: string) => {
-                            return element.toLowerCase() == hrGameName
+                            return element.toLowerCase() === runnableSegment
                         }
-                    )
+                    ) >= 0
                 ) {
                     hrRunnableSegment =
                         GameLevels[propertyGame][propertyLevels][0]
@@ -145,8 +147,8 @@ export function GetHaloRunsWr(msg: TwitchPrivateMessage) {
     for (const property in GameDifficulty) {
         if (
             GameDifficulty[property].findIndex((element: string) => {
-                return element.toLowerCase() == category
-            })
+                return element.toLowerCase() === difficulty
+            }) >= 0
         ) {
             hrDifficulty = GameDifficulty[property][0]
         }
@@ -156,11 +158,19 @@ export function GetHaloRunsWr(msg: TwitchPrivateMessage) {
         return element.Name === hrGameName
     })
 
+    if (hrGameIndex < 0) {
+        SendMessage("!wr", "Failed to find game")
+    }
+
     let hrCategoryIndex = hrGeneralJson.Games[hrGameIndex].Categories.findIndex(
         (element: any) => {
             return element.Name === hrCategory
         }
     )
+
+    if (hrCategoryIndex < 0) {
+        SendMessage("!wr", "Failed to find category")
+    }
 
     let hrRunnableSegmentIndex = hrGeneralJson.Games[
         hrGameIndex
@@ -168,7 +178,25 @@ export function GetHaloRunsWr(msg: TwitchPrivateMessage) {
         return element.Name === hrRunnableSegment
     })
 
+    if (hrRunnableSegmentIndex < 0) {
+        SendMessage("!wr", "Failed to find runnable segment")
+    }
+
     hrGameId = hrGeneralJson.Games[hrGameIndex].Id
+
+    console.log(
+        gameName,
+        category,
+        runnableSegment,
+        difficulty,
+        hrGameName,
+        hrCategory,
+        hrRunnableSegment,
+        hrDifficulty,
+        hrGameId,
+        hrCategoryId,
+        hrRunnableSegmentId
+    )
 
     hrCategoryId =
         hrGeneralJson.Games[hrGameIndex].Categories[hrCategoryIndex].Id
@@ -219,7 +247,7 @@ export function GetHaloRunsWr(msg: TwitchPrivateMessage) {
                                 leaderboardJson.Entries[0].Participants[0]
                                     .Username
                         } else {
-                            wrUsernames += ` & ${leaderboardJson.Entries[0].Participants[0].Username}`
+                            wrUsernames += ` & ${leaderboardJson.Entries[entriesIndex].Participants[0].Username}`
                         }
 
                         for (

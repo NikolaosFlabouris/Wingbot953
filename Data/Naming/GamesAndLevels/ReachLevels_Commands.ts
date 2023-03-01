@@ -1,5 +1,6 @@
 export const ReachLevels_Commands: { [key: string]: string[] } = {
     Game: ["Halo: Reach"],
+    FullGame: ["Full Game", "Fullgame", "FG"],
     NobleActual: ["Noble Actual"],
     WinterContingency: ["Winter Contingency", "WC"],
     ONISwordBase: [

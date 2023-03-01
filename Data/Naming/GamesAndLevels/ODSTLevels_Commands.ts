@@ -1,5 +1,6 @@
 export const ODSTLevels_Commands: { [key: string]: string[] } = {
     Game: ["Halo 3: ODST"],
+    FullGame: ["Full Game", "Fullgame", "FG"],
     PtD: ["Prepare to Drop", "PtD"],
     Tayari: ["Tayari Plaza", "Tayari"],
     Uplift: ["Uplift Reserve", "Uplift"],

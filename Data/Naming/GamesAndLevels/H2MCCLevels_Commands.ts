@@ -1,5 +1,6 @@
 export const H2MCCLevels_Commands: { [key: string]: string[] } = {
     Game: ["Halo 2 MCC"],
+    FullGame: ["Full Game", "Fullgame", "FG"],
     Heretic: ["The Heretic - MCC", "Heretic"],
     Armoury: ["The Armory - MCC", "Armoury", "Armory"],
     Cairo: ["Cairo Station - MCC", "CairoStation", "Cairo"],

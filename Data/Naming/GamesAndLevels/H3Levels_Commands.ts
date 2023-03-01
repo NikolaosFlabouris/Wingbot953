@@ -1,5 +1,6 @@
 export const H3Levels_Commands: { [key: string]: string[] } = {
     Game: ["Halo 3"],
+    FullGame: ["Full Game", "Fullgame", "FG"],
     Arrival: ["Arrival"],
     Sierra: ["Sierra 117", "Sierra", "S117"],
     Crows: ["Crow's Nest", "Crows"],

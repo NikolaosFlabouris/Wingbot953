@@ -1,5 +1,6 @@
 export const H5Levels_Commands: { [key: string]: string[] } = {
     Game: ["Halo 5"],
+    FullGame: ["Full Game", "Fullgame", "FG"],
     Osiris: ["Osiris"],
     BlueTeam: ["Blue Team", "BT"],
     Glassed: ["Glassed"],

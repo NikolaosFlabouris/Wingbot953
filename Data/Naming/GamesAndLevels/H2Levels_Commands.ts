@@ -1,5 +1,6 @@
 export const H2Levels_Commands: { [key: string]: string[] } = {
     Game: ["Halo 2"],
+    FullGame: ["Full Game", "Fullgame", "FG"],
     Heretic: ["The Heretic", "Heretic"],
     Armoury: ["The Armory", "Armoury", "Armory"],
     Cairo: ["Cairo Station", "Cairo"],

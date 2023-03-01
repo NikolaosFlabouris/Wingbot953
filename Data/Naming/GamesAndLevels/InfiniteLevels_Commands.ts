@@ -1,5 +1,6 @@
 export const InfiniteLevels_Commands: { [key: string]: string[] } = {
     Game: ["Halo Infinite"],
+    FullGame: ["Full Game", "Fullgame", "FG"],
     WarshipGbraakon: [
         "Warship Gbraakon",
         "Warship Gbrakon",
