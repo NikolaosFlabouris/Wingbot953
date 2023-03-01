@@ -24,7 +24,7 @@ let leaderboardsAllTime: any
 let leaderboardsCurrentTime: any
 const leaderboardsFilePath = "./Data/QuizLeaderboards/"
 const leaderboardsAllTimeFileName = "QuizLeaderboards.json"
-const leaderboardsCurrentTimeFileName = "2023JanFeb-QuizLeaderboards.json"
+const leaderboardsCurrentTimeFileName = "2023MarApr-QuizLeaderboards.json"
 
 const quizQuestionFilePath = "./Data/QuizQuestions/"
 
