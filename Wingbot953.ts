@@ -1,7 +1,8 @@
-import { DiscordSetup } from './Integrations/Discord'
+import { DiscordSetup } from "./Integrations/Discord"
 import { TwitchSetup } from "./Integrations/Twitch"
 import { SpotifySetup } from "./Integrations/Spotify"
 import { QuizSetup } from "./Commands/Quiz"
+import { HaloRunsSetup } from "./Integrations/HaloRuns"
 
 import express = require("express")
 
@@ -18,6 +19,8 @@ async function main() {
     await TwitchSetup(server)
 
     QuizSetup()
+
+    HaloRunsSetup()
 }
 
 main()

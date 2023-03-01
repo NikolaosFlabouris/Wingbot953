@@ -1,4 +1,5 @@
 import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
+import { AutoModerationRuleKeywordPresetType } from "discord.js"
 import { SendMessage } from "../Integrations/Twitch"
 
 export function SecondsToDuration(numIn: number) {
@@ -67,6 +68,33 @@ export function SelectFromList(list: Array<string>, msg: TwitchPrivateMessage) {
     }
 
     SendMessage(command, `[${index + 1}] ` + list[index])
+}
+
+///
+/// Turns a number of seconds into HH:MM:SS format as a string
+///
+export function SecsToHMS(totalSeconds: number) {
+    const totalMinutes: number = Math.floor(totalSeconds / 60)
+
+    const seconds: number = totalSeconds % 60
+    const hours: number = Math.floor(totalMinutes / 60)
+    const minutes: number = totalMinutes % 60
+
+    let time: string = ""
+
+    if (hours) {
+        time += `${hours}:`
+    }
+
+    if (minutes) {
+        time += `${minutes}:`
+    } else {
+        time += `00:`
+    }
+
+    time += `${seconds}`
+
+    return time
 }
 
 ///

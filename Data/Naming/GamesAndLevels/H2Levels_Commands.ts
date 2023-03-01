@@ -1,0 +1,18 @@
+export const H2Levels_Commands: { [key: string]: string[] } = {
+    Game: ["Halo 2"],
+    Heretic: ["The Heretic", "Heretic"],
+    Armoury: ["The Armory", "Armoury", "Armory"],
+    Cairo: ["Cairo Station", "Cairo"],
+    Outskirts: ["Outskirts"],
+    Metro: ["Metropolis", "Metro"],
+    Arbiter: ["The Arbiter", "Arbiter"],
+    Oracle: ["The Oracle", "Oracle"],
+    DeltaHalo: ["Delta Halo", "DeltaHalo", "Delta", "DH"],
+    Regret: ["Regret"],
+    SI: ["Sacred Icon", "SI"],
+    QZ: ["Quarantine Zone", "QZ"],
+    Gravemind: ["Gravemind", "GM"],
+    Uprising: ["Uprising"],
+    HighCharity: ["High Charity", "HC"],
+    GreatJourney: ["The Great Journey", "TGJ"],
+}

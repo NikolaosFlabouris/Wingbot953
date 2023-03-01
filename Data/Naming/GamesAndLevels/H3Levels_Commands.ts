@@ -1,0 +1,14 @@
+export const H3Levels_Commands: { [key: string]: string[] } = {
+    Game: ["Halo 3"],
+    Arrival: ["Arrival"],
+    Sierra: ["Sierra 117", "Sierra", "S117"],
+    Crows: ["Crow's Nest", "Crows"],
+    Tsavo: ["Tsavo Highway", "Tsavo"],
+    Storm: ["The Storm", "Storm"],
+    Floodgate: ["Floodgate", "FG"],
+    Ark: ["The Ark", "Ark"],
+    Covie: ["The Covenant", "Covenant", "Covie"],
+    Cortana: ["Cortana"],
+    Halo: ["Halo"],
+    Epilogue: ["Epilogue"],
+}

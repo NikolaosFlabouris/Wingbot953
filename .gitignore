@@ -1,9 +1,6 @@
 # Builds
 Build/*
 
-# Config
-Data/Twitch/TwitchConfig.json
-
 # Logs
 logs
 *.log

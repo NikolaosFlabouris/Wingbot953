@@ -26,9 +26,9 @@ import {
 import { SendDidYouKnowFact, HandleFastFact } from "../Commands/FastFacts"
 import { GetCurrentSong } from "./Spotify"
 import { LivestreamAlert } from "./Discord"
-import { TwitchConfig } from "../Data/Twitch/TwitchConfig"
 
 import express = require("express")
+import { GetHaloRunsPb, GetHaloRunsWr } from "./HaloRuns"
 
 const debug = false
 
@@ -44,12 +44,11 @@ let apiClient: ApiClient
 
 const commandsList: Array<string> = ["", ""]
 
-
 // Intervals
-let quizInterval : NodeJS.Timeout
+let quizInterval: NodeJS.Timeout
 //var didYouKnowInterval
-let periodicMessagesInterval : NodeJS.Timeout
-let twitchApiPollingInterval : NodeJS.Timeout
+let periodicMessagesInterval: NodeJS.Timeout
+let twitchApiPollingInterval: NodeJS.Timeout
 
 // Flags
 export let isLive = false
@@ -122,7 +121,9 @@ export async function TwitchSetup(app: express.Application) {
                     req.query.code as string,
                     process.env.TWITCH_REDIRECT_URI!
                 )
-                const streamerAuthWindow = open(authorizeURL, { app: { name: TwitchConfig().StreamerBrowser }})
+                const streamerAuthWindow = open(authorizeURL, {
+                    app: { name: process.env.STREAMERBROWSER! },
+                })
             } else {
                 streamerTwitchAccessToken = await exchangeCode(
                     process.env.TWITCH_CLIENT_ID!,
@@ -135,7 +136,7 @@ export async function TwitchSetup(app: express.Application) {
         }
     )
 
-    open(authorizeURL, { app: { name: TwitchConfig().BotBrowser } })
+    open(authorizeURL, { app: { name: process.env.BOTBROWSER! } })
 }
 
 async function ContinueTwitchSetup() {
@@ -210,8 +211,8 @@ async function ContinueTwitchSetup() {
             console.log(
                 `DEBUG: User message received from ${msg.userInfo.displayName.toLowerCase()}: ${message}`
             )
-        
-        if(isLive) {
+
+        if (isLive) {
             CheckForVipWelcome(msg.userInfo.displayName)
         }
 
@@ -249,7 +250,9 @@ async function ContinueTwitchSetup() {
             1000
         )
 
-        setTimeout(() => { StartQuiz() }, 2500)
+        setTimeout(() => {
+            StartQuiz()
+        }, 2500)
     })
 
     chatClient.onResub((channel, user, subInfo) => {
@@ -259,7 +262,9 @@ async function ContinueTwitchSetup() {
             1000
         )
 
-        setTimeout(() => { StartQuiz() }, 2500)
+        setTimeout(() => {
+            StartQuiz()
+        }, 2500)
     })
 
     chatClient.onSubGift((channel, user, subInfo) => {
@@ -269,7 +274,9 @@ async function ContinueTwitchSetup() {
             1000
         )
 
-        setTimeout(() => { StartQuiz() }, 2500)
+        setTimeout(() => {
+            StartQuiz()
+        }, 2500)
     })
 }
 
@@ -288,11 +295,7 @@ async function TwitchApiPolling() {
         //clearInterval(didYouKnowInterval)
         clearInterval(periodicMessagesInterval)
 
-        SendMessage(
-            "streamend",
-            `wingma14Blush Thanks for the stream!`,
-            1000
-        )
+        SendMessage("streamend", `wingma14Blush Thanks for the stream!`, 1000)
     } else if (
         !isLive &&
         streamWingman953?.startDate != undefined /* &&
@@ -379,24 +382,27 @@ function PeriodicMessages() {
 }
 
 const converseResponses = [
-            "yea jon",
-            "correct jacob",
-            "truthful sean",
-            "definitely joseph",
-            "exactly hurricane",
-            "precisely vance",
-            "affirmative nik",
-            "absolutely andrew",
-            "agreed matt",
-            "excellent jack",
-            "splendid grant",
-            "unquestionably neil",
-        ]
+    "yea jon",
+    "correct jacob",
+    "truthful sean",
+    "definitely joseph",
+    "exactly hurricane",
+    "precisely vance",
+    "affirmative nik",
+    "absolutely andrew",
+    "agreed matt",
+    "excellent jack",
+    "splendid grant",
+    "unquestionably neil",
+]
 
 function Converse(user: string, msg: TwitchPrivateMessage) {
     const msgWords = msg.content.value.split(" ")[0].trim().toLowerCase()
     if (msgWords === "is" && Between(0, 99) < 40) {
-        SendMessage("converse", converseResponses[Between(0, converseResponses.length - 1)])
+        SendMessage(
+            "converse",
+            converseResponses[Between(0, converseResponses.length - 1)]
+        )
     }
 }
 
@@ -600,6 +606,15 @@ const functionMap = [
         Command: ["!song"],
         Function: GetCurrentSong,
     },
+    //
+    {
+        Command: ["!wr"],
+        Function: GetHaloRunsWr,
+    },
+    {
+        Command: ["!pb"],
+        Function: GetHaloRunsPb,
+    },
     // Quiz
     {
         Command: ["!quizstart"],
@@ -607,7 +622,7 @@ const functionMap = [
         Function: StartQuiz,
     },
     {
-        Command: ["!quizscore", "!score"],
+        Command: ["!quizscore", "!score", "!points"],
         Function: GetMyQuizScore,
     },
     {

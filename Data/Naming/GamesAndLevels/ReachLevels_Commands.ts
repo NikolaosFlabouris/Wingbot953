@@ -1,0 +1,22 @@
+export const ReachLevels_Commands: { [key: string]: string[] } = {
+    Game: ["Halo: Reach"],
+    NobleActual: ["Noble Actual"],
+    WinterContingency: ["Winter Contingency", "WC"],
+    ONISwordBase: [
+        "ONI: Sword Base",
+        "ONI Sword Base",
+        "ONI:SwordBase",
+        "ONI:SB",
+        "ONISB",
+        "Oni",
+    ],
+    Nightfall: ["Nightfall", "NF"],
+    TotS: ["Tip of the Spear", "TotS"],
+    LNoS: ["Long Night of Solace", "LNoS"],
+    Exodus: ["Exodus"],
+    NewAlexandria: ["New Alexandria", "NA"],
+    Package: ["The Package", "Package"],
+    PoA: ["The Pillar of Autumn", "Pillar of Autumn", "PoA"],
+    Epilogue: ["Epilogue"],
+    LoneWolf: ["Lone Wolf"],
+}

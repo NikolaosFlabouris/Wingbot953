@@ -1,0 +1,18 @@
+export const H2MCCLevels_Commands: { [key: string]: string[] } = {
+    Game: ["Halo 2 MCC"],
+    Heretic: ["The Heretic - MCC", "Heretic"],
+    Armoury: ["The Armory - MCC", "Armoury", "Armory"],
+    Cairo: ["Cairo Station - MCC", "CairoStation", "Cairo"],
+    Outskirts: ["Outskirts - MCC", "Outskirts"],
+    Metro: ["Metropolis - MCC", "Metropolis", "Metro"],
+    Arbiter: ["The Arbiter - MCC", "Arbiter"],
+    Oracle: ["The Oracle - MCC", "Oracle"],
+    DeltaHalo: ["Delta Halo - MCC", "DeltaHalo", "Delta", "DH"],
+    Regret: ["Regret - MCC", "Regret"],
+    SI: ["Sacred Icon - MCC", "SI"],
+    QZ: ["Quarantine Zone - MCC", "QZ"],
+    Gravemind: ["Gravemind - MCC", "GM"],
+    Uprising: ["Uprising - MCC", "Uprising"],
+    HighCharity: ["High Charity - MCC", "HC"],
+    GreatJourney: ["The Great Journey - MCC", "TGJ"],
+}

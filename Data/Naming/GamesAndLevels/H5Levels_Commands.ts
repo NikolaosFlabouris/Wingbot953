@@ -1,0 +1,18 @@
+export const H5Levels_Commands: { [key: string]: string[] } = {
+    Game: ["Halo 5"],
+    Osiris: ["Osiris"],
+    BlueTeam: ["Blue Team", "BT"],
+    Glassed: ["Glassed"],
+    MeridianStation: ["Meridian Station", "Meridian"],
+    Unconfirmed: ["Unconfirmed"],
+    Evacuation: ["Evacuation"],
+    Reunion: ["Reunion"],
+    SwordOfSanghelios: ["Sword of Sanghelios", "SoS"],
+    Alliance: ["Alliance"],
+    EnemyLines: ["Enemy Lines", "EnemyLines", "Enemy", "EL"],
+    BeforeTheStorm: ["Before the Storm", "Storm", "BtS"],
+    BattleOfSunaion: ["Battle of Sunaion", "Sunaion", "BoS"],
+    Genesis: ["Genesis"],
+    Breaking: ["The Breaking", "Breaking"],
+    Guardians: ["Guardians"],
+}

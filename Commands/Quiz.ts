@@ -2,7 +2,10 @@ import { sleep, Between } from "./Utils"
 import { SendMessage } from "../Integrations/Twitch"
 import fs from "fs"
 import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
-import { PublishAlltimeLeaderboard, PublishBimonthlyLeaderboard } from "../Integrations/Discord"
+import {
+    PublishAlltimeLeaderboard,
+    PublishBimonthlyLeaderboard,
+} from "../Integrations/Discord"
 
 let blockQuiz = false
 let quizActive = false
@@ -25,7 +28,6 @@ const leaderboardsCurrentTimeFileName = "2023JanFeb-QuizLeaderboards.json"
 
 const quizQuestionFilePath = "./Data/QuizQuestions/"
 
-
 let data = fs.readFileSync(quizQuestionFilePath + "HaloCE.json", "utf8")
 const halo1Questions = JSON.parse(data)
 data = fs.readFileSync(quizQuestionFilePath + "Halo2.json", "utf8")
@@ -44,7 +46,10 @@ const halo5Questions = JSON.parse(data)
 // const haloInfiniteQuestions = JSON.parse(data)
 data = fs.readFileSync(quizQuestionFilePath + "HaloFranchise.json", "utf8")
 const franchiseQuestions = JSON.parse(data)
-data = fs.readFileSync(quizQuestionFilePath + "HalorunsSpeedrunning.json", "utf8")
+data = fs.readFileSync(
+    quizQuestionFilePath + "HalorunsSpeedrunning.json",
+    "utf8"
+)
 const halorunsQuestions = JSON.parse(data)
 
 const quizCategories = [
@@ -125,8 +130,7 @@ export async function StartQuiz() {
 }
 
 export function ResetUsedQuestions() {
-    while (usedQuestions.length > 0)
-    {
+    while (usedQuestions.length > 0) {
         usedQuestions.pop()
     }
 }
@@ -335,11 +339,13 @@ export function DisplayQuizLeaderboards() {
     ReadLeaderboardsFromFile()
 
     leaderboardsAllTime.sort(
-        (firstItem: { Score: number }, secondItem: { Score: number }) => secondItem.Score - firstItem.Score
+        (firstItem: { Score: number }, secondItem: { Score: number }) =>
+            secondItem.Score - firstItem.Score
     )
 
     leaderboardsCurrentTime.sort(
-        (firstItem: { Score: number }, secondItem: { Score: number }) => secondItem.Score - firstItem.Score
+        (firstItem: { Score: number }, secondItem: { Score: number }) =>
+            secondItem.Score - firstItem.Score
     )
 
     let message = "ALL-TIME QUIZ TOP 5: "
@@ -356,9 +362,9 @@ export function DisplayQuizLeaderboards() {
     }
 
     SendMessage("!quizleaderboard", message)
-    
+
     message = "BI-MONTHLY QUIZ TOP 5: "
-    
+
     learboardSize =
         5 > leaderboardsCurrentTime.length ? leaderboardsCurrentTime.length : 5
 
@@ -418,17 +424,17 @@ export function GetMyQuizScore(msg: TwitchPrivateMessage) {
 export function AddQuizScore(msg: TwitchPrivateMessage) {
     var originalMessage = msg.content.value
     originalMessage.split(" ")[0].trim()
-    
+
     if (originalMessage.split(" ").length === 2) {
         var user = originalMessage.split(" ")[1].trim()
         ReadLeaderboardsFromFile()
         UpdateQuizScore([user], 1)
+        SendMessage("!addscore", `Score added for user: ${user}`)
     }
 }
 
 function UpdateQuizScore(users: string[], pointsChange: number) {
-
-    users.forEach(user => {
+    users.forEach((user) => {
         let currentTimeFound = false
         let allTimeFound = false
 
@@ -449,7 +455,10 @@ function UpdateQuizScore(users: string[], pointsChange: number) {
         }
 
         if (!currentTimeFound) {
-            leaderboardsCurrentTime.push({ Username: user, Score: pointsChange })
+            leaderboardsCurrentTime.push({
+                Username: user,
+                Score: pointsChange,
+            })
         }
 
         if (!allTimeFound) {
@@ -483,6 +492,10 @@ function ReadLeaderboardsFromFile() {
 }
 
 function WriteLeaderboardsToFile() {
+    if (process.env.DEBUG === "TRUE") {
+        return
+    }
+
     try {
         const data = fs.writeFileSync(
             leaderboardsFilePath + leaderboardsAllTimeFileName,
