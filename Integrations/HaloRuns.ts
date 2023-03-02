@@ -10,27 +10,20 @@ import { SecsToHMS } from "../Commands/Utils"
 
 const hrApiHostName = "https://haloruns.z20.web.core.windows.net"
 
-const hrGeneral = "/content/metadata/global.json"
-const wingman953Profile =
-    "/content/users/c6f4a6e2-b5b8-4012-acb5-53bbf9dc54f9/career.json"
+const Wingman953HrId = "c6f4a6e2-b5b8-4012-acb5-53bbf9dc54f9"
+
+const hrGeneralUrl = "/content/metadata/global.json"
+const wingman953ProfileUrl = `/content/users/${Wingman953HrId}/career.json`
 
 const OdstGameId = "4a100d57-0000-3000-8000-000000000000"
-
-// "/content/boards/{gameId}/{categoryId}/leaderboard/{runnableSegmentId}/{difficulty}.json"
 
 let hrGeneralJson: any
 let wingman953ProfileJson: any
 
-function main() {
-    HaloRunsSetup()
-}
-
-main()
-
 export function HaloRunsSetup() {
     // Read HR Global data
     let req = https.get(
-        hrApiHostName + hrGeneral,
+        hrApiHostName + hrGeneralUrl,
         function (res: {
             on: (arg0: string, arg1: { (stream: string): void }) => void
         }) {
@@ -52,7 +45,7 @@ export function HaloRunsSetup() {
 
     // Read Wingman953 HR Profile data
     req = https.get(
-        hrApiHostName + wingman953Profile,
+        hrApiHostName + wingman953ProfileUrl,
         function (res: {
             on: (arg0: string, arg1: { (stream: string): void }) => void
         }) {
@@ -73,93 +66,50 @@ export function HaloRunsSetup() {
     })
 }
 
-export function GetHaloRunsWr(msg: TwitchPrivateMessage) {
-    let gameName: string = "",
-        category: string = "",
-        runnableSegment: string = "",
-        difficulty: string = "",
-        hrGameName: string = "",
-        hrCategory: string = "",
-        hrRunnableSegment: string = "",
-        hrDifficulty: string = "",
-        hrGameId: string = "",
-        hrCategoryId: string = "",
-        hrRunnableSegmentId: string = ""
-
+export function HandleHaloRunsWr(msg: TwitchPrivateMessage) {
     let msgSplitArray = msg.content.value.toLowerCase().split(" ")
 
-    if (msgSplitArray.length === 1) {
-        SendOdstFullGameWr()
+    if (
+        msgSplitArray.length === 1 &&
+        msg.content.value.toLowerCase() === "!wr"
+    ) {
+        GetHaloRunsWr("Halo 3: ODST", "Solo", "Full Game", "Easy")
+        GetHaloRunsWr("Halo 3: ODST", "Solo", "Full Game", "Legendary")
+        return
+    } else if (msgSplitArray.length != 5) {
+        SendMessage("!wr", `Incorrect number of parameters for !wr command`)
         return
     }
 
-    if (msgSplitArray.length != 5) {
-        SendMessage("!wr", `Failed to parse WR command`)
-        return
-    }
+    let hrNames: string[] = FindHaloRunsCompatibleNames(
+        msgSplitArray[1].trim().toLowerCase(), //gameName
+        msgSplitArray[2].trim().toLowerCase(), //category
+        msgSplitArray[3].trim().toLowerCase(), //runnableSegment
+        msgSplitArray[4].trim().toLowerCase() //difficulty
+    )
 
-    gameName = msgSplitArray[1].trim().toLowerCase()
-    category = msgSplitArray[2].trim().toLowerCase()
-    runnableSegment = msgSplitArray[3].trim().toLowerCase()
-    difficulty = msgSplitArray[4].trim().toLowerCase()
-
-    for (const property in GameNames) {
-        if (
-            GameNames[property].findIndex((element: string) => {
-                return element.toLowerCase() === gameName
-            }) >= 0
-        ) {
-            hrGameName = GameNames[property][0]
-        }
+    if (hrNames.length === 4) {
+        GetHaloRunsWr(hrNames[0], hrNames[1], hrNames[2], hrNames[3])
     }
+}
 
-    for (const property in GameCategories) {
-        if (
-            GameCategories[property].findIndex((element: string) => {
-                return element.toLowerCase() === category
-            }) >= 0
-        ) {
-            hrCategory = GameCategories[property][0]
-        }
-    }
+function GetHaloRunsWr(
+    hrGameName: string,
+    hrCategory: string,
+    hrRunnableSegment: string,
+    hrDifficulty: string
+) {
+    // Search HaloRuns global.json for Game, Category and Runnable Segment IDs
 
-    for (const propertyGame in GameLevels) {
-        if (
-            GameLevels[propertyGame].Game.findIndex((element: string) => {
-                return element === hrGameName
-            }) >= 0
-        ) {
-            for (const propertyLevels in GameLevels[propertyGame]) {
-                if (
-                    GameLevels[propertyGame][propertyLevels].findIndex(
-                        (element: string) => {
-                            return element.toLowerCase() === runnableSegment
-                        }
-                    ) >= 0
-                ) {
-                    hrRunnableSegment =
-                        GameLevels[propertyGame][propertyLevels][0]
-                }
-            }
-        }
-    }
-
-    for (const property in GameDifficulty) {
-        if (
-            GameDifficulty[property].findIndex((element: string) => {
-                return element.toLowerCase() === difficulty
-            }) >= 0
-        ) {
-            hrDifficulty = GameDifficulty[property][0]
-        }
-    }
+    console.log(hrGameName, hrCategory, hrRunnableSegment, hrDifficulty)
 
     let hrGameIndex = hrGeneralJson.Games.findIndex((element: any) => {
         return element.Name === hrGameName
     })
 
     if (hrGameIndex < 0) {
-        SendMessage("!wr", "Failed to find game")
+        SendMessage("!wr", "Failed to find game on HaloRuns")
+        return
     }
 
     let hrCategoryIndex = hrGeneralJson.Games[hrGameIndex].Categories.findIndex(
@@ -169,7 +119,8 @@ export function GetHaloRunsWr(msg: TwitchPrivateMessage) {
     )
 
     if (hrCategoryIndex < 0) {
-        SendMessage("!wr", "Failed to find category")
+        SendMessage("!wr", "Failed to find category on HaloRuns")
+        return
     }
 
     let hrRunnableSegmentIndex = hrGeneralJson.Games[
@@ -179,33 +130,21 @@ export function GetHaloRunsWr(msg: TwitchPrivateMessage) {
     })
 
     if (hrRunnableSegmentIndex < 0) {
-        SendMessage("!wr", "Failed to find runnable segment")
+        SendMessage("!wr", "Failed to find runnable segment on HaloRuns")
+        return
     }
 
-    hrGameId = hrGeneralJson.Games[hrGameIndex].Id
+    let hrGameId: string = hrGeneralJson.Games[hrGameIndex].Id
 
-    console.log(
-        gameName,
-        category,
-        runnableSegment,
-        difficulty,
-        hrGameName,
-        hrCategory,
-        hrRunnableSegment,
-        hrDifficulty,
-        hrGameId,
-        hrCategoryId,
-        hrRunnableSegmentId
-    )
-
-    hrCategoryId =
+    let hrCategoryId: string =
         hrGeneralJson.Games[hrGameIndex].Categories[hrCategoryIndex].Id
 
-    hrRunnableSegmentId =
+    let hrRunnableSegmentId: string =
         hrGeneralJson.Games[hrGameIndex].RunnableSegments[
             hrRunnableSegmentIndex
         ].Id
 
+    // Perform HaloRuns API request
     let apiUrl =
         hrApiHostName +
         `/content/boards/${hrGameId}/${hrCategoryId}/leaderboard/${hrRunnableSegmentId}/${hrDifficulty}.json`
@@ -224,7 +163,16 @@ export function GetHaloRunsWr(msg: TwitchPrivateMessage) {
             })
 
             res.on("end", function () {
+                // Parse leaderboard for WR info
+
                 leaderboardJson = JSON.parse(data)
+
+                if (leaderboardJson.Entries.length === 0) {
+                    SendMessage(
+                        "!wr",
+                        `There is no HaloRuns Record for ${hrGameName} ${hrCategory} ${hrRunnableSegment} ${hrDifficulty}`
+                    )
+                }
 
                 let wrTime: string = SecsToHMS(
                     parseInt(leaderboardJson.Entries[0].Duration, 10)
@@ -268,7 +216,7 @@ export function GetHaloRunsWr(msg: TwitchPrivateMessage) {
 
                 SendMessage(
                     "!wr",
-                    `The HaloRuns Record for ${hrGameName} ${hrCategory} ${hrRunnableSegment} ${hrDifficulty} is ${wrTime} by ${wrUsernames}`
+                    `The HaloRuns Record for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty} is ${wrTime} by ${wrUsernames}`
                 )
             })
         }
@@ -279,6 +227,185 @@ export function GetHaloRunsWr(msg: TwitchPrivateMessage) {
     })
 }
 
-function SendOdstFullGameWr() {}
+export function HandleWingman953Pb(msg: TwitchPrivateMessage) {
+    let msgSplitArray = msg.content.value.toLowerCase().split(" ")
 
-export function GetHaloRunsPb(msg: TwitchPrivateMessage) {}
+    if (
+        msgSplitArray.length === 1 &&
+        msg.content.value.toLowerCase() === "!pb"
+    ) {
+        GetHaloRunsPb("Halo 3: ODST", "Solo", "Full Game", "Easy")
+        GetHaloRunsPb("Halo 3: ODST", "Solo", "Full Game", "Legendary")
+        return
+    } else if (msgSplitArray.length != 5) {
+        SendMessage("!pb", `Incorrect number of parameters for !pb command`)
+        return
+    }
+
+    let hrNames: string[] = FindHaloRunsCompatibleNames(
+        msgSplitArray[1].trim().toLowerCase(), //gameName
+        msgSplitArray[2].trim().toLowerCase(), //category
+        msgSplitArray[3].trim().toLowerCase(), //runnableSegment
+        msgSplitArray[4].trim().toLowerCase() //difficulty
+    )
+
+    if (hrNames.length === 4) {
+        GetHaloRunsPb(hrNames[0], hrNames[1], hrNames[2], hrNames[3])
+    }
+}
+
+function GetHaloRunsPb(
+    hrGameName: string,
+    hrCategory: string,
+    hrRunnableSegment: string,
+    hrDifficulty: string
+) {
+    // Search HaloRuns global.json for Game and Runnable Segment IDs
+    let hrGameIndex = hrGeneralJson.Games.findIndex((element: any) => {
+        return element.Name === hrGameName
+    })
+
+    if (hrGameIndex < 0) {
+        SendMessage("!pb", "Failed to find game on HaloRuns")
+        return
+    }
+
+    let hrRunnableSegmentIndex = hrGeneralJson.Games[
+        hrGameIndex
+    ].RunnableSegments.findIndex((element: any) => {
+        return element.Name === hrRunnableSegment
+    })
+
+    if (hrRunnableSegmentIndex < 0) {
+        SendMessage("!pb", "Failed to find runnable segment on HaloRuns")
+        return
+    }
+
+    let hrGameId: string = hrGeneralJson.Games[hrGameIndex].Id
+
+    let hrRunnableSegmentId: string =
+        hrGeneralJson.Games[hrGameIndex].RunnableSegments[
+            hrRunnableSegmentIndex
+        ].Id
+
+    let pbRuns = wingman953ProfileJson.RunsByCategory.Solo
+
+    if (hrCategory === "Coop") {
+        pbRuns = wingman953ProfileJson.RunsByCategory.Coop
+    }
+
+    for (let runIndex = 0; runIndex < pbRuns.length; runIndex++) {
+        if (
+            pbRuns[runIndex].GameId === hrGameId &&
+            pbRuns[runIndex].RunnableSegmentId === hrRunnableSegmentId &&
+            pbRuns[runIndex].Difficulty === hrDifficulty
+        ) {
+            let pbTime: string = SecsToHMS(
+                parseInt(pbRuns[runIndex].Duration, 10)
+            )
+
+            let coopUsernames: string = ""
+
+            if (pbRuns[runIndex].Participants.length > 1) {
+                coopUsernames = " with "
+
+                for (let i = 0; i < pbRuns[runIndex].Participants.length; i++) {
+                    if (
+                        pbRuns[runIndex].Participants[i].UserId ===
+                        Wingman953HrId
+                    ) {
+                        continue
+                    }
+
+                    coopUsernames += `${pbRuns[runIndex].Participants[i].Username}, `
+                }
+
+                coopUsernames = coopUsernames.substring(
+                    0,
+                    coopUsernames.length - 2
+                )
+            }
+
+            SendMessage(
+                "!pb",
+                `Wingman953's PB for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty} is ${pbTime}${coopUsernames}`
+            )
+
+            return
+        }
+    }
+
+    SendMessage(
+        "!pb",
+        `Wingman953 does not have a submitted time for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty}`
+    )
+
+    return
+}
+
+function FindHaloRunsCompatibleNames(
+    gameName: string,
+    category: string,
+    runnableSegment: string,
+    difficulty: string
+) {
+    let hrGameName = FindCommandMatch(GameNames, gameName)
+
+    if (hrGameName === "") {
+        SendMessage("!wr/!pb", "Failed to parse game")
+        return []
+    }
+
+    let hrCategory = FindCommandMatch(GameCategories, category)
+
+    if (hrCategory === "") {
+        SendMessage("!wr/!pb", "Failed to parse category")
+        return []
+    }
+
+    let hrRunnableSegment = ""
+
+    for (const propertyGame in GameLevels) {
+        if (
+            GameLevels[propertyGame].Game.findIndex((element: string) => {
+                return element === hrGameName
+            }) >= 0
+        ) {
+            hrRunnableSegment = FindCommandMatch(
+                GameLevels[propertyGame],
+                runnableSegment
+            )
+        }
+    }
+
+    if (hrRunnableSegment === "") {
+        SendMessage("!wr/!pb", "Failed to parse runnable segment")
+        return []
+    }
+
+    let hrDifficulty = FindCommandMatch(GameDifficulty, difficulty)
+
+    if (hrDifficulty === "") {
+        SendMessage("!wr/!pb", "Failed to parse difficulty")
+        return []
+    }
+
+    return [hrGameName, hrCategory, hrRunnableSegment, hrDifficulty]
+}
+
+function FindCommandMatch(
+    commandList: { [key: string]: string[] },
+    command: string
+) {
+    for (const property in commandList) {
+        if (
+            commandList[property].findIndex((element: string) => {
+                return element.toLowerCase() === command
+            }) >= 0
+        ) {
+            return commandList[property][0]
+        }
+    }
+
+    return ""
+}

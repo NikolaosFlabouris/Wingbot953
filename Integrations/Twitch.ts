@@ -28,7 +28,7 @@ import { GetCurrentSong } from "./Spotify"
 import { LivestreamAlert } from "./Discord"
 
 import express = require("express")
-import { GetHaloRunsPb, GetHaloRunsWr } from "./HaloRuns"
+import { HaloRunsSetup, HandleHaloRunsWr, HandleWingman953Pb } from "./HaloRuns"
 
 const debug = false
 
@@ -307,6 +307,7 @@ async function TwitchApiPolling() {
         LivestreamAlert(streamWingman953.title, streamWingman953.gameName)
         LoadWelcomeMessages()
         ResetUsedQuestions()
+        HaloRunsSetup()
 
         // Automatic messages on timers
         quizInterval = setInterval(StartQuiz, Between(2100000, 2700000)) // 35-45mins
@@ -609,11 +610,11 @@ const functionMap = [
     //
     {
         Command: ["!wr"],
-        Function: GetHaloRunsWr,
+        Function: HandleHaloRunsWr,
     },
     {
         Command: ["!pb"],
-        Function: GetHaloRunsPb,
+        Function: HandleWingman953Pb,
     },
     // Quiz
     {

@@ -86,7 +86,9 @@ export function SecsToHMS(totalSeconds: number) {
         time += `${hours}:`
     }
 
-    if (minutes) {
+    if (minutes < 10 && hours) {
+        time += `0${minutes}:`
+    } else if (minutes) {
         time += `${minutes}:`
     } else {
         time += `00:`
