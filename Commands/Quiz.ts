@@ -518,3 +518,14 @@ function WriteLeaderboardsToFile() {
         console.error(err)
     }
 }
+
+export function PublishLeaderboards() {
+    ReadLeaderboardsFromFile()
+    PublishAlltimeLeaderboard(leaderboardsAllTime)
+    PublishBimonthlyLeaderboard(leaderboardsCurrentTime)
+}
+
+export function PublishNewLeaderboard() {
+    ReadLeaderboardsFromFile()
+    PublishBimonthlyLeaderboard(leaderboardsCurrentTime, true)
+}

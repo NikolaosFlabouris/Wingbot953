@@ -22,6 +22,8 @@ import {
     DisplayQuizLeaderboards,
     ResetUsedQuestions,
     AddQuizScore,
+    PublishNewLeaderboard,
+    PublishLeaderboards,
 } from "../Commands/Quiz"
 import { SendDidYouKnowFact, HandleFastFact } from "../Commands/FastFacts"
 import { GetCurrentSong } from "./Spotify"
@@ -639,6 +641,16 @@ const functionMap = [
             "!leaderboard",
         ],
         Function: DisplayQuizLeaderboards,
+    },
+    {
+        Command: ["!publishleaderboards"],
+        Username: ["Wingman953"],
+        Function: PublishLeaderboards,
+    },
+    {
+        Command: ["!publishnewleaderboard"],
+        Username: ["Wingman953"],
+        Function: PublishNewLeaderboard,
     },
     {
         Command: ["!createquiz"],

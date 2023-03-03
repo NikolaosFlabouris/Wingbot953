@@ -165,7 +165,12 @@ function GetHaloRunsWr(
             res.on("end", function () {
                 // Parse leaderboard for WR info
 
-                leaderboardJson = JSON.parse(data)
+                try {
+                    leaderboardJson = JSON.parse(data)
+                } catch {
+                    SendMessage("!wr", `Failed to access HaloRuns Leaderboards`)
+                    return
+                }
 
                 if (leaderboardJson.Entries.length === 0) {
                     SendMessage(
@@ -290,47 +295,102 @@ function GetHaloRunsPb(
 
     let pbRuns = wingman953ProfileJson.RunsByCategory.Solo
 
-    if (hrCategory === "Coop") {
-        pbRuns = wingman953ProfileJson.RunsByCategory.Coop
-    }
+    if (hrCategory === "Solo") {
+        pbRuns = wingman953ProfileJson.RunsByCategory.Solo
 
-    for (let runIndex = 0; runIndex < pbRuns.length; runIndex++) {
-        if (
-            pbRuns[runIndex].GameId === hrGameId &&
-            pbRuns[runIndex].RunnableSegmentId === hrRunnableSegmentId &&
-            pbRuns[runIndex].Difficulty === hrDifficulty
-        ) {
-            let pbTime: string = SecsToHMS(
-                parseInt(pbRuns[runIndex].Duration, 10)
-            )
+        for (let runIndex = 0; runIndex < pbRuns.length; runIndex++) {
+            if (
+                pbRuns[runIndex].GameId === hrGameId &&
+                pbRuns[runIndex].RunnableSegmentId === hrRunnableSegmentId &&
+                pbRuns[runIndex].Difficulty === hrDifficulty
+            ) {
+                let pbTime: string = SecsToHMS(
+                    parseInt(pbRuns[runIndex].Duration, 10)
+                )
 
-            let coopUsernames: string = ""
+                let coopUsernames: string = ""
 
-            if (pbRuns[runIndex].Participants.length > 1) {
-                coopUsernames = " with "
+                if (pbRuns[runIndex].Participants.length > 1) {
+                    coopUsernames = " with "
 
-                for (let i = 0; i < pbRuns[runIndex].Participants.length; i++) {
-                    if (
-                        pbRuns[runIndex].Participants[i].UserId ===
-                        Wingman953HrId
+                    for (
+                        let i = 0;
+                        i < pbRuns[runIndex].Participants.length;
+                        i++
                     ) {
-                        continue
+                        if (
+                            pbRuns[runIndex].Participants[i].UserId ===
+                            Wingman953HrId
+                        ) {
+                            continue
+                        }
+
+                        coopUsernames += `${pbRuns[runIndex].Participants[i].Username}, `
                     }
 
-                    coopUsernames += `${pbRuns[runIndex].Participants[i].Username}, `
+                    coopUsernames = coopUsernames.substring(
+                        0,
+                        coopUsernames.length - 2
+                    )
                 }
 
-                coopUsernames = coopUsernames.substring(
-                    0,
-                    coopUsernames.length - 2
+                SendMessage(
+                    "!pb",
+                    `Wingman953's PB for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty} is ${pbTime}${coopUsernames}`
                 )
-            }
 
+                return
+            }
+        }
+    }
+
+    if (hrCategory === "Coop") {
+        pbRuns = wingman953ProfileJson.RunsByCategory.Coop
+
+        let pbTimeSecs: number = 99999999
+        let pbTime: string = ""
+        let coopUsernames: string = ""
+
+        for (let runIndex = 0; runIndex < pbRuns.length; runIndex++) {
+            if (
+                pbRuns[runIndex].GameId === hrGameId &&
+                pbRuns[runIndex].RunnableSegmentId === hrRunnableSegmentId &&
+                pbRuns[runIndex].Difficulty === hrDifficulty
+            ) {
+                if (parseInt(pbRuns[runIndex].Duration, 10) < pbTimeSecs) {
+                    pbTimeSecs = parseInt(pbRuns[runIndex].Duration, 10)
+                    pbTime = SecsToHMS(parseInt(pbRuns[runIndex].Duration, 10))
+
+                    coopUsernames = " with "
+
+                    for (
+                        let i = 0;
+                        i < pbRuns[runIndex].Participants.length;
+                        i++
+                    ) {
+                        if (
+                            pbRuns[runIndex].Participants[i].UserId ===
+                            Wingman953HrId
+                        ) {
+                            continue
+                        }
+
+                        coopUsernames += `${pbRuns[runIndex].Participants[i].Username}, `
+                    }
+
+                    coopUsernames = coopUsernames.substring(
+                        0,
+                        coopUsernames.length - 2
+                    )
+                }
+            }
+        }
+
+        if (pbTime !== "") {
             SendMessage(
                 "!pb",
                 `Wingman953's PB for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty} is ${pbTime}${coopUsernames}`
             )
-
             return
         }
     }
