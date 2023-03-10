@@ -236,7 +236,8 @@
             "One greeting added per redemption also hi UwU",
             "Add Custom Greeting | +1 to GREETINGS pool | This card adds itself to the GREETINGS pool after use. Add one Greeting. +1 RNG -1000 Channel Points ",
             "Kazinga",
-            "(slash)timeout @anoobis_117 69"
+            "(slash)timeout @anoobis_117 69",
+            "Wingman953 is Love953. Wingman953 is Life953."
         ],
         "Arrived": false
     },
@@ -443,6 +444,15 @@
         ],
         "Message": [
             "Well if it isn't Wingman's favorite viewer. Hello, fromthegrave"
+        ],
+        "Arrived": false
+    },
+    {
+        "Username": [
+            "garry_spivey"
+        ],
+        "Message": [
+            "It him"
         ],
         "Arrived": false
     }
