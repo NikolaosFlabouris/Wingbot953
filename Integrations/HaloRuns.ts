@@ -183,6 +183,7 @@ function GetHaloRunsWr(
                     parseInt(leaderboardJson.Entries[0].Duration, 10)
                 )
                 let wrUsernames: string = ""
+                let wrVideo: string = ""
 
                 let stillWrTime = true
                 let entriesIndex = 0
@@ -199,6 +200,10 @@ function GetHaloRunsWr(
                             wrUsernames +=
                                 leaderboardJson.Entries[0].Participants[0]
                                     .Username
+
+                            wrVideo =
+                                leaderboardJson.Entries[0].Participants[0]
+                                    .EvidenceLink
                         } else {
                             wrUsernames += ` & ${leaderboardJson.Entries[entriesIndex].Participants[0].Username}`
                         }
@@ -221,7 +226,7 @@ function GetHaloRunsWr(
 
                 SendMessage(
                     "!wr",
-                    `The HaloRuns Record for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty} is ${wrTime} by ${wrUsernames}`
+                    `The HaloRuns Record for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty} is ${wrTime} by ${wrUsernames} | ${wrVideo}`
                 )
             })
         }
@@ -308,35 +313,12 @@ function GetHaloRunsPb(
                     parseInt(pbRuns[runIndex].Duration, 10)
                 )
 
-                let coopUsernames: string = ""
-
-                if (pbRuns[runIndex].Participants.length > 1) {
-                    coopUsernames = " with "
-
-                    for (
-                        let i = 0;
-                        i < pbRuns[runIndex].Participants.length;
-                        i++
-                    ) {
-                        if (
-                            pbRuns[runIndex].Participants[i].UserId ===
-                            Wingman953HrId
-                        ) {
-                            continue
-                        }
-
-                        coopUsernames += `${pbRuns[runIndex].Participants[i].Username}, `
-                    }
-
-                    coopUsernames = coopUsernames.substring(
-                        0,
-                        coopUsernames.length - 2
-                    )
-                }
+                let pbVideo: string =
+                    pbRuns[runIndex].Participants[0].EvidenceLink
 
                 SendMessage(
                     "!pb",
-                    `Wingman953's PB for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty} is ${pbTime}${coopUsernames}`
+                    `Wingman953's PB for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty} is ${pbTime} | ${pbVideo}`
                 )
 
                 return
@@ -350,6 +332,7 @@ function GetHaloRunsPb(
         let pbTimeSecs: number = 99999999
         let pbTime: string = ""
         let coopUsernames: string = ""
+        let pbVideo: string = ""
 
         for (let runIndex = 0; runIndex < pbRuns.length; runIndex++) {
             if (
@@ -360,6 +343,8 @@ function GetHaloRunsPb(
                 if (parseInt(pbRuns[runIndex].Duration, 10) < pbTimeSecs) {
                     pbTimeSecs = parseInt(pbRuns[runIndex].Duration, 10)
                     pbTime = SecsToHMS(parseInt(pbRuns[runIndex].Duration, 10))
+
+                    pbRuns[runIndex].Participants[0].EvidenceLink
 
                     coopUsernames = " with "
 
@@ -389,7 +374,7 @@ function GetHaloRunsPb(
         if (pbTime !== "") {
             SendMessage(
                 "!pb",
-                `Wingman953's PB for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty} is ${pbTime}${coopUsernames}`
+                `Wingman953's PB for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty} is ${pbTime}${coopUsernames} | ${pbVideo}`
             )
             return
         }
