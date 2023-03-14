@@ -344,7 +344,7 @@ function GetHaloRunsPb(
                     pbTimeSecs = parseInt(pbRuns[runIndex].Duration, 10)
                     pbTime = SecsToHMS(parseInt(pbRuns[runIndex].Duration, 10))
 
-                    pbRuns[runIndex].Participants[0].EvidenceLink
+                    pbVideo = pbRuns[runIndex].Participants[0].EvidenceLink
 
                     coopUsernames = " with "
 
