@@ -1,4 +1,4 @@
-export const GamesDifficulty_Commands: { [key: string]: string[] } = {
+export const Difficulty_Commands: { [key: string]: string[] } = {
     Easy: ["Easy", "Ezy", "Ez", "E"],
 
     Normal: ["Normal", "Norm", "N"],

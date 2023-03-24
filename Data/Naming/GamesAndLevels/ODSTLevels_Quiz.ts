@@ -19,6 +19,7 @@ export class ODSTLevels_Quiz {
         "ONI",
         "ONI: Alpha Site",
         "Alpha Site",
+        "Oni Pog",
     ]
 
     public static NMPD = [
@@ -30,7 +31,7 @@ export class ODSTLevels_Quiz {
         "New Mombasa Police Department",
     ]
 
-    public static Kiko = ["Kikowani Station", "Kikowani", "Kiko"]
+    public static KikowaniStation = ["Kikowani Station", "Kikowani", "Kiko"]
 
     public static DataHive = ["Data Hive", "DH"]
 

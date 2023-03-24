@@ -1,10 +1,7 @@
 import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
 import https from "https"
 
-import { GamesNaming_Commands as GameNames } from "../Data/Naming/GamesAndLevels/GamesNaming_Commands"
-import { GamesLevels_Commands as GameLevels } from "../Data/Naming/GamesAndLevels/GamesLevels_Commands"
-import { GamesDifficulty_Commands as GameDifficulty } from "../Data/Naming/GamesAndLevels/GamesDifficulty_Commands"
-import { GamesCategories_Commands as GameCategories } from "../Data/Naming/GamesAndLevels/GamesCategories_Commands"
+import { CommandNaming } from "../Data/Naming/CommandNaming"
 import { SendMessage } from "./Twitch"
 import { SecsToHMS } from "../Commands/Utils"
 
@@ -394,14 +391,14 @@ function FindHaloRunsCompatibleNames(
     runnableSegment: string,
     difficulty: string
 ) {
-    let hrGameName = FindCommandMatch(GameNames, gameName)
+    let hrGameName = FindCommandMatch(CommandNaming.Games, gameName)
 
     if (hrGameName === "") {
         SendMessage("!wr/!pb", "Failed to parse game")
         return []
     }
 
-    let hrCategory = FindCommandMatch(GameCategories, category)
+    let hrCategory = FindCommandMatch(CommandNaming.Categories, category)
 
     if (hrCategory === "") {
         SendMessage("!wr/!pb", "Failed to parse category")
@@ -410,14 +407,16 @@ function FindHaloRunsCompatibleNames(
 
     let hrRunnableSegment = ""
 
-    for (const propertyGame in GameLevels) {
+    for (const propertyGame in CommandNaming.Levels) {
         if (
-            GameLevels[propertyGame].Game.findIndex((element: string) => {
-                return element === hrGameName
-            }) >= 0
+            CommandNaming.Levels[propertyGame].Game.findIndex(
+                (element: string) => {
+                    return element === hrGameName
+                }
+            ) >= 0
         ) {
             hrRunnableSegment = FindCommandMatch(
-                GameLevels[propertyGame],
+                CommandNaming.Levels[propertyGame],
                 runnableSegment
             )
         }
@@ -428,7 +427,7 @@ function FindHaloRunsCompatibleNames(
         return []
     }
 
-    let hrDifficulty = FindCommandMatch(GameDifficulty, difficulty)
+    let hrDifficulty = FindCommandMatch(CommandNaming.Difficulty, difficulty)
 
     if (hrDifficulty === "") {
         SendMessage("!wr/!pb", "Failed to parse difficulty")

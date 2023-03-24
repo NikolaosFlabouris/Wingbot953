@@ -3,7 +3,12 @@ export class ReachLevels_Quiz {
 
     public static WinterContingency = ["Winter Contingency", "WC"]
 
-    public static ONISwordBase = ["ONI: Sword Base", "ONI Sword Base"]
+    public static ONISwordBase = [
+        "ONI: Sword Base",
+        "Oni Sword Base",
+        "Oni",
+        "Sword Base",
+    ]
 
     public static Nightfall = ["Nightfall", "NF"]
 

@@ -15,7 +15,12 @@ export class HCELevels_Quiz {
         "TnR",
     ]
 
-    public static SC = ["The Silent Cartographer", "SC", "TSC", "Cartographer"]
+    public static SC = [
+        "The Silent Cartographer",
+        "Silent Cartographer",
+        "SC",
+        "TSC",
+    ]
 
     public static AotCR = ["Assault on the Control Room", "AotCR"]
 

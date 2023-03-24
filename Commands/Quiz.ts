@@ -7,6 +7,8 @@ import {
     PublishBimonthlyLeaderboard,
 } from "../Integrations/Discord"
 
+import { quizCategories } from "../Data/QuizQuestions/QuizCategories"
+
 let blockQuiz = false
 let quizActive = false
 let totalQuestionCount: number
@@ -25,85 +27,6 @@ let leaderboardsCurrentTime: any
 const leaderboardsFilePath = "./Data/QuizLeaderboards/"
 const leaderboardsAllTimeFileName = "QuizLeaderboards.json"
 const leaderboardsCurrentTimeFileName = "2023MarApr-QuizLeaderboards.json"
-
-const quizQuestionFilePath = "./Data/QuizQuestions/"
-
-let data = fs.readFileSync(quizQuestionFilePath + "HaloCE.json", "utf8")
-const halo1Questions = JSON.parse(data)
-data = fs.readFileSync(quizQuestionFilePath + "Halo2.json", "utf8")
-const halo2Questions = JSON.parse(data)
-data = fs.readFileSync(quizQuestionFilePath + "Halo3.json", "utf8")
-const halo3Questions = JSON.parse(data)
-data = fs.readFileSync(quizQuestionFilePath + "Halo3ODST.json", "utf8")
-const odstQuestions = JSON.parse(data)
-data = fs.readFileSync(quizQuestionFilePath + "HaloReach.json", "utf8")
-const reachQuestions = JSON.parse(data)
-data = fs.readFileSync(quizQuestionFilePath + "Halo4.json", "utf8")
-const halo4Questions = JSON.parse(data)
-data = fs.readFileSync(quizQuestionFilePath + "Halo5.json", "utf8")
-const halo5Questions = JSON.parse(data)
-// data = fs.readFileSync(quizQuestionFilePath + "HaloInfinite.json", "utf8")
-// const haloInfiniteQuestions = JSON.parse(data)
-data = fs.readFileSync(quizQuestionFilePath + "HaloFranchise.json", "utf8")
-const franchiseQuestions = JSON.parse(data)
-data = fs.readFileSync(
-    quizQuestionFilePath + "HalorunsSpeedrunning.json",
-    "utf8"
-)
-const halorunsQuestions = JSON.parse(data)
-
-const quizCategories = [
-    {
-        CategoryQuestions: halo1Questions,
-        CategoryName: "Halo: CE",
-        CategoryLength: halo1Questions.length,
-    },
-    {
-        CategoryQuestions: halo2Questions,
-        CategoryName: "Halo 2",
-        CategoryLength: halo2Questions.length,
-    },
-    {
-        CategoryQuestions: halo3Questions,
-        CategoryName: "Halo 3",
-        CategoryLength: halo3Questions.length,
-    },
-    {
-        CategoryQuestions: odstQuestions,
-        CategoryName: "Halo 3:ODST",
-        CategoryLength: odstQuestions.length,
-    },
-    {
-        CategoryQuestions: reachQuestions,
-        CategoryName: "Halo: Reach",
-        CategoryLength: reachQuestions.length,
-    },
-    {
-        CategoryQuestions: halo4Questions,
-        CategoryName: "Halo 4",
-        CategoryLength: halo4Questions.length,
-    },
-    {
-        CategoryQuestions: halo5Questions,
-        CategoryName: "Halo 5",
-        CategoryLength: halo5Questions.length,
-    },
-    // {
-    //     CategoryQuestions: haloInfiniteQuestions,
-    //     CategoryName: "Halo Infinite",
-    //     CategoryLength: haloInfiniteQuestions.length,
-    // },
-    {
-        CategoryQuestions: franchiseQuestions,
-        CategoryName: "Halo Franchise",
-        CategoryLength: franchiseQuestions.length,
-    },
-    {
-        CategoryQuestions: halorunsQuestions,
-        CategoryName: "HaloRuns/Speedrunning",
-        CategoryLength: halorunsQuestions.length,
-    },
-]
 
 export async function QuizSetup() {
     totalQuestionCount = 0

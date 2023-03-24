@@ -8,7 +8,7 @@ import { H4Levels_Commands } from "./H4Levels_Commands"
 import { H5Levels_Commands } from "./H5Levels_Commands"
 import { InfiniteLevels_Commands } from "./InfiniteLevels_Commands"
 
-export const GamesLevels_Commands: {
+export const Levels_Commands: {
     [key: string]: { [key: string]: string[] }
 } = {
     HCELevels: HCELevels_Commands,

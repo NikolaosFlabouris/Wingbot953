@@ -1,29 +1,29 @@
-import { GamesNaming_Quiz } from "./GamesAndLevels/GamesNaming_Quiz"
-import { H2Levels_Quiz } from "./GamesAndLevels/H2Levels_Quiz"
-import { H3Levels_Quiz } from "./GamesAndLevels/H3Levels_Quiz"
-import { H4Levels_Quiz } from "./GamesAndLevels/H4Levels_Quiz"
-import { H5Levels_Quiz } from "./GamesAndLevels/H5Levels_Quiz"
-import { HCELevels_Quiz } from "./GamesAndLevels/HCELevels_Quiz"
-import { InfiniteLevels_Quiz } from "./GamesAndLevels/InfiniteLevels_Quiz"
-import { ODSTLevels_Quiz } from "./GamesAndLevels/ODSTLevels_Quiz"
-import { ReachLevels_Quiz } from "./GamesAndLevels/ReachLevels_Quiz"
+import { Characters_Quiz } from "./Objects/Characters_Quiz"
+import { Games_Quiz } from "./GamesAndLevels/Games_Quiz"
+import { Levels_Quiz } from "./GamesAndLevels/Levels_Quiz"
+import { Equipment_Quiz } from "./Objects/Equipment_Quiz"
+import { Numbers_Quiz } from "./Objects/Numbers_Quiz"
+import { Vehicles_Quiz } from "./Objects/Vehicles_Quiz"
+import { Weapons_Quiz } from "./Objects/Weapons_Quiz"
+import { Locations_Quiz } from "./Objects/Locations_Quiz"
+import { People_Quiz } from "./Objects/People_Quiz"
 
 export class QuizNaming {
-    public static Games = GamesNaming_Quiz
+    public static Games = Games_Quiz
 
-    public static HCELevels = HCELevels_Quiz
+    public static Levels = Levels_Quiz
 
-    public static H2Levels = H2Levels_Quiz
+    public static Numbers = Numbers_Quiz
 
-    public static H3Levels = H3Levels_Quiz
+    public static Equipment = Equipment_Quiz
 
-    public static ODSTLevels = ODSTLevels_Quiz
+    public static Vehicles = Vehicles_Quiz
 
-    public static ReachLevels = ReachLevels_Quiz
+    public static Weapons = Weapons_Quiz
 
-    public static H4Levels = H4Levels_Quiz
+    public static Characters = Characters_Quiz
 
-    public static H5Levels = H5Levels_Quiz
+    public static People = People_Quiz
 
-    public static InfiniteLevels = InfiniteLevels_Quiz
+    public static Locations = Locations_Quiz
 }

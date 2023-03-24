@@ -1,4 +1,4 @@
-export const GamesNaming_Commands: { [key: string]: string[] } = {
+export const Games_Commands: { [key: string]: string[] } = {
     HaloCE: ["Halo CE", "HCE", "CE", "C", "Halo1", "H1", "1"],
 
     Halo2: ["Halo 2", "Halo2", "H2", "2"],
