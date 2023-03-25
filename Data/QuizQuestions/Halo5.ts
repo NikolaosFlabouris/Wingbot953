@@ -221,15 +221,15 @@ export const halo5Questions = [
     },
     {
         Question: "Who says the following quote: \"We could've taken 'em.\"",
-        Answers: ["Spartan Edward Buck", "Spartan Buck"].concat(
-            QuizNaming.Characters.Buck
+        Answers: QuizNaming.Characters.EdwardBuck.concat(
+            QuizNaming.Characters.SpartanBuck
         ),
     },
     {
         Question:
             "Who says the following quote: \"This might be hard to believe, seeing as how I'm a model of stoicism and courage today, but... When I was a kid, I-I was afraid of heights. So...there's that.\"",
-        Answers: ["Spartan Edward Buck", "Spartan Buck"].concat(
-            QuizNaming.Characters.Buck
+        Answers: QuizNaming.Characters.EdwardBuck.concat(
+            QuizNaming.Characters.SpartanBuck
         ),
     },
     {

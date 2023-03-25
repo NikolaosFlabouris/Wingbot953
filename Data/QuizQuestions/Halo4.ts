@@ -191,12 +191,7 @@ export const halo4Questions = [
     },
     {
         Question: "Who shot Halsey causing the lose of her left arm?",
-        Answers: [
-            "Spartan Commander Sarah Palmer",
-            "Spartan Commander Palmer",
-            "Commander Sarah Palmer",
-            "Commander Palmer",
-        ].concat(QuizNaming.Characters.SpartanPalmer),
+        Answers: QuizNaming.Characters.SpartanCommanderPalmer,
     },
     {
         Question:

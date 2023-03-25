@@ -49,24 +49,25 @@ export class Numbers_Quiz {
 
     public static ThirtyNine = ["39", "Thirty-Nine", "Thirty Nine"]
 
-    public static FortySeven = ["47", "Forty Seven", "Forty-Seven"]
+    public static FortySeven = ["47", "Forty-Seven", "Forty Seven"]
 
-    public static FortyNine = ["49", "Forty Nine", "Forty-Nine"]
+    public static FortyNine = ["49", "Forty-Nine", "Forty Nine"]
 
-    public static Fifty = ["50", "fifty"]
+    public static Fifty = ["50", "Fifty"]
 
-    public static SeventyTwo = [
-        "72",
-        "seventy-two",
-        "seventytwo",
-        "seventy two",
-    ]
+    public static SeventyTwo = ["72", "Seventy-Two", "Seventy Two"]
 
     public static OneHundredThirteen = [
         "113",
         "One-Hundred-Thirteen",
         "One Hundred Thirteen",
-        "One one three",
+    ]
+
+    public static OneHundredSeventeen = [
+        "117",
+        "One Hundred and Seventeen",
+        "One Hundred Seventeen",
+        "One-Hundred-Seventeen",
     ]
 
     public static OneHundredTwentyOne = [
@@ -80,17 +81,11 @@ export class Numbers_Quiz {
         "130",
         "One Hundred and Thirty",
         "One Hundred Thirty",
-    ]
-
-    public static OneHundredSeventeen = [
-        "117",
-        "One Hundred and Seventeen",
-        "One Hundred Seventeen",
-        "One-Hundred-Seventeen",
+        "One-Hundred-Thirty",
     ]
 
     public static OneHundredFiftyTwo = [
-        "117",
+        "152",
         "One Hundred and Fifty Two",
         "One Hundred Fifty Two",
         "One-Hundred-Fifty-Two",
@@ -112,13 +107,15 @@ export class Numbers_Quiz {
 
     public static TwoHundredForty = [
         "240",
-        "two hundred and forty",
-        "two hundred forty",
+        "Two Hundred and Forty",
+        "Two Hundred Forty",
+        "Two-Hundred-Forty",
     ]
 
     public static FourThousandFour = [
         "4004",
         "Four Thousand and Four",
         "Four Thousand Four",
+        "Four-Thousand-Four",
     ]
 }

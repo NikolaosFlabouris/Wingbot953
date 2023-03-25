@@ -17,7 +17,15 @@ export class H3Levels_Quiz {
 
     public static Cortana = ["Cortana"]
 
-    public static Halo = ["Halo", "Halo (H3)", "Halo (Halo 3)"]
+    public static Halo = [
+        "Halo",
+        "Halo (H3)",
+        "Halo (Halo 3)",
+        "Halo Halo 3",
+        "Halo H3",
+        "Halo 3 Halo",
+        "H3 Halo",
+    ]
 
     public static Epilogue = ["Epilogue"]
 }

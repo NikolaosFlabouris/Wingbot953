@@ -33,7 +33,9 @@ export const reachQuestions = [
     {
         Question:
             'The achievement to "hear a familiar voice on New Alexandria" is awarded when the player hears the voice of which character?',
-        Answers: QuizNaming.Characters.Buck,
+        Answers: QuizNaming.Characters.EdwardBuck.concat(
+            QuizNaming.Characters.GunnerySergeantBuck
+        ),
     },
     {
         Question:

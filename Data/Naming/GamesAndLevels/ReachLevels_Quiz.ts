@@ -6,15 +6,20 @@ export class ReachLevels_Quiz {
     public static ONISwordBase = [
         "ONI: Sword Base",
         "Oni Sword Base",
+        "ONI:SB",
         "Oni",
         "Sword Base",
     ]
 
     public static Nightfall = ["Nightfall", "NF"]
 
-    public static TotS = ["Tip of the Spear", "TotS"]
+    public static TipOfTheSpear = ["Tip of the Spear", "TotS"]
 
-    public static LNoS = ["Long Night of Solace", "LNoS"]
+    public static LongNightOfSolace = [
+        "Long Night of Solace",
+        "Long Night",
+        "LNoS",
+    ]
 
     public static Exodus = ["Exodus"]
 

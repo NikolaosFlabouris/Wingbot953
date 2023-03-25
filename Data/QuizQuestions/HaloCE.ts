@@ -16,7 +16,7 @@ export const halo1Questions = [
     },
     {
         Question: "On which level can the Megg Easter Egg be found?",
-        Answers: QuizNaming.Levels.HCE.PoA,
+        Answers: QuizNaming.Levels.HCE.PillarOfAutumn,
     },
     {
         Question: "Carol Rawley is better known by what call sign?",
@@ -25,7 +25,7 @@ export const halo1Questions = [
     {
         Question:
             "Which is the only level where a player cannot use the Magnum?",
-        Answers: QuizNaming.Levels.HCE.TnR,
+        Answers: QuizNaming.Levels.HCE.TruthAndReconciliation,
     },
     {
         Question:
@@ -35,12 +35,12 @@ export const halo1Questions = [
     {
         Question:
             "Which is the only level to feature a drivable Scorpion tank?",
-        Answers: QuizNaming.Levels.HCE.AotCR,
+        Answers: QuizNaming.Levels.HCE.AssaultOnTheControlRoom,
     },
     {
         Question:
             "In Halo: CE the Siege of Madrigal Easter Egg is found on which level?",
-        Answers: QuizNaming.Levels.HCE.AotCR,
+        Answers: QuizNaming.Levels.HCE.AssaultOnTheControlRoom,
     },
     {
         Question:
@@ -108,12 +108,12 @@ export const halo1Questions = [
     {
         Question:
             "The 'Pacifist' Achievement is awarded upon completing which mission without shooting, grenades, melee, dying or restarting?",
-        Answers: QuizNaming.Levels.HCE.SC,
+        Answers: QuizNaming.Levels.HCE.SilentCartographer,
     },
     {
         Question:
             'The "Would It\'ve Killed You To Take The Elevator" Achievement is awarded when the player beats the Par Time on which level?',
-        Answers: QuizNaming.Levels.HCE.AotCR,
+        Answers: QuizNaming.Levels.HCE.AssaultOnTheControlRoom,
     },
     {
         Question:

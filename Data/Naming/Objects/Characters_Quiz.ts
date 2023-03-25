@@ -1,12 +1,7 @@
 export class Characters_Quiz {
     public static Arbiter = ["Arbiter", "the Arbiter"]
 
-    public static Buck = [
-        "Gunnery Sergeant Buck",
-        "Buck",
-        "Edward Buck",
-        "Eddy Buck",
-    ]
+    public static EdwardBuck = ["Edward Buck", "Buck", "Eddy Buck"]
 
     public static Carter = ["Carter", "Noble One", "Noble 1"]
 
@@ -40,6 +35,18 @@ export class Characters_Quiz {
         "Chips Dubo",
     ]
 
+    public static GunnerySergeantBuck = [
+        "Gunnery Sergeant Buck",
+        "Gunnery Sergeant Edward Buck",
+        "Gunny",
+    ]
+
+    public static SpartanBuck = [
+        "Spartan Edward Buck",
+        "Spartan Eddy Buck",
+        "Spartan Buck",
+    ]
+
     public static SpartanDavis = [
         "Spartan Edward Davis",
         "Edward Davis",
@@ -54,6 +61,13 @@ export class Characters_Quiz {
         "Palmer",
     ]
 
+    public static SpartanCommanderPalmer = [
+        "Spartan Commander Sarah Palmer",
+        "Spartan Commander Palmer",
+        "Commander Sarah Palmer",
+        "Commander Palmer",
+    ].concat(Characters_Quiz.SpartanPalmer)
+
     public static Cortana = ["Cortana"]
 
     public static Dare = ["Dare", "Veronica Dare", "Veronica"]
@@ -63,7 +77,7 @@ export class Characters_Quiz {
         "Doctor Tilson",
         "Dr Tillson",
         "Dr Tilson",
-        "Tilson",
+        "Tillson",
         "Sandra Tillson",
     ]
 
@@ -154,18 +168,24 @@ export class Characters_Quiz {
     public static SergeantJohnson = [
         "Sergeant Avery Johnson",
         "Sergeant Johnson",
+        "Sgt Avery Johnson",
+        "Sgt Johnson",
         "Avery Johnson",
         "Johnson",
-        "Sgt Johnson",
     ]
 
     public static SergeantReynolds = [
         "Gunnery Sergeant Reynolds",
-        "Reynolds",
         "Sergeant Reynolds",
+        "Sgt Reynolds",
+        "Reynolds",
     ]
 
-    public static SergeantStacker = ["Sergeant Stacker", "Stacker"]
+    public static SergeantStacker = [
+        "Sergeant Stacker",
+        "Sgt Stacker",
+        "Stacker",
+    ]
 
     public static Tartarus = ["Tartarus", "Tartarsauce"]
 
@@ -176,12 +196,12 @@ export class Characters_Quiz {
         "Thel Vadam",
     ]
 
-    public static ThomasLasky = ["Thomas Lasky", "Lasky", "Tom Lasky"]
+    public static ThomasLasky = ["Thomas Lasky", "Tom Lasky", "Lasky"]
 
     public static ThreeFourThreeGuiltySpark = [
         "343 Guilty Spark",
-        "343GS",
         "Guilty Spark",
+        "343GS",
     ]
 
     public static WardenEternal = ["Warden Eternal", "Warden"]

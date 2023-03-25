@@ -66,7 +66,7 @@ export class People_Quiz {
 
     public static Ruudyt = ["Ruudyt", "Rudy", "Ruudy"]
 
-    public static Sasquatch = ["SasquatchSensei", "Sasquatch"]
+    public static Sasquatch = ["SasquatchSensei", "Sasquatch", "Sas"]
 
     public static Scurty = ["Scurty", "Scurty_"]
 
@@ -88,5 +88,5 @@ export class People_Quiz {
 
     public static Wingman953 = ["Wingman953", "Wingman"]
 
-    public static WoLfy = ["Wolfy"]
+    public static WoLfy = ["WoLfy"]
 }

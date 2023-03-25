@@ -1,7 +1,7 @@
 export class Weapons_Quiz {
     public static AssaultRifle = ["Assault Rifle", "AR"]
 
-    public static Automag = ["Automag", "Pistol"]
+    public static Automag = ["Automag", "Pistol", "Silenced Pistol"]
 
     public static DMR = ["DMR", "Designated Marksman Rifle"]
 
@@ -14,17 +14,23 @@ export class Weapons_Quiz {
     public static IncinerationCannon = [
         "Incineration Cannon",
         "Incineration Cannons",
+        "Incin Cannon",
     ]
 
     public static Needler = ["Needler"]
 
     public static PlasmaPistol = ["Plasma Pistol", "PP"]
 
-    public static RocketLauncher = ["Rocket Launcher", "Rocket", "Rockets"]
+    public static RocketLauncher = [
+        "Rocket Launcher",
+        "Rocket",
+        "Rockets",
+        "Rocks",
+    ]
 
     public static Shotgun = ["Shotgun", "Shotty", "Shoty"]
 
-    public static SniperRifle = ["Sniper Rifle", "Sniper"]
+    public static SniperRifle = ["Sniper Rifle", "Sniper", "Snipe"]
 
     public static SpartanLaser = [
         "Spartan Laser",

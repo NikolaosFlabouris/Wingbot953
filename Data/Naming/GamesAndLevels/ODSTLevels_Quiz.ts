@@ -1,41 +1,43 @@
 export class ODSTLevels_Quiz {
-    public static PtD = ["Prepare to Drop", "PtD"]
+    public static PrepareToDrop = ["Prepare to Drop", "PtD"]
 
     public static MombasaStreets = ["Mombasa Streets", "Streets"]
 
-    public static Tayari = ["Tayari Plaza", "Tayari"]
+    public static TayariPlaza = ["Tayari Plaza", "Tayari"]
 
-    public static Uplift = ["Uplift Reserve", "Uplift"]
+    public static UpliftReserve = ["Uplift Reserve", "Uplift"]
 
-    public static Kizingo = [
+    public static KizingoBlvd = [
         "Kizingo Blvd.",
         "Kizingo",
         "Kizingo Blvd",
         "Kizingo Boulevard",
     ]
 
-    public static Oni = [
+    public static OniAlphaSite = [
         "ONI Alpha Site",
         "ONI",
         "ONI: Alpha Site",
         "Alpha Site",
         "Oni Pog",
+        "OniPog",
     ]
 
-    public static NMPD = [
+    public static NMPDHQ = [
         "NMPD HQ",
         "NMPD",
         "New Mombasa Police Department Headquarters",
         "New Mombasa Police Department Head quarters",
         "New Mombasa Police Department HQ",
         "New Mombasa Police Department",
+        "New Mombasa PD",
     ]
 
     public static KikowaniStation = ["Kikowani Station", "Kikowani", "Kiko"]
 
     public static DataHive = ["Data Hive", "DH"]
 
-    public static Coastal = ["Coastal Highway", "Coastal"]
+    public static CoastalHighway = ["Coastal Highway", "Coastal", "Highway"]
 
     public static Epilogue = ["Epilogue"]
 }

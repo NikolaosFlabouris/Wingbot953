@@ -22,17 +22,17 @@ export const halorunsQuestions = [
     {
         Question:
             "In Halo CE Speedrunning, Keyes and which other IL has more Legendary submissions than Easy?",
-        Answers: QuizNaming.Levels.HCE.AotCR,
+        Answers: QuizNaming.Levels.HCE.AssaultOnTheControlRoom,
     },
     {
         Question:
             "In Halo 3:ODST Speedrunning, which IL has the most submissions on the Easy difficulty?",
-        Answers: QuizNaming.Levels.ODST.Tayari,
+        Answers: QuizNaming.Levels.ODST.TayariPlaza,
     },
     {
         Question:
             "In Halo 3:ODST Speedrunning, which IL has the most submissions on the Legendary difficulty?",
-        Answers: QuizNaming.Levels.ODST.Uplift,
+        Answers: QuizNaming.Levels.ODST.UpliftReserve,
     },
     {
         Question: "Who holds the slowest IL WR?",
@@ -60,7 +60,7 @@ export const halorunsQuestions = [
     {
         Question:
             "Wingman953 set his first IL WR on ONI Alpha Site. What was the next level that he set a WR on?",
-        Answers: QuizNaming.Levels.ODST.Coastal,
+        Answers: QuizNaming.Levels.ODST.CoastalHighway,
     },
     {
         Question:
@@ -185,7 +185,7 @@ export const halorunsQuestions = [
     {
         Question:
             "In March 2016 SkilledGames_ set the Legendary IL WR for which level?",
-        Answers: QuizNaming.Levels.ODST.NMPD,
+        Answers: QuizNaming.Levels.ODST.NMPDHQ,
     },
     {
         Question: '2019 was named the "Year of ODST" by which speedrunner?',
@@ -203,7 +203,7 @@ export const halorunsQuestions = [
     },
     {
         Question: "In July 2020 Two_EEzy set a new WR on which level?",
-        Answers: QuizNaming.Levels.Reach.LNoS,
+        Answers: QuizNaming.Levels.Reach.LongNightOfSolace,
     },
     {
         Question:
@@ -217,15 +217,15 @@ export const halorunsQuestions = [
     },
     {
         Question: "Welshevo79 is known to be a fan of which level?",
-        Answers: QuizNaming.Levels.ODST.Coastal,
+        Answers: QuizNaming.Levels.ODST.CoastalHighway,
     },
     {
         Question: "Harc is known to be a fan of which Halo 3:ODST level?",
-        Answers: QuizNaming.Levels.ODST.NMPD,
+        Answers: QuizNaming.Levels.ODST.NMPDHQ,
     },
     {
         Question: "Wingman953 is known to be a fan of which level?",
-        Answers: QuizNaming.Levels.ODST.Oni,
+        Answers: QuizNaming.Levels.ODST.OniAlphaSite,
     },
     {
         Question: "Forerunner ILs",

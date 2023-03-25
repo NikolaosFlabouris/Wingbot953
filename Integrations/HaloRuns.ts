@@ -297,8 +297,8 @@ function GetHaloRunsPb(
 
     let pbRuns = wingman953ProfileJson.RunsByCategory.Solo
 
-    if (hrCategory === "Solo") {
-        pbRuns = wingman953ProfileJson.RunsByCategory.Solo
+    if (!hrCategory.includes("Coop")) {
+        pbRuns = wingman953ProfileJson.RunsByCategory[hrCategory]
 
         for (let runIndex = 0; runIndex < pbRuns.length; runIndex++) {
             if (
@@ -323,8 +323,8 @@ function GetHaloRunsPb(
         }
     }
 
-    if (hrCategory === "Coop") {
-        pbRuns = wingman953ProfileJson.RunsByCategory.Coop
+    if (hrCategory.includes("Coop")) {
+        pbRuns = wingman953ProfileJson.RunsByCategory[hrCategory]
 
         let pbTimeSecs: number = 99999999
         let pbTime: string = ""

@@ -7,6 +7,7 @@ import { ReachLevels_Commands } from "./ReachLevels_Commands"
 import { H4Levels_Commands } from "./H4Levels_Commands"
 import { H5Levels_Commands } from "./H5Levels_Commands"
 import { InfiniteLevels_Commands } from "./InfiniteLevels_Commands"
+import { MultiGameLevels_Commands } from "./MultiGameLevels_Commands"
 
 export const Levels_Commands: {
     [key: string]: { [key: string]: string[] }
@@ -20,4 +21,5 @@ export const Levels_Commands: {
     H4Levels: H4Levels_Commands,
     H5Levels: H5Levels_Commands,
     InfiniteLevels: InfiniteLevels_Commands,
+    MultiGameLevels: MultiGameLevels_Commands,
 }

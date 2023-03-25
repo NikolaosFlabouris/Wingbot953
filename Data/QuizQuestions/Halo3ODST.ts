@@ -203,7 +203,7 @@ export const odstQuestions = [
     {
         Question:
             "Which flashback mission has a different end cutscene when played on the Legendary difficulty?",
-        Answers: QuizNaming.Levels.ODST.NMPD,
+        Answers: QuizNaming.Levels.ODST.NMPDHQ,
     },
     {
         Question:
@@ -394,17 +394,17 @@ export const odstQuestions = [
     {
         Question:
             'On what mission is the following quote said: "Look out! Chieftain!"',
-        Answers: QuizNaming.Levels.ODST.NMPD,
+        Answers: QuizNaming.Levels.ODST.NMPDHQ,
     },
     {
         Question:
             "On what mission is the following quote said: \"Trooper, we're pinned down! Flank through this building, hit 'em from behind!\"",
-        Answers: QuizNaming.Levels.ODST.Tayari,
+        Answers: QuizNaming.Levels.ODST.TayariPlaza,
     },
     {
         Question:
             'On what mission is the following quote said: "Wanna live? Then get your ass out of the street!"',
-        Answers: QuizNaming.Levels.ODST.Kizingo,
+        Answers: QuizNaming.Levels.ODST.KizingoBlvd,
     },
     {
         Question:
@@ -414,12 +414,14 @@ export const odstQuestions = [
     {
         Question:
             'On what mission is the following quote said: "Whew! Lord, that thing stinks. Kinda reminds me of my-"',
-        Answers: QuizNaming.Levels.ODST.Coastal,
+        Answers: QuizNaming.Levels.ODST.CoastalHighway,
     },
     {
         Question:
             'Who says the following quote: "You know the music, time to dance."',
-        Answers: QuizNaming.Characters.Buck,
+        Answers: QuizNaming.Characters.EdwardBuck.concat(
+            QuizNaming.Characters.GunnerySergeantBuck
+        ),
     },
     {
         Question:

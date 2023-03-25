@@ -1,7 +1,7 @@
 export class H2Levels_Quiz {
     public static Heretic = ["The Heretic", "Heretic"]
 
-    public static Armoury = ["The Armory", "The Armoury", "Armoury", "Armory"]
+    public static Armoury = ["Armoury", "Armory"]
 
     public static Cairo = ["Cairo Station", "Cairo"]
 
@@ -27,5 +27,5 @@ export class H2Levels_Quiz {
 
     public static HighCharity = ["High Charity", "HC"]
 
-    public static GreatJourney = ["The Great Journey", "TGJ"]
+    public static GreatJourney = ["The Great Journey", "Great Journey", "TGJ"]
 }

@@ -3,11 +3,13 @@ export class InfiniteLevels_Quiz {
         "Warship Gbraakon",
         "Warship Gbrakon",
         "Warship",
+        "Gbraakon",
+        "Gbrakon",
     ]
 
     public static Foundation = ["Foundation"]
 
-    public static Outpost = ["Outpost Tremonious", "Outpost"]
+    public static OutpostTremonious = ["Outpost Tremonious", "Outpost"]
 
     public static Recovery = ["Recovery"]
 
@@ -17,7 +19,7 @@ export class InfiniteLevels_Quiz {
 
     public static Spire = ["Spire"]
 
-    public static PelicanDown = ["PelicanDown", "Pelican"]
+    public static PelicanDown = ["Pelican Down", "Peli Down"]
 
     public static TheSequence = ["The Sequence", "Sequence"]
 
@@ -29,7 +31,7 @@ export class InfiniteLevels_Quiz {
 
     public static TheRoad = ["The Road", "Road"]
 
-    public static HouseOfReckoning = ["House of Reckoning", "HoS"]
+    public static HouseOfReckoning = ["House of Reckoning", "HoR"]
 
-    public static SilentAuditorium = ["Silent Auditorium", "SA"]
+    public static SilentAuditorium = ["Silent Auditorium", "Auditorium", "SA"]
 }

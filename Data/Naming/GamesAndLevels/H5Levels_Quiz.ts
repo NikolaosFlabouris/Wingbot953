@@ -9,11 +9,11 @@ export class H5Levels_Quiz {
 
     public static Unconfirmed = ["Unconfirmed"]
 
-    public static Evacuation = ["Evacuation"]
+    public static Evacuation = ["Evacuation", "Evac"]
 
     public static Reunion = ["Reunion"]
 
-    public static SwordOfSanghelios = ["Sword of Sanghelios", "SoS"]
+    public static SwordsOfSanghelios = ["Swords of Sanghelios", "Swords", "SoS"]
 
     public static Alliance = ["Alliance"]
 
@@ -21,7 +21,7 @@ export class H5Levels_Quiz {
 
     public static BeforeTheStorm = ["Before the Storm"]
 
-    public static BattleOfSunaion = ["Battle of Sunaion", "BoS"]
+    public static BattleOfSunaion = ["Battle of Sunaion", "Sunaion", "BoS"]
 
     public static Genesis = ["Genesis"]
 
