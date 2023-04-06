@@ -1,4 +1,17 @@
 export class Characters_Quiz {
+    public static Alice = [
+        "Alice",
+        "Alice-130",
+        "Alice 130",
+        "Alice Treske",
+        "Spartan Alice",
+        "Alice Treske",
+        "Spartan Alice Treske",
+        "Senior Chief Petty Officer Alice-130",
+        "Senior Chief Petty Officer Alice 130",
+        "Senior Chief Petty Officer Alice",
+    ]
+
     public static Arbiter = ["Arbiter", "the Arbiter"]
 
     public static EdwardBuck = ["Edward Buck", "Buck", "Eddy Buck"]
@@ -14,6 +27,17 @@ export class Characters_Quiz {
         "Capt Jacob Keyes",
         "Jacob Keyes",
         "Keyes",
+    ]
+
+    public static CaptainCutter = [
+        "Captain Cutter",
+        "Captain James Cutter",
+        "Cpt Cutter",
+        "Cpt James Cutter",
+        "Capt Cutter",
+        "Capt James Cutter",
+        "James Cutter",
+        "Cutter",
     ]
 
     public static CatherineHalsey = [
@@ -35,11 +59,174 @@ export class Characters_Quiz {
         "Chips Dubo",
     ]
 
+    public static Cortana = ["Cortana"]
+
+    public static Dare = ["Dare", "Veronica Dare", "Veronica"]
+
+    public static Douglas = [
+        "Douglas",
+        "Douglas-042",
+        "Douglas 042",
+        "Douglas-42",
+        "Douglas 42",
+        "Douglas Rutland",
+        "Spartan Douglas",
+        "Douglas Rutland",
+        "Spartan Douglas Rutland",
+        "Senior Chief Petty Officer Douglas-042",
+        "Senior Chief Petty Officer Douglas 042",
+        "Senior Chief Petty Officer Douglas",
+    ]
+
+    public static DrTillson = [
+        "Doctor Tillson",
+        "Doctor Tilson",
+        "Dr Tillson",
+        "Dr Tilson",
+        "Tillson",
+        "Sandra Tillson",
+    ]
+
+    public static Dutch = ["Dutch", "Taylor Miles"]
+
+    public static Emile = ["Emile", "Noble Four", "Noble 4"]
+
+    public static ExuberantWitness = [
+        "031 Exuberant Witness",
+        "Exuberant Witness",
+    ]
+
+    public static FoeHammer = ["Foe Hammer", "FoeHammer", "Foe-Hammer"]
+
+    public static Gravemind = ["the Gravemind", "Gravemind"]
+
+    public static GovernorSloan = ["Governor Sloan", "Sloan"]
+
     public static GunnerySergeantBuck = [
         "Gunnery Sergeant Buck",
         "Gunnery Sergeant Edward Buck",
         "Gunny",
     ]
+
+    public static HalfJaw = [
+        "Half-Jaw",
+        "Half Jaw",
+        "Halfjaw",
+        "Rtas 'Vadumee",
+        "Rtas Vadumee",
+        "Rtas 'Vadum",
+        "Rtas Vadum",
+    ]
+
+    public static HollyTanaka = [
+        "Spartan Holly Tanaka",
+        "Tanaka",
+        "Holly Tanaka",
+        "Spartan Tanaka",
+    ]
+
+    public static JamesonLocke = [
+        "Spartan Jameson Locke",
+        "Locke",
+        "Jameson Locke",
+        "Spartan Locke",
+    ]
+
+    public static Jerome = [
+        "Jerome",
+        "Jerome-092",
+        "Jerome 092",
+        "Jerome-92",
+        "Jerome 92",
+        "Jerome Cable",
+        "Spartan Jerome",
+        "Jerome Cable",
+        "Spartan Jerome Cable",
+        "Commander Jerome-092",
+        "Commander Jerome 092",
+        "Commander Jerome",
+    ]
+
+    public static Jorge = ["Jorge", "Noble Five", "Noble 5"]
+
+    public static Jun = ["Jun", "Noble Three", "Noble 3"]
+
+    public static Kat = ["Kat", "Catherine", "Noble Two", "Noble 2"]
+
+    public static LordTerranceHood = ["Lord Hood", "Hood", "Terrance Hood"]
+
+    public static OlympiaVale = [
+        "Spartan Olympia Vale",
+        "Vale",
+        "Olympia Vale",
+        "Spartan Vale",
+    ]
+
+    public static MasterChief = [
+        "Master Chief",
+        "Chief",
+        "John-117",
+        "John 117",
+        "John",
+        "Master Chief Petty Officer John-117",
+        "Master Chief Petty Officer John 117",
+        "Master Chief Petty Officer John",
+    ]
+
+    public static Mickey = ["Mickey", "Michael Crespo", "Crespo"]
+
+    public static MirandaKeyes = ["Miranda Keyes", "Miranda", "Keyes"]
+
+    public static Noble6 = [
+        "Noble Six",
+        "Noble 6",
+        "SPARTAN-B312",
+        "SPARTAN B312",
+        "B312",
+    ]
+
+    public static ProphetOfMercy = ["Prophet of Mercy", "Mercy"]
+
+    public static ProphetOfRegret = ["Prophet of Regret", "Regret"]
+
+    public static ProphetOfTruth = ["Prophet of Truth", "Truth"]
+
+    public static Romeo = ["Romeo", "Kojo Agu"]
+
+    public static SergeantBanks = ["Sergeant Banks", "Banks"]
+
+    public static SergeantForge = [
+        "Sergeant Forge",
+        "Sergeant John Forge",
+        "Sgt Forge",
+        "Sgt John Forge",
+        "Forge",
+        "John Forge",
+    ]
+
+    public static SergeantJohnson = [
+        "Sergeant Avery Johnson",
+        "Sergeant Johnson",
+        "Sgt Avery Johnson",
+        "Sgt Johnson",
+        "Avery Johnson",
+        "Johnson",
+    ]
+
+    public static SergeantReynolds = [
+        "Gunnery Sergeant Reynolds",
+        "Sergeant Reynolds",
+        "Sgt Reynolds",
+        "Reynolds",
+    ]
+
+    public static SergeantStacker = [
+        "Sergeant Stacker",
+        "Sgt Stacker",
+        "Stacker",
+    ]
+
+    public static Serina = ["Serina"]
 
     public static SpartanBuck = [
         "Spartan Edward Buck",
@@ -67,125 +254,6 @@ export class Characters_Quiz {
         "Commander Sarah Palmer",
         "Commander Palmer",
     ].concat(Characters_Quiz.SpartanPalmer)
-
-    public static Cortana = ["Cortana"]
-
-    public static Dare = ["Dare", "Veronica Dare", "Veronica"]
-
-    public static DrTillson = [
-        "Doctor Tillson",
-        "Doctor Tilson",
-        "Dr Tillson",
-        "Dr Tilson",
-        "Tillson",
-        "Sandra Tillson",
-    ]
-
-    public static Dutch = ["Dutch", "Taylor Miles"]
-
-    public static Emile = ["Emile", "Noble Four", "Noble 4"]
-
-    public static ExuberantWitness = [
-        "031 Exuberant Witness",
-        "Exuberant Witness",
-    ]
-
-    public static FoeHammer = ["Foe Hammer", "FoeHammer", "Foe-Hammer"]
-
-    public static Gravemind = ["the Gravemind", "Gravemind"]
-
-    public static GovernorSloan = ["Governor Sloan", "Sloan"]
-
-    public static HalfJaw = [
-        "Half-Jaw",
-        "Half Jaw",
-        "Halfjaw",
-        "Rtas 'Vadumee",
-        "Rtas Vadumee",
-        "Rtas 'Vadum",
-        "Rtas Vadum",
-    ]
-
-    public static HollyTanaka = [
-        "Spartan Holly Tanaka",
-        "Tanaka",
-        "Holly Tanaka",
-        "Spartan Tanaka",
-    ]
-
-    public static JamesonLocke = [
-        "Spartan Jameson Locke",
-        "Locke",
-        "Jameson Locke",
-        "Spartan Locke",
-    ]
-
-    public static Jorge = ["Jorge", "Noble Five", "Noble 5"]
-
-    public static Jun = ["Jun", "Noble Three", "Noble 3"]
-
-    public static Kat = ["Kat", "Catherine", "Noble Two", "Noble 2"]
-
-    public static LordTerranceHood = ["Lord Hood", "Hood", "Terrance Hood"]
-
-    public static OlympiaVale = [
-        "Spartan Olympia Vale",
-        "Vale",
-        "Olympia Vale",
-        "Spartan Vale",
-    ]
-
-    public static MasterChief = [
-        "Master Chief",
-        "Chief",
-        "John-117",
-        "John",
-        "John 117",
-    ]
-
-    public static Mickey = ["Mickey", "Michael Crespo", "Crespo"]
-
-    public static MirandaKeyes = ["Miranda Keyes", "Miranda", "Keyes"]
-
-    public static Noble6 = [
-        "Noble Six",
-        "Noble 6",
-        "SPARTAN-B312",
-        "SPARTAN B312",
-        "B312",
-    ]
-
-    public static ProphetOfMercy = ["Prophet of Mercy", "Mercy"]
-
-    public static ProphetOfRegret = ["Prophet of Regret", "Regret"]
-
-    public static ProphetOfTruth = ["Prophet of Truth", "Truth"]
-
-    public static Romeo = ["Romeo", "Kojo Agu"]
-
-    public static SergeantBanks = ["Sergeant Banks", "Banks"]
-
-    public static SergeantJohnson = [
-        "Sergeant Avery Johnson",
-        "Sergeant Johnson",
-        "Sgt Avery Johnson",
-        "Sgt Johnson",
-        "Avery Johnson",
-        "Johnson",
-    ]
-
-    public static SergeantReynolds = [
-        "Gunnery Sergeant Reynolds",
-        "Sergeant Reynolds",
-        "Sgt Reynolds",
-        "Reynolds",
-    ]
-
-    public static SergeantStacker = [
-        "Sergeant Stacker",
-        "Sgt Stacker",
-        "Stacker",
-    ]
 
     public static Tartarus = ["Tartarus", "Tartarsauce"]
 

@@ -1,9 +1,23 @@
 export class Vehicles_Quiz {
     public static Banshee = ["Banshee", "Banshees"]
 
-    public static Chopper = ["Chopper"]
+    public static Chopper = ["Chopper", "Choppers"]
+
+    public static Cyclops = ["Cyclops", "Cyclopses"]
+
+    public static Elephant = ["Elephant", "Elephants"]
 
     public static Ghost = ["Ghost", "Ghosts"]
+
+    public static Gremlin = ["Gremlin", "Gremlins"]
+
+    public static Grizzly = [
+        "Grizzly",
+        "Grizzlys",
+        "Grizzlies",
+        "Grizzly Tank",
+        "Grizzly Tanks",
+    ]
 
     public static Kestrel = [
         "AV-30 Kestrel",
@@ -11,6 +25,8 @@ export class Vehicles_Quiz {
         "AV-30",
         "AV30 Kestrel",
     ]
+
+    public static Locust = ["Locust", "Locusts"]
 
     public static Mongoose = [
         "Mongoose",
@@ -20,9 +36,17 @@ export class Vehicles_Quiz {
         "a Mongoose",
     ]
 
-    public static Phaeton = ["Phaeton"]
+    public static Phaeton = ["Phaeton", "Phaetons"]
 
     public static Prowler = ["Prowler", "Prowlers"]
 
-    public static Scarab = ["Scarab"]
+    public static Scarab = ["Scarab", "Scarabs"]
+
+    public static Sparrowhawk = ["Sparrowhawk", "Sparrowhawks"]
+
+    public static Wolverine = ["Wolverine", "Wolverines"]
+
+    public static Vampire = ["Vampire", "Vampires"]
+
+    public static Vulture = ["Vulture", "Vultures"]
 }
