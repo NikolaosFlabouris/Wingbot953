@@ -202,12 +202,33 @@ export const halorunsQuestions = [
         Answers: QuizNaming.People.Sorix,
     },
     {
-        Question: "In July 2020 Two_EEzy set a new WR on which level?",
+        Question:
+            "In July 2020 Two_EEzy set their first Halo Speedrunning WR on which level?",
         Answers: QuizNaming.Levels.Reach.LongNightOfSolace,
     },
     {
         Question:
-            "Who was the first person to get the Two Bertrayals IL WR with the Banshee out of Level strategy?",
+            "In Feb 2021 yeVcM set their first Halo Speedrunning WR on which level?",
+        Answers: QuizNaming.Levels.ODST.OniAlphaSite,
+    },
+    {
+        Question:
+            "In what year did Sorix set their first Halo Speedrunning WR?",
+        Answers: ["2017"],
+    },
+    {
+        Question:
+            "In Aug 2020 Cambid set their first Halo Speedrunning WR on which level?",
+        Answers: QuizNaming.Levels.HCE.TwoBetrayals,
+    },
+    {
+        Question:
+            "In Dec 2016 Harc set their first Halo Speedrunning WR on which level?",
+        Answers: QuizNaming.Levels.H3.Floodgate,
+    },
+    {
+        Question:
+            "Who was the first person to get the Two Betrayals IL WR with the Banshee out of Level strategy?",
         Answers: QuizNaming.People.Sorix,
     },
     {

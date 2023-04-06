@@ -51,9 +51,12 @@ let quizInterval: NodeJS.Timeout
 //var didYouKnowInterval
 let periodicMessagesInterval: NodeJS.Timeout
 let twitchApiPollingInterval: NodeJS.Timeout
+let streamNameAndGameInterval: NodeJS.Timeout
 
 // Flags
 export let isLive = false
+let streamName: string = ""
+let streamGame: string = ""
 let isFirstAuth = true
 let quizStartReward: HelixCustomReward
 let latestRedemptionDate: number = Date.now()
@@ -296,6 +299,7 @@ async function TwitchApiPolling() {
         clearInterval(quizInterval)
         //clearInterval(didYouKnowInterval)
         clearInterval(periodicMessagesInterval)
+        clearInterval(streamNameAndGameInterval)
 
         SendMessage("streamend", `wingma14Blush Thanks for the stream!`, 1000)
     } else if (
@@ -306,7 +310,10 @@ async function TwitchApiPolling() {
         isLive = true
         console.log("Streamer went live!")
 
-        LivestreamAlert(streamWingman953.title, streamWingman953.gameName)
+        streamName = streamWingman953.title
+        streamGame = streamWingman953.gameName
+
+        LivestreamAlert(streamName, streamGame)
         LoadWelcomeMessages()
         ResetUsedQuestions()
         HaloRunsSetup()
@@ -315,6 +322,7 @@ async function TwitchApiPolling() {
         quizInterval = setInterval(StartQuiz, Between(2100000, 2700000)) // 35-45mins
         //didYouKnowInterval = setInterval(SendDidYouKnowFact, 2580000) // 43mins
         periodicMessagesInterval = setInterval(PeriodicMessages, 3300000) // 55mins
+        streamNameAndGameInterval = setInterval(PollStreamNameAndGame, 60000) // 1min
 
         SendMessage(
             "streamstart",
@@ -369,17 +377,32 @@ export function SendMessage(
     }, delay)
 }
 
+async function PollStreamNameAndGame() {
+    const streamWingman953 = await apiClient.streams.getStreamByUserId(
+        Wingman953?.id as string
+    )
+
+    if (
+        streamWingman953?.title !== streamName ||
+        streamWingman953?.gameName !== streamGame
+    ) {
+        streamName = streamWingman953?.title!
+        streamGame = streamWingman953?.gameName!
+        LivestreamAlert(streamName, streamGame)
+    }
+}
+
 const periodicMessages = [
     "/me Enjoying the stream? Watching, chatting, following, cheering, subscribing or donating are all great ways to support the stream. Your support allows me to continue investing time into the channel and it is greatly appreciated!",
     "/me Got a song suggestion? Feel free to share it with the streamer and it may be added to the stream playlist!",
     "/me Join Wingman953's Discord Server here: https://discord.gg/6KPBTApkJ8",
     "You got this streamer! Keep up the good work!",
-    "/me Bi-monthly Quiz Leaderboards are live! At the end of every 2 months the top 3 users win a gift sub!",
+    "/me Bi-monthly Quiz Leaderboards are live! Check out the top quizzers with !leaderboards",
 ]
 
 function PeriodicMessages() {
     SendMessage(
-        "periodicmessage",
+        "periodicMessage",
         periodicMessages[Between(0, periodicMessages.length - 1)]
     )
 }

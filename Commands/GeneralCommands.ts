@@ -24,14 +24,8 @@ export var commandMap = [
             "Wingman953's HaloRuns Profile: haloruns.com/profiles/Wingman953",
         ],
     },
-    // {
-    //     Command: ["!wr", "!fgwr"],
-    //     Message: [
-    //         "ODST Easy: 56:42 by Wingman953 | ODST Leg: 1:02:23 by Wingman953",
-    //     ],
-    // },
     {
-        Command: ["!youtube", "!yt", "!pbvid"],
+        Command: ["!youtube", "!yt"],
         Message: [
             "Wingman953's YouTube: www.youtube.com/channel/UCOwR4betNPOGARQqHUBFQRw/videos",
         ],
@@ -169,7 +163,9 @@ export var commandMap = [
     // FAQ
     {
         Command: ["!faq"],
-        Message: ["!ammoempty, !timer, !glyphs, !downpatch, !quiz"],
+        Message: [
+            "!ammoempty, !timer, !glyphs, !downpatch, !quiz, !song, !playlist, !wr, !pb",
+        ],
     },
     {
         Command: ["!ammoempty", "!ammo", "!wasteammo"],
@@ -193,12 +189,10 @@ export var commandMap = [
             "On Season 8 Brutes slide around a lot when EMP'd, this can make it difficult to deal with them (particularly for the Chieftain on the roof of the ONI building and during Data Hive). It's not a big deal but the issue can easily be avoided by downpatching to Season 7.",
         ],
     },
-    // {
-    //     Command: ["!sub1pace", "!subonepace"],
-    //     Message: [
-    //         "Sub 34:40 into Data Hive. Sub 45:40 into Coastal.",
-    //     ],
-    // },
+    {
+        Command: ["!sub1pace", "!subonepace"],
+        Message: ["Sub 34:40 into Data Hive. Sub 45:40 into Coastal."],
+    },
     // People
     {
         Command: ["!sleepless", "!sleeplessblue"],
