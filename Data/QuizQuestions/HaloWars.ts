@@ -25,12 +25,10 @@ export const haloWars = [
     },
     {
         Question: "Name one of the members of Red Team featured in Halo Wars?",
-        Answers: [
-            "Alice-130, Douglas-042, Jerome-092",
+        Answers: ["Alice-130, Douglas-042, Jerome-092"].concat(
             QuizNaming.Characters.Alice,
             QuizNaming.Characters.Douglas,
-            QuizNaming.Characters.Jerome,
-        ],
+            QuizNaming.Characters.Jerome),
     },
     {
         Question:
