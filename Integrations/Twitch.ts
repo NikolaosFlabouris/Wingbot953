@@ -286,68 +286,79 @@ async function ContinueTwitchSetup() {
 }
 
 async function TwitchApiPolling() {
-    const streamWingman953 = await apiClient.streams.getStreamByUserId(
-        Wingman953?.id as string
-    )
+    try {
+        const streamWingman953 = await apiClient.streams.getStreamByUserId(
+            Wingman953?.id as string
+        )
 
-    // Gone Live!
-    const currentTimestamp = Date.now()
-    if (isLive && streamWingman953?.startDate == null) {
-        isLive = false
-        console.log("Streamer went offline!")
+        // Gone Live!
+        const currentTimestamp = Date.now()
+        if (isLive && streamWingman953?.startDate == null) {
+            isLive = false
+            console.log("Streamer went offline!")
 
-        clearInterval(quizInterval)
-        //clearInterval(didYouKnowInterval)
-        clearInterval(periodicMessagesInterval)
-        clearInterval(streamNameAndGameInterval)
+            clearInterval(quizInterval)
+            //clearInterval(didYouKnowInterval)
+            clearInterval(periodicMessagesInterval)
+            clearInterval(streamNameAndGameInterval)
 
-        SendMessage("streamend", `wingma14Blush Thanks for the stream!`, 1000)
-    } else if (
-        !isLive &&
-        streamWingman953?.startDate != undefined /* &&
+            SendMessage(
+                "streamend",
+                `wingma14Blush Thanks for the stream!`,
+                1000
+            )
+        } else if (
+            !isLive &&
+            streamWingman953?.startDate != undefined /* &&
         streamWingman953?.startDate.getTime() > currentTimestamp*/
-    ) {
-        isLive = true
-        console.log("Streamer went live!")
+        ) {
+            isLive = true
+            console.log("Streamer went live!")
 
-        streamName = streamWingman953.title
-        streamGame = streamWingman953.gameName
+            streamName = streamWingman953.title
+            streamGame = streamWingman953.gameName
 
-        LivestreamAlert(streamName, streamGame)
-        LoadWelcomeMessages()
-        ResetUsedQuestions()
-        HaloRunsSetup()
+            LivestreamAlert(streamName, streamGame)
+            LoadWelcomeMessages()
+            ResetUsedQuestions()
+            HaloRunsSetup()
 
-        // Automatic messages on timers
-        quizInterval = setInterval(StartQuiz, Between(2100000, 2700000)) // 35-45mins
-        //didYouKnowInterval = setInterval(SendDidYouKnowFact, 2580000) // 43mins
-        periodicMessagesInterval = setInterval(PeriodicMessages, 3300000) // 55mins
-        streamNameAndGameInterval = setInterval(PollStreamNameAndGame, 60000) // 1min
+            // Automatic messages on timers
+            quizInterval = setInterval(StartQuiz, Between(2100000, 2700000)) // 35-45mins
+            //didYouKnowInterval = setInterval(SendDidYouKnowFact, 2580000) // 43mins
+            periodicMessagesInterval = setInterval(PeriodicMessages, 3300000) // 55mins
+            streamNameAndGameInterval = setInterval(
+                PollStreamNameAndGame,
+                60000
+            ) // 1min
 
-        SendMessage(
-            "streamstart",
-            `wingma14Arrive Good Luck Streamer! wingma14Blush`,
-            1000
-        )
-    }
+            SendMessage(
+                "streamstart",
+                `wingma14Arrive Good Luck Streamer! wingma14Blush`,
+                1000
+            )
+        }
 
-    // Quiz Start!
-    const redemptionsWingman953 =
-        await apiClient.channelPoints.getRedemptionsForBroadcaster(
-            Wingman953?.id as string,
-            quizStartReward.id,
-            "UNFULFILLED",
-            { newestFirst: true }
-        )
+        // Quiz Start!
+        const redemptionsWingman953 =
+            await apiClient.channelPoints.getRedemptionsForBroadcaster(
+                Wingman953?.id as string,
+                quizStartReward.id,
+                "UNFULFILLED",
+                { newestFirst: true }
+            )
 
-    if (
-        redemptionsWingman953.data.length > 0 &&
-        redemptionsWingman953.data[0].redemptionDate.getTime() >
-            latestRedemptionDate
-    ) {
-        latestRedemptionDate =
-            redemptionsWingman953.data[0].redemptionDate.getTime()
-        HandleRedemption(redemptionsWingman953.data[0].rewardTitle)
+        if (
+            redemptionsWingman953.data.length > 0 &&
+            redemptionsWingman953.data[0].redemptionDate.getTime() >
+                latestRedemptionDate
+        ) {
+            latestRedemptionDate =
+                redemptionsWingman953.data[0].redemptionDate.getTime()
+            HandleRedemption(redemptionsWingman953.data[0].rewardTitle)
+        }
+    } catch {
+        console.log("CATCH: Failed to reach Twitch API.")
     }
 }
 
