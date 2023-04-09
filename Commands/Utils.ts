@@ -46,28 +46,67 @@ export function Between(min: number, max: number) {
 export function SelectFromList(list: Array<string>, msg: TwitchPrivateMessage) {
     var originalMessage = msg.content.value
     var command = originalMessage.split(" ")[0].trim().toLowerCase()
+    var argumentCount = originalMessage.split(" ").length - 1
     var index = Between(0, list.length - 1)
 
-    // Check if at least one argument have been given
-    if (originalMessage.split(" ").length >= 2) {
-        // Parse the number, subtract one because human readable argument is accepted.
-        index = parseInt(originalMessage.split(" ")[1].trim(), 10) - 1
-
-        if (Number.isNaN(index)) {
-            SendMessage(
-                command,
-                "Use a number following the command to specify which result should be given."
-            )
-            return
-        }
-    }
-
-    if (index < 0 || index >= list.length) {
-        SendMessage(command, `Value out of range: 1 to ${list.length}`)
+    if (argumentCount === 0) {
+        SendMessage(command, `[${index + 1}] ` + list[index])
         return
     }
 
-    SendMessage(command, `[${index + 1}] ` + list[index])
+    // Check if a number has been given
+    if (
+        argumentCount === 1 &&
+        !Number.isNaN(parseInt(originalMessage.split(" ")[1].trim(), 10))
+    ) {
+        // Parse the number, subtract one because human readable argument is accepted.
+        index = parseInt(originalMessage.split(" ")[1].trim(), 10) - 1
+
+        if (index < 0 || index >= list.length) {
+            SendMessage(command, `Value out of range: 1 to ${list.length}`)
+            return
+        }
+
+        SendMessage(command, `[${index + 1}] ` + list[index])
+        return
+    }
+
+    // Check if words have been given
+    if (argumentCount >= 1) {
+        let matchWords = originalMessage.split(" ").slice(1)
+
+        let matches: Array<{ quote: string; index: number }> = []
+
+        for (let i = 0; i < list.length; i++) {
+            let isMatch = true
+            for (let j = 0; j < matchWords.length; j++) {
+                if (
+                    !list[i]
+                        .toLowerCase()
+                        .includes(matchWords[j].trim().toLowerCase())
+                ) {
+                    isMatch = false
+                    break
+                }
+            }
+
+            if (isMatch) {
+                matches.push({ quote: list[i], index: i })
+            }
+        }
+
+        if (matches.length === 0) {
+            SendMessage(command, "No word match found.")
+            return
+        }
+
+        var matchIndex = Between(0, matches.length - 1)
+        SendMessage(
+            command,
+            `[${matches[matchIndex].index + 1}] ` + matches[matchIndex].quote
+        )
+        return
+    }
 }
 
 ///

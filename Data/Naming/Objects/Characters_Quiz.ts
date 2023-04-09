@@ -84,7 +84,11 @@ export class Characters_Quiz {
         "Dr Tillson",
         "Dr Tilson",
         "Tillson",
+        "Tilson",
         "Sandra Tillson",
+        "Sandra Tilson",
+        "Sandy Tillson",
+        "Sandy Tilson",
     ]
 
     public static Dutch = ["Dutch", "Taylor Miles"]

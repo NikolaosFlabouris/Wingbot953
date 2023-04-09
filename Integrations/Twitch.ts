@@ -389,17 +389,21 @@ export function SendMessage(
 }
 
 async function PollStreamNameAndGame() {
-    const streamWingman953 = await apiClient.streams.getStreamByUserId(
-        Wingman953?.id as string
-    )
+    try {
+        const streamWingman953 = await apiClient.streams.getStreamByUserId(
+            Wingman953?.id as string
+        )
 
-    if (
-        streamWingman953?.title !== streamName ||
-        streamWingman953?.gameName !== streamGame
-    ) {
-        streamName = streamWingman953?.title!
-        streamGame = streamWingman953?.gameName!
-        LivestreamAlert(streamName, streamGame)
+        if (
+            streamWingman953?.title !== streamName ||
+            streamWingman953?.gameName !== streamGame
+        ) {
+            streamName = streamWingman953?.title!
+            streamGame = streamWingman953?.gameName!
+            LivestreamAlert(streamName, streamGame)
+        }
+    } catch {
+        console.log("CATCH: Failed to reach Twitch API.")
     }
 }
 
@@ -450,47 +454,59 @@ function HandleRedemption(rewardTitle: string) {
 }
 
 async function HandleFollowAge(msg: TwitchPrivateMessage) {
-    const follow = await apiClient.users.getFollowFromUserToBroadcaster(
-        msg.userInfo.userId,
-        msg.channelId!
-    )
+    try {
+        const follow = await apiClient.users.getFollowFromUserToBroadcaster(
+            msg.userInfo.userId,
+            msg.channelId!
+        )
 
-    if (follow) {
-        const currentTimestamp = Date.now()
-        const followStartTimestamp = follow.followDate.getTime()
-        SendMessage(
-            "!followage",
-            `@${
-                msg.userInfo.displayName
-            } You have been following for ${SecondsToDuration(
-                (currentTimestamp - followStartTimestamp) / 1000
-            )}!`
-        )
-    } else {
-        SendMessage(
-            "!followage",
-            `@${msg.userInfo.displayName} You are not following!`
-        )
+        if (follow) {
+            const currentTimestamp = Date.now()
+            const followStartTimestamp = follow.followDate.getTime()
+            SendMessage(
+                "!followage",
+                `@${
+                    msg.userInfo.displayName
+                } You have been following for ${SecondsToDuration(
+                    (currentTimestamp - followStartTimestamp) / 1000
+                )}!`
+            )
+        } else {
+            SendMessage(
+                "!followage",
+                `@${msg.userInfo.displayName} You are not following!`
+            )
+        }
+    } catch {
+        console.log("CATCH: Failed to reach Twitch API.")
     }
 }
 
 async function HandleUptime(msg: TwitchPrivateMessage) {
-    const channel = await apiClient.channels.getChannelInfoById(msg.channelId!)
-    const stream = await apiClient.streams.getStreamByUserName(
-        channel?.displayName!
-    )
-
-    if (stream) {
-        const currentTimestamp = Date.now()
-        const streamStartTimestamp = stream.startDate.getTime()
-        SendMessage(
-            "!uptime",
-            `@${msg.userInfo.displayName} Stream uptime: ${SecondsToDuration(
-                (currentTimestamp - streamStartTimestamp) / 1000
-            )}`
+    try {
+        const channel = await apiClient.channels.getChannelInfoById(
+            msg.channelId!
         )
-    } else {
-        console.log("* ERROR Failed to get stream uptime.")
+        const stream = await apiClient.streams.getStreamByUserName(
+            channel?.displayName!
+        )
+
+        if (stream) {
+            const currentTimestamp = Date.now()
+            const streamStartTimestamp = stream.startDate.getTime()
+            SendMessage(
+                "!uptime",
+                `@${
+                    msg.userInfo.displayName
+                } Stream uptime: ${SecondsToDuration(
+                    (currentTimestamp - streamStartTimestamp) / 1000
+                )}`
+            )
+        } else {
+            console.log("* ERROR Failed to get stream uptime.")
+        }
+    } catch {
+        console.log("CATCH: Failed to reach Twitch API.")
     }
 }
 
