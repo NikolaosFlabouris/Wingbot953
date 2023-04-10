@@ -28,7 +28,8 @@ export const haloWars = [
         Answers: ["Alice-130, Douglas-042, Jerome-092"].concat(
             QuizNaming.Characters.Alice,
             QuizNaming.Characters.Douglas,
-            QuizNaming.Characters.Jerome),
+            QuizNaming.Characters.Jerome
+        ),
     },
     {
         Question:
@@ -85,6 +86,10 @@ export const haloWars = [
         Question:
             'Who says the following quote: "Why don\'t we put the lady down and talk about this, man to freak?"',
         Answers: QuizNaming.Characters.SergeantForge,
+    },
+    {
+        Question: 'Complete this quote (1 word): "All ____."',
+        Answers: ["units", "All units"],
     },
     {
         Question:
