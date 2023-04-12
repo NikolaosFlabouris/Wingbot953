@@ -16,4 +16,12 @@ export class Locations_Quiz {
         "04",
         "4",
     ]
+
+    public static Installation09 = [
+        "Installation 09",
+        "Anders' Halo",
+        "Installation 9",
+        "09",
+        "9",
+    ]
 }

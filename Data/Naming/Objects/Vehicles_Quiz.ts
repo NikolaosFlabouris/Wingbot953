@@ -1,7 +1,16 @@
 export class Vehicles_Quiz {
     public static Banshee = ["Banshee", "Banshees"]
 
+    public static Blisterback = ["Blisterback"]
+
     public static Chopper = ["Chopper", "Choppers"]
+
+    public static Condor = [
+        "G81 Condor",
+        "Condor",
+        "G81-Condor",
+        "G81 Heavy Gunship",
+    ]
 
     public static Cyclops = ["Cyclops", "Cyclopses"]
 
@@ -19,11 +28,26 @@ export class Vehicles_Quiz {
         "Grizzly Tanks",
     ]
 
+    public static Jackrabbit = [
+        "Jackrabbit",
+        "Jackrabbits",
+        "M121 Jackrabbit",
+        "M121 Light Strike Vehicle",
+        "M121 LSV",
+    ]
+
     public static Kestrel = [
         "AV-30 Kestrel",
         "Kestrel",
         "AV-30",
         "AV30 Kestrel",
+    ]
+
+    public static Kodiak = [
+        "Kodiak",
+        "M400 Kodiak",
+        "M400",
+        "M400 Artillery System",
     ]
 
     public static Locust = ["Locust", "Locusts"]
@@ -36,9 +60,23 @@ export class Vehicles_Quiz {
         "a Mongoose",
     ]
 
+    public static Nightingale = [
+        "Nightingale",
+        "Nightinggale",
+        "EV-44 Nightingale",
+        "Nightingales",
+        "EV-44 Support VTOL",
+    ]
+
     public static Phaeton = ["Phaeton", "Phaetons"]
 
     public static Prowler = ["Prowler", "Prowlers"]
+
+    public static Reaver = [
+        "Reaver",
+        "Dovotaa Workshop Sky Protector",
+        "Sky Protector",
+    ]
 
     public static Scarab = ["Scarab", "Scarabs"]
 

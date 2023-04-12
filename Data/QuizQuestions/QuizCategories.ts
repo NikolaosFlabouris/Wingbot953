@@ -9,6 +9,7 @@ import { infiniteQuestions } from "./HaloInfinite"
 import { franchiseQuestions } from "./HaloFranchise"
 import { halorunsQuestions } from "./HalorunsSpeedrunning"
 import { haloWars } from "./HaloWars"
+import { haloWars2 } from "./HaloWars2"
 
 export const quizCategories = [
     {
@@ -54,6 +55,11 @@ export const quizCategories = [
     {
         CategoryQuestions: haloWars,
         CategoryName: "Halo Wars 1",
+        CategoryLength: haloWars.length,
+    },
+    {
+        CategoryQuestions: haloWars2,
+        CategoryName: "Halo Wars 2",
         CategoryLength: haloWars.length,
     },
     {

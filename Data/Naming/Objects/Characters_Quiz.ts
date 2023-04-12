@@ -14,6 +14,10 @@ export class Characters_Quiz {
 
     public static Arbiter = ["Arbiter", "the Arbiter"]
 
+    public static Atriox = ["Atriox"]
+
+    public static August = ["August", "August-099", "August 099"]
+
     public static EdwardBuck = ["Edward Buck", "Buck", "Eddy Buck"]
 
     public static Carter = ["Carter", "Noble One", "Noble 1"]
@@ -59,9 +63,13 @@ export class Characters_Quiz {
         "Chips Dubo",
     ]
 
+    public static Colony = ["Colony"]
+
     public static Cortana = ["Cortana"]
 
     public static Dare = ["Dare", "Veronica Dare", "Veronica"]
+
+    public static Decimus = ["Decimus", "Deci"]
 
     public static Douglas = [
         "Douglas",
@@ -129,6 +137,8 @@ export class Characters_Quiz {
         "Spartan Tanaka",
     ]
 
+    public static Isabel = ["Isabel"]
+
     public static JamesonLocke = [
         "Spartan Jameson Locke",
         "Locke",
@@ -156,6 +166,10 @@ export class Characters_Quiz {
     public static Jun = ["Jun", "Noble Three", "Noble 3"]
 
     public static Kat = ["Kat", "Catherine", "Noble Two", "Noble 2"]
+
+    public static Kinsano = ["Morgan Kinsano", "Morgan", "Kinsano"]
+
+    public static Leon = ["Leon", "Leon-011", "Leon 011"]
 
     public static LordTerranceHood = ["Lord Hood", "Hood", "Terrance Hood"]
 
@@ -189,11 +203,15 @@ export class Characters_Quiz {
         "B312",
     ]
 
+    public static Pavium = ["Pavium"]
+
     public static ProphetOfMercy = ["Prophet of Mercy", "Mercy"]
 
     public static ProphetOfRegret = ["Prophet of Regret", "Regret"]
 
     public static ProphetOfTruth = ["Prophet of Truth", "Truth"]
+
+    public static Robert = ["Robert", "Robert-025", "Robert 025"]
 
     public static Romeo = ["Romeo", "Kojo Agu"]
 
@@ -215,6 +233,7 @@ export class Characters_Quiz {
         "Sgt Johnson",
         "Avery Johnson",
         "Johnson",
+        "Avery",
     ]
 
     public static SergeantReynolds = [
@@ -276,5 +295,18 @@ export class Characters_Quiz {
         "343GS",
     ]
 
+    public static Voridus = ["Voridus", "Vori"]
+
     public static WardenEternal = ["Warden Eternal", "Warden"]
+
+    public static Yapyap = [
+        "Yapyap the Destroyer",
+        "Yap yap the Destroyer",
+        "Yap-yap the Destroyer",
+        "the Destroyer",
+        "Yapyap",
+        "Yap yap",
+        "Yap-yap",
+        "Yap",
+    ]
 }

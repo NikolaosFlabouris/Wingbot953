@@ -77,6 +77,13 @@ export class Numbers_Quiz {
         "One-Hundred-Twenty-One",
     ]
 
+    public static OneHundredTwentySix = [
+        "126",
+        "One Hundred and Twenty Six",
+        "One Hundred Twenty Six",
+        "One-Hundred-Twenty-Six",
+    ]
+
     public static OneHundredThirty = [
         "130",
         "One Hundred and Thirty",
