@@ -27,8 +27,8 @@ export class Games_Quiz {
     public static Halo3 = ["Halo 3", "H3"]
 
     public static Halo3ODST = [
-        "Halo 3:ODST",
         "Halo 3: ODST",
+        "Halo 3:ODST",
         "Halo 3 :ODST",
         "Halo 3 : ODST",
         "Halo 3ODST",

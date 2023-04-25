@@ -121,7 +121,12 @@ export const halo4Questions = [
     },
     {
         Question: "What does IFF stand for?",
-        Answers: ["Identification Friend or Foe", "Identification Friend Foe"],
+        Answers: [
+            "Identification Friend or Foe",
+            "Identification Friend Foe",
+            "Identify Friend or Foe",
+            "Identify Friend Foe",
+        ],
     },
     {
         Question:

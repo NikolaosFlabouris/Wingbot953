@@ -2,7 +2,7 @@ import { QuizNaming } from "../Naming/QuizNaming"
 
 export const odstQuestions = [
     {
-        Question: "What year was Halo 3:ODST released on the Xbox 360?",
+        Question: "What year was Halo 3: ODST released on the Xbox 360?",
         Answers: ["2009"],
     },
     {
@@ -16,7 +16,7 @@ export const odstQuestions = [
     },
     {
         Question:
-            "During the events of Halo 3:ODST what is Buck's military rank?",
+            "During the events of Halo 3: ODST what is Buck's military rank?",
         Answers: ["Gunnery Sergeant"],
     },
     {
@@ -57,25 +57,41 @@ export const odstQuestions = [
         ],
     },
     {
-        Question: "What is Buck's name?",
-        Answers: ["Edward Buck"],
+        Question: "What is Buck's full name?",
+        Answers: [
+            "Edward Malcolm Buck",
+            "Edward Buck",
+            "Gunnery Sergeant Edward Malcolm Buck",
+            "Gunnery Sergeant Edward Buck",
+            "Spartan Edward Malcolm Buck",
+            "Spartan Edward Buck",
+        ],
     },
     {
-        Question: "What is Dutch's name?",
+        Question: "What is Dutch's full name?",
         Answers: [
+            "Taylor Henry Miles",
             "Taylor Miles",
             "Corporal Taylor Miles",
-            "Taylor Henry Miles",
             "Corporal Taylor Henry Miles",
         ],
     },
     {
-        Question: "What is Mickey's name?",
+        Question: "What is Mickey's full name?",
         Answers: ["Michael Crespo", "Private First Class Michael Crespo"],
     },
     {
-        Question: "What is Romeo's name?",
+        Question: "What is Romeo's full name?",
         Answers: ["Kojo Agu", "Lance Corporal Kojo Agu"],
+    },
+    {
+        Question: "What is Dare's full name?",
+        Answers: [
+            "Veronica Ann Dare",
+            "Captain Veronica Ann Dare",
+            "Veronica Dare",
+            "Captain Veronica Dare",
+        ],
     },
     {
         Question:
@@ -83,7 +99,7 @@ export const odstQuestions = [
         Answers: ["Quick to Adjust"],
     },
     {
-        Question: "What was the name of the ODST Fireteam in Halo 3:ODST?",
+        Question: "What was the name of the ODST Fireteam in Halo 3: ODST?",
         Answers: ["Alpha-9", "Alpha 9", "Alpha Nine", "Alpha-Nine"],
     },
     {
@@ -165,12 +181,12 @@ export const odstQuestions = [
     },
     {
         Question:
-            "What was the name originally given to game Halo 3:ODST before release?",
+            "What was the name originally given to game Halo 3: ODST before release?",
         Answers: ["Halo 3:Recon", "Halo 3: Recon", "Halo 3 Recon", "Recon"],
     },
     {
         Question:
-            "Which Firefight character was a Halo 3:ODST pre-order bonus?",
+            "Which Firefight character was a Halo 3: ODST pre-order bonus?",
         Answers: QuizNaming.Characters.SergeantJohnson,
     },
     {
@@ -217,7 +233,7 @@ export const odstQuestions = [
     },
     {
         Question:
-            "2 skulls where cut from the original release of Halo 3:ODST, one provided a 'directors style' commentary, what did the other skull do?",
+            "2 skulls where cut from the original release of Halo 3: ODST, one provided a 'directors style' commentary, what did the other skull do?",
         Answers: [
             "3rd person camera",
             "third person camera",
@@ -226,17 +242,17 @@ export const odstQuestions = [
     },
     {
         Question:
-            "How many skulls launched with the original version of Halo 3:ODST?",
+            "How many skulls launched with the original version of Halo 3: ODST?",
         Answers: QuizNaming.Numbers.Twelve,
     },
     {
         Question:
-            "Halo 3 launched with 13 skulls, one was removed for the launch of Halo 3:ODST, which skull was removed?",
+            "Halo 3 launched with 13 skulls, one was removed for the launch of Halo 3: ODST, which skull was removed?",
         Answers: ["Fog"],
     },
     {
         Question:
-            "In Halo 3:ODST how many needles are required to supercombine?",
+            "In Halo 3: ODST how many needles are required to supercombine?",
         Answers: QuizNaming.Numbers.Twelve,
     },
     {
@@ -273,7 +289,7 @@ export const odstQuestions = [
     },
     {
         Question:
-            "What is the name of the MCC Achievement for completing Halo 3:ODST on Legendary in under 3hrs?",
+            "What is the name of the MCC Achievement for completing Halo 3: ODST on Legendary in under 3hrs?",
         Answers: ["Nagato Makes Moving Easy"],
     },
     {
@@ -503,7 +519,7 @@ export const odstQuestions = [
     },
     {
         Question:
-            "References to which game were removed in the re-release of Halo 3:ODST on Halo: The Master Chief Collection?",
+            "References to which game were removed in the re-release of Halo 3: ODST on Halo: The Master Chief Collection?",
         Answers: ["Destiny"],
     },
     {

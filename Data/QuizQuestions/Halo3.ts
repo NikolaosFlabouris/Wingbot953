@@ -111,7 +111,7 @@ export const halo3Questions = [
     },
     {
         Question:
-            "What was the name of the Halo 3 Multiplayer disc included alongside Halo 3:ODST?",
+            "What was the name of the Halo 3 Multiplayer disc included alongside Halo 3: ODST?",
         Answers: [
             "Halo 3: Mythic",
             "Halo 3 Mythic",
@@ -232,6 +232,11 @@ export const halo3Questions = [
         Question:
             "Complete this quote (1 word): \"Ma'am, I've got ____. Above and below.\"",
         Answers: ["movement"],
+    },
+    {
+        Question:
+            'Complete this quote (1 word): "A fresh _____! Must be close."',
+        Answers: ["scent"],
     },
     {
         Question:

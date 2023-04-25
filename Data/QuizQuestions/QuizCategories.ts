@@ -29,7 +29,7 @@ export const quizCategories = [
     },
     {
         CategoryQuestions: odstQuestions,
-        CategoryName: "Halo 3:ODST",
+        CategoryName: "Halo 3: ODST",
         CategoryLength: odstQuestions.length,
     },
     {

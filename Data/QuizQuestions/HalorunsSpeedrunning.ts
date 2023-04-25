@@ -26,12 +26,12 @@ export const halorunsQuestions = [
     },
     {
         Question:
-            "In Halo 3:ODST Speedrunning, which IL has the most submissions on the Easy difficulty?",
+            "In Halo 3: ODST Speedrunning, which IL has the most submissions on the Easy difficulty?",
         Answers: QuizNaming.Levels.ODST.TayariPlaza,
     },
     {
         Question:
-            "In Halo 3:ODST Speedrunning, which IL has the most submissions on the Legendary difficulty?",
+            "In Halo 3: ODST Speedrunning, which IL has the most submissions on the Legendary difficulty?",
         Answers: QuizNaming.Levels.ODST.UpliftReserve,
     },
     {
@@ -45,7 +45,7 @@ export const halorunsQuestions = [
     },
     {
         Question:
-            "The first sub-1hr Halo 3:ODST solo time was achieved by who?",
+            "The first sub-1hr Halo 3: ODST solo time was achieved by who?",
         Answers: QuizNaming.People.Harc,
     },
     {
@@ -84,7 +84,7 @@ export const halorunsQuestions = [
         Answers: QuizNaming.People.Sasquatch,
     },
     {
-        Question: "In 2021 Halo 3:ODST was run at AGDQ by which speedrunner?",
+        Question: "In 2021 Halo 3: ODST was run at AGDQ by which speedrunner?",
         Answers: QuizNaming.People.HeroicRobb,
     },
     {
@@ -228,8 +228,18 @@ export const halorunsQuestions = [
     },
     {
         Question:
+            "In Feb 2017 Sasquatch set their first Halo Speedrunning WR on which level?",
+        Answers: QuizNaming.Levels.H3.Sierra,
+    },
+    {
+        Question:
             "Who was the first person to get the Two Betrayals IL WR with the Banshee out of Level strategy?",
         Answers: QuizNaming.People.Sorix,
+    },
+    {
+        Question:
+            "The Prepare to Drop Legendary WR of 1:48 remained unbeaten for 4 years, 11 months and 9 days. Who held this WR?",
+        Answers: QuizNaming.People.HLGNagato,
     },
     {
         Question:
@@ -241,7 +251,7 @@ export const halorunsQuestions = [
         Answers: QuizNaming.Levels.ODST.CoastalHighway,
     },
     {
-        Question: "Harc is known to be a fan of which Halo 3:ODST level?",
+        Question: "Harc is known to be a fan of which Halo 3: ODST level?",
         Answers: QuizNaming.Levels.ODST.NMPDHQ,
     },
     {
@@ -262,20 +272,20 @@ export const halorunsQuestions = [
         Answers: QuizNaming.People.Chappified,
     },
     {
-        Question: "In Halo 3:ODST Speedrunning, what does BPL stand for?",
+        Question: "In Halo 3: ODST Speedrunning, what does BPL stand for?",
         Answers: ["Brute Pressure Launch"],
     },
     {
-        Question: "In Halo 3:ODST Speedrunning, what does HCB stand for?",
+        Question: "In Halo 3: ODST Speedrunning, what does HCB stand for?",
         Answers: ["Hunter Car Boost", "Hunter-Car Boost"],
     },
     {
-        Question: "In Halo 3:ODST Speedrunning, what does RCB stand for?",
+        Question: "In Halo 3: ODST Speedrunning, what does RCB stand for?",
         Answers: ["Rocket Car Boost", "Rocket-Car Boost"],
     },
     {
         Question:
-            "In Halo 3:ODST Speedrunning, if I was performing the Robb Special I would be on which level?",
+            "In Halo 3: ODST Speedrunning, if I was performing the Robb Special I would be on which level?",
         Answers: QuizNaming.Levels.ODST.MombasaStreets.concat([
             "Mombasa Streets 3",
             "Streets 3",
@@ -284,7 +294,7 @@ export const halorunsQuestions = [
     },
     {
         Question:
-            "In Halo 3:ODST Speedrunning, if I was performing the Catwalk Launch I would be on which level?",
+            "In Halo 3: ODST Speedrunning, if I was performing the Catwalk Launch I would be on which level?",
         Answers: QuizNaming.Levels.ODST.DataHive,
     },
     {
