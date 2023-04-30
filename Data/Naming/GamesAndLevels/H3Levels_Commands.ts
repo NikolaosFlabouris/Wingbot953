@@ -5,7 +5,7 @@ export const H3Levels_Commands: { [key: string]: string[] } = {
     Sierra: ["Sierra 117", "Sierra", "S117"],
     Crows: ["Crow's Nest", "Crow'sNest", "CrowsNest", "Crow's", "Crows", "CN"],
     Tsavo: ["Tsavo Highway", "TsavoHighway", "Tsavo", "Highway", "TH", "T"],
-    Storm: ["The Storm", "TheStorm", "Storm"],
+    Storm: ["The Storm", "TheStorm", "Storm", "TS"],
     Floodgate: ["Floodgate", "Flood", "F"],
     Ark: ["The Ark", "TheArk", "Ark", "A"],
     Covie: ["The Covenant", "TheCovenant", "Covenant", "Covie", "Cov"],
