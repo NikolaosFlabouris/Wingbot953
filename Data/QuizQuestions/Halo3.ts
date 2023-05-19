@@ -78,8 +78,8 @@ export const halo3Questions = [
     },
     {
         Question:
-            "The Warthog, Ghost and which other vehicle can be driven on the mission Halo?",
-        Answers: QuizNaming.Vehicles.Mongoose,
+            "The Warthog, Mongoose, Ghost and which other vehicle can be driven on the mission Halo?",
+        Answers: QuizNaming.Vehicles.Chopper,
     },
     {
         Question:
@@ -273,7 +273,7 @@ export const halo3Questions = [
     },
     {
         Question: "What is the name of the max rank in Halo 3 Multiplayer?",
-        Answers: ["5 Star General", "General"],
+        Answers: ["5 Star General", "Five Star General", "General"],
     },
     {
         Question:
