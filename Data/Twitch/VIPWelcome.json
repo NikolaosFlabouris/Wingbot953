@@ -59,7 +59,7 @@
     },
     {
         "Username": [
-            "Reptilian_Gamer"
+            "Reptilian_Gamer", "TheReptiliani"
         ],
         "Message": [
             "lookslikerep is here!"
@@ -208,10 +208,10 @@
     },
     {
         "Username": [
-            "Shoncay"
+            "Shoncay", "ImShoncay"
         ],
         "Message": [
-            "shoncaaaaaay"
+            "shoncaaaaaay", "Shoncaaaaaaaaaaaaaay"
         ],
         "Arrived": false
     },
@@ -454,6 +454,15 @@
         ],
         "Message": [
             "It him"
+        ],
+        "Arrived": false
+    },
+    {
+        "Username": [
+            "elia0528"
+        ],
+        "Message": [
+            "Hello Elia, how's it going?  <3"
         ],
         "Arrived": false
     }

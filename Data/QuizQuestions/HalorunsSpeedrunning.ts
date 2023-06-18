@@ -68,6 +68,10 @@ export const halorunsQuestions = [
         Answers: QuizNaming.People.Synyster,
     },
     {
+        Question: "In 2023 Halo 3 was run at SGDQ by which speedrunner?",
+        Answers: QuizNaming.People.G3lk_Jr,
+    },
+    {
         Question: "In 2022 Halo CE was run at AGDQ by which speedrunner?",
         Answers: QuizNaming.People.Chronos,
     },
@@ -313,9 +317,9 @@ export const halorunsQuestions = [
     {
         Question: "In Halo 4 Speedrunning, what does ASS POD stand for?",
         Answers: [
-            "Area Specific Standing Point Of Despawn",
             "Alley Specific Standing Point Of Despawn",
             "Ally Specific Standing Point Of Despawn",
+            "Area Specific Standing Point Of Despawn",
         ],
     },
     {
