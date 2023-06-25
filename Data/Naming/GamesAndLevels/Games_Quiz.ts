@@ -5,6 +5,7 @@ export class Games_Quiz {
         "Halo: CE",
         "Halo:CE",
         "Halo 1",
+        "Halo CE",
         "HaloCE",
         "Halo1",
         "H:CE",
