@@ -37,6 +37,25 @@ export const franchiseQuestions = [
         Answers: ["Yanme'e", "Yanmee", "Yanme"],
     },
     {
+        Question:
+            "What is the name of the species commonly referred to as Skimmers?",
+        Answers: ["Gasgira"],
+    },
+    {
+        Question:
+            "What is the name of the species commonly referred to as the Endless?",
+        Answers: ["Xalanyn"],
+    },
+    {
+        Question: "Which was the first Spartan to fall to the Covenant?",
+        Answers: QuizNaming.Characters.Samuel,
+    },
+    {
+        Question:
+            "What is the name of the Master Chief's childhood best-friend?",
+        Answers: QuizNaming.Characters.Samuel,
+    },
+    {
         Question: "Which Skull gives the largest points score multiplier?",
         Answers: ["Iron Skull", "Iron"],
     },

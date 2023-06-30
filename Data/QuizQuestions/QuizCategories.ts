@@ -47,11 +47,11 @@ export const quizCategories = [
         CategoryName: "Halo 5",
         CategoryLength: halo5Questions.length,
     },
-    // {
-    //     CategoryQuestions: infiniteQuestions,
-    //     CategoryName: "Halo Infinite",
-    //     CategoryLength: infiniteQuestions.length,
-    // },
+    {
+        CategoryQuestions: infiniteQuestions,
+        CategoryName: "Halo Infinite",
+        CategoryLength: infiniteQuestions.length,
+    },
     {
         CategoryQuestions: haloWars,
         CategoryName: "Halo Wars 1",

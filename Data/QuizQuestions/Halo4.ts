@@ -214,7 +214,7 @@ export const halo4Questions = [
     },
     {
         Question:
-            'Complete this quote (4 word): "It worked. You did it. Just ___ ___ ___ ___."',
+            'Complete this quote (4 words): "It worked. You did it. Just ___ ___ ___ ___."',
         Answers: ["like you always do"],
     },
     {

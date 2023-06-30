@@ -108,6 +108,14 @@ export class Characters_Quiz {
         "Exuberant Witness",
     ]
 
+    public static FernandoEsparza = [
+        "Fernando Esparza",
+        "Fernando",
+        "Esparza",
+        "Pilot",
+        "The Pilot",
+    ]
+
     public static FoeHammer = ["Foe Hammer", "FoeHammer", "Foe-Hammer"]
 
     public static Gravemind = ["the Gravemind", "Gravemind"]
@@ -215,6 +223,16 @@ export class Characters_Quiz {
 
     public static Romeo = ["Romeo", "Kojo Agu"]
 
+    public static Samuel = [
+        "Petty Officer, Second Class Samuel-034",
+        "Samuel-034",
+        "Samuel 034",
+        "Samuel",
+        "Sam",
+        "Samuel Westergaard",
+        "Sam Westergaard",
+    ]
+
     public static SergeantBanks = ["Sergeant Banks", "Banks"]
 
     public static SergeantForge = [
@@ -298,6 +316,8 @@ export class Characters_Quiz {
     public static Voridus = ["Voridus", "Vori"]
 
     public static WardenEternal = ["Warden Eternal", "Warden"]
+
+    public static Weapon = ["The Weapon", "Weapon"]
 
     public static Yapyap = [
         "Yapyap the Destroyer",

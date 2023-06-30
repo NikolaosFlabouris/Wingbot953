@@ -145,11 +145,11 @@ export const halo1Questions = [
             'The "Back In the Day" Achievement was originally awarded when the player played a Capture the Flag game with 4-player splitscreen on which map?',
         Answers: ["Blood Gulch"],
     },
-    {
-        Question:
-            'The "Mystery Achievement" Achievement is awarded when the player enters what text string into any textbox in the game?',
-        Answers: [".fortune"],
-    },
+    // {
+    //     Question:
+    //         'The "Mystery Achievement" Achievement is awarded when the player enters what text string into any textbox in the game?',
+    //     Answers: [".fortune"],
+    // },
     {
         Question:
             'Complete this quote (4 words): "Cortana, all I need to know is ___ ___ ___ ___?"',
