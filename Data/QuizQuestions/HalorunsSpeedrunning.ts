@@ -64,7 +64,7 @@ export const halorunsQuestions = [
     },
     {
         Question:
-            "Whow as the first person to achieve a sub-9min on H2A Regret Legendary?",
+            "Who was the first person to achieve a sub-9min on H2A Regret Legendary?",
         Answers: QuizNaming.People.Synyster,
     },
     {

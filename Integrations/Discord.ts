@@ -104,7 +104,7 @@ export function PublishBimonthlyLeaderboard(
         }
 
         leaderboardMessage =
-            bold("May - June 2023 Bi-Monthly Quiz Leaderboards - Top 50!") +
+            bold("July - August 2023 Bi-Monthly Quiz Leaderboards - Top 50!") +
             `\n\n` +
             leaderboardMessage.replace(/(\*|_|`|~|\\)/g, "\\$1")
 

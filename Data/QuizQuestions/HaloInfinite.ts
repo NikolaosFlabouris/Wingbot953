@@ -1,4 +1,3 @@
-import { QuizSetup } from "../../Commands/Quiz"
 import { QuizNaming } from "../Naming/QuizNaming"
 
 export const infiniteQuestions = [
