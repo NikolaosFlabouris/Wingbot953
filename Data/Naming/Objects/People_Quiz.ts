@@ -26,7 +26,16 @@ export class People_Quiz {
 
     public static GarishGoblin = ["GarishGoblin", "Garish"]
 
-    public static G3lk_Jr = ["G3lk_Jr", "G3lk", "Gelk_Jr", "Gelk", "G3lkJr", "GelkJr", "G3lk Jr", "Gelk Jr"]
+    public static G3lk_Jr = [
+        "G3lk_Jr",
+        "G3lk",
+        "Gelk_Jr",
+        "Gelk",
+        "G3lkJr",
+        "GelkJr",
+        "G3lk Jr",
+        "Gelk Jr",
+    ]
 
     public static Goatrope = ["Goatrope", "Goat"]
 
@@ -47,6 +56,8 @@ export class People_Quiz {
     public static History100 = ["History100", "History"]
 
     public static Hoshka = ["Hoshka"]
+
+    public static JosephStaten = ["Joseph Staten", "Joe Staten", "Staten"]
 
     public static Monopoli = [
         "Monopoli",

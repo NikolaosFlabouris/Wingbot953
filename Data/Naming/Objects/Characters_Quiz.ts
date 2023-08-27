@@ -101,6 +101,8 @@ export class Characters_Quiz {
 
     public static Dutch = ["Dutch", "Taylor Miles"]
 
+    public static Escharum = ["Escharum"]
+
     public static Emile = ["Emile", "Noble Four", "Noble 4"]
 
     public static ExuberantWitness = [

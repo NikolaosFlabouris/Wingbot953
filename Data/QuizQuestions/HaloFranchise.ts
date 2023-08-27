@@ -47,6 +47,10 @@ export const franchiseQuestions = [
         Answers: ["Xalanyn"],
     },
     {
+        Question: "What is the name of the Jiralhanae homeworld?",
+        Answers: ["Doisac"],
+    },
+    {
         Question: "Which was the first Spartan to fall to the Covenant?",
         Answers: QuizNaming.Characters.Samuel,
     },

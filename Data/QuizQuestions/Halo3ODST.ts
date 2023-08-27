@@ -124,7 +124,7 @@ export const odstQuestions = [
     },
     {
         Question: "Who is the voice actor for the Superintendent?",
-        Answers: ["Joseph Staten", "Joe Staten", "Staten"],
+        Answers: QuizNaming.People.JosephStaten,
     },
     {
         Question: "What is The Rookie's signature weapon?",

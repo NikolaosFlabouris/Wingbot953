@@ -83,9 +83,29 @@ export const infiniteQuestions = [
         Answers: ["Hyperius & Tovarus", "Hyperius", "Tovarus"],
     },
     {
+        Question: `Hyperius can be seen wearing the armour of which Spartan?`,
+        Answers: QuizNaming.Characters.JamesonLocke,
+    },
+    {
+        Question: `What is the name of Escharum's Headquaters?`,
+        Answers: ["The House of Reckoning", "House of Reckoning"],
+    },
+    {
+        Question: `What is the Sangheili Blademaster encountered in the House of Reckoning?`,
+        Answers: ["Jega 'Rdomnai", "Jega Rdomnai", "Jega"],
+    },
+    {
+        Question: `In order to access the Bandanna skull, the player cannot kill any of which enemy?`,
+        Answers: ["Sentinels", "Sentinel"],
+    },
+    {
         Question:
             "On which mission do three secret Banished control switches activate an airstrike?",
         Answers: QuizNaming.Levels.Infinite.OutpostTremonious,
+    },
+    {
+        Question: "What does HVT stand for?",
+        Answers: ["High Value Target"],
     },
     {
         Question: "What does FOB stand for?",
@@ -96,9 +116,47 @@ export const infiniteQuestions = [
         Answers: QuizNaming.Numbers.Twelve,
     },
     {
+        Question: "How many Skulls are there in the Halo Infinite Campaign?",
+        Answers: QuizNaming.Numbers.Twelve,
+    },
+    {
+        Question:
+            "What is the name of that one brute from the Halo Infinite Campaign Gameplay Premiere?",
+        Answers: ["Craig"],
+    },
+    {
+        Question:
+            "What is the name of that grunt broadcasting over the Propaganda Towers?",
+        Answers: ["Glibnub"],
+    },
+    {
+        Question: "Who is the voice actor for Glibnub?",
+        Answers: QuizNaming.People.JosephStaten,
+    },
+    {
         Question:
             "The 'Mix Things Up' Achievement is awarded once the player earns at least one kill with every weapon and grenade available on which level?",
         Answers: QuizNaming.Levels.Infinite.WarshipGbraakon,
+    },
+    {
+        Question:
+            "What is the name of the UNSC pistol introduced in Halo Infinite?",
+        Answers: QuizNaming.Weapons.Sidekick,
+    },
+    {
+        Question:
+            "What is the name of the UNSC shotgun introduced in Halo Infinite?",
+        Answers: QuizNaming.Weapons.Bulldog,
+    },
+    {
+        Question:
+            "What is the name of the UNSC rifle introduced in Halo Infinite Season 03?",
+        Answers: QuizNaming.Weapons.Bandit,
+    },
+    {
+        Question:
+            "In Halo Infinite Multiplayer, what is the name of the medal for defeating 40 enemies without dying?",
+        Answers: ["Demon"],
     },
     {
         Question:
@@ -153,5 +211,9 @@ export const infiniteQuestions = [
     {
         Question: `Who says the following quote: "We all fail. We all make mistakes. It's what makes us human."`,
         Answers: QuizNaming.Characters.MasterChief,
+    },
+    {
+        Question: `Who says the following quote: "Bear witness! Our story will become legend. Told by those that survive you."`,
+        Answers: QuizNaming.Characters.Escharum,
     },
 ]

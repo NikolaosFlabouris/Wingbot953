@@ -237,6 +237,11 @@ export const halorunsQuestions = [
     },
     {
         Question:
+            "In June 2019 Jon and Pon set their first Halo Speedrunning WR on which level?",
+        Answers: QuizNaming.Levels.H4.Shutdown,
+    },
+    {
+        Question:
             "Who was the first person to get the Two Betrayals IL WR with the Banshee out of Level strategy?",
         Answers: QuizNaming.People.Sorix,
     },

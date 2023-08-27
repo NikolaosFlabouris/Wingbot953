@@ -3,6 +3,10 @@ export class Weapons_Quiz {
 
     public static Automag = ["Automag", "Pistol", "Silenced Pistol"]
 
+    public static Bandit = ["Bandit"]
+
+    public static Bulldog = ["Bulldog"]
+
     public static DMR = ["DMR", "Designated Marksman Rifle"]
 
     public static EnergySword = ["Energy Sword", "Sword"]
@@ -27,6 +31,8 @@ export class Weapons_Quiz {
         "Rockets",
         "Rocks",
     ]
+
+    public static Sidekick = ["Sidekick"]
 
     public static Shotgun = ["Shotgun", "Shotty", "Shoty"]
 
