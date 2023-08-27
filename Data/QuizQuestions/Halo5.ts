@@ -61,7 +61,8 @@ export const halo5Questions = [
     },
     {
         Question: "2 missions are tied for the longest Par Time, name one?",
-        Answers: QuizNaming.Levels.H5.BlueTeam.concat(
+        Answers: ["Blue Team & Battle of Sunaion"].concat(
+            QuizNaming.Levels.H5.BlueTeam,
             QuizNaming.Levels.H5.BattleOfSunaion
         ),
     },
