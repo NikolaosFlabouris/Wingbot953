@@ -165,6 +165,7 @@ export async function StartMultiUserQuiz() {
 
         for (let i = 0; i < quizCategories.length; i++) {
             if (questionIndex < quizCategories[i].CategoryLength) {
+                console.log("*** DEBUGGING QUIZ QUESTION ERROR: ", quizCategories[i].CategoryQuestions[questionIndex]);
                 question =
                     quizCategories[i].CategoryQuestions[questionIndex].Question
                 answer =
