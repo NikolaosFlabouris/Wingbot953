@@ -26,7 +26,7 @@ let leaderboardsAllTime: any
 let leaderboardsCurrentTime: any
 const leaderboardsFilePath = "./Data/QuizLeaderboards/"
 const leaderboardsAllTimeFileName = "QuizLeaderboards.json"
-const leaderboardsCurrentTimeFileName = "2023SepOct-QuizLeaderboards.json"
+const leaderboardsCurrentTimeFileName = "2023NovDec-QuizLeaderboards.json"
 
 export async function QuizSetup() {
     totalQuestionCount = 0
@@ -69,6 +69,7 @@ export async function StartBasicQuiz() {
             if (!usedQuestions.includes(questionIndex)) {
                 usedQuestions.push(questionIndex)
                 findingNumber = false
+                console.log(questionIndex)
             }
         }
 
@@ -160,12 +161,16 @@ export async function StartMultiUserQuiz() {
             if (!usedQuestions.includes(questionIndex)) {
                 usedQuestions.push(questionIndex)
                 findingNumber = false
+                console.log(questionIndex)
             }
         }
 
         for (let i = 0; i < quizCategories.length; i++) {
             if (questionIndex < quizCategories[i].CategoryLength) {
-                console.log("*** DEBUGGING QUIZ QUESTION ERROR: ", quizCategories[i].CategoryQuestions[questionIndex]);
+                console.log(
+                    "*** DEBUGGING QUIZ QUESTION ERROR: ",
+                    quizCategories[i].CategoryQuestions[questionIndex]
+                )
                 question =
                     quizCategories[i].CategoryQuestions[questionIndex].Question
                 answer =

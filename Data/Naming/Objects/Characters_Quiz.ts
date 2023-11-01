@@ -12,7 +12,7 @@ export class Characters_Quiz {
         "Senior Chief Petty Officer Alice",
     ]
 
-    public static Arbiter = ["Arbiter", "the Arbiter"]
+    public static Arbiter = ["Arbiter", "the Arbiter", "Arby"]
 
     public static Atriox = ["Atriox"]
 

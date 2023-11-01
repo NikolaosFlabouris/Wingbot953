@@ -60,7 +60,8 @@
     },
     {
         "Username": [
-            "Reptilian_Gamer", "TheReptiliani"
+            "Reptilian_Gamer",
+            "TheReptiliani"
         ],
         "Message": [
             "lookslikerep is here!"
@@ -70,7 +71,8 @@
     {
         "Username": [
             "eggplanthydra53",
-            "eggplanthr"
+            "eggplanthr",
+            "EggplantSR"
         ],
         "Message": [
             "Egggrant hype!",
@@ -176,7 +178,8 @@
             "Alextremo08"
         ],
         "Message": [
-            "Hola amiguito!", "Heyo Alex wingma14Good 7"
+            "Hola amiguito!",
+            "Heyo Alex wingma14Good 7"
         ],
         "Arrived": false
     },
@@ -209,10 +212,12 @@
     },
     {
         "Username": [
-            "Shoncay", "ImShoncay"
+            "Shoncay",
+            "ImShoncay"
         ],
         "Message": [
-            "shoncaaaaaay", "Shoncaaaaaaaaaaaaaay"
+            "shoncaaaaaay",
+            "Shoncaaaaaaaaaaaaaay"
         ],
         "Arrived": false
     },
@@ -399,7 +404,8 @@
             "Bilbo_Saggins01"
         ],
         "Message": [
-            "...how do your greetings keep getting worse?!", "MonopolionQuizHandler"
+            "...how do your greetings keep getting worse?!",
+            "MonopolionQuizHandler"
         ],
         "Arrived": false
     },
