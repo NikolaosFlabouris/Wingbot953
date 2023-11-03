@@ -60,7 +60,7 @@ export const quizCategories = [
     {
         CategoryQuestions: haloWars2,
         CategoryName: "Halo Wars 2",
-        CategoryLength: haloWars.length,
+        CategoryLength: haloWars2.length,
     },
     {
         CategoryQuestions: franchiseQuestions,
