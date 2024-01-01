@@ -72,11 +72,11 @@
         "Username": [
             "eggplanthydra53",
             "eggplanthr",
-            "EggplantSR"
+            "EggplantSR",
+            "Koma_SR"
         ],
         "Message": [
-            "Egggrant hype!",
-            "OOOOO Eggplant OOOOO",
+            "OOOOO Koma OOOOO",
             "Hello Marge Simpson!"
         ],
         "Arrived": false
@@ -137,7 +137,8 @@
             "McThumbs"
         ],
         "Message": [
-            "McThumbs hello!"
+            "McThumbs hello!",
+            "level 5 gyatt rizz livvy dunne rizzing up baby gronk ice spice what the dog doin skibidi toilet in real life only in ohio we go jim's creatine alpha sigma cuh dey board"
         ],
         "Arrived": false
     },
@@ -452,7 +453,8 @@
             "fromthegrave_69"
         ],
         "Message": [
-            "Well if it isn't Wingman's favorite viewer. Hello, fromthegrave"
+            "Well if it isn't Wingman's favorite viewer. Hello, fromthegrave",
+            "Hey Grave! Always great to see Wingman's favorite viewer in the chat."
         ],
         "Arrived": false
     },
@@ -471,6 +473,42 @@
         ],
         "Message": [
             "Hello Elia, how's it going?  <3"
+        ],
+        "Arrived": false
+    },
+    {
+        "Username": [
+            "arrogant_biscuit"
+        ],
+        "Message": [
+            "Bye"
+        ],
+        "Arrived": false
+    },
+    {
+        "Username": [
+            "kidtroublehr"
+        ],
+        "Message": [
+            "naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaah"
+        ],
+        "Arrived": false
+    },
+    {
+        "Username": [
+            "PHLHimself"
+        ],
+        "Message": [
+            "Hey PHL, do you also find Ana de Armas pretty attractive?"
+        ],
+        "Arrived": false
+    },
+    {
+        "Username": [
+            "ImElyk"
+        ],
+        "Message": [
+            "Hi."
         ],
         "Arrived": false
     }

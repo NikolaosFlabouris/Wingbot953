@@ -23,7 +23,8 @@ export const haloWars2 = [
         Answers: ["The Ark", "Ark"],
     },
     {
-        Question: "What is the name of the Halo encountered in Halo Wars 2?",
+        Question:
+            "What is the name of the Halo Ring encountered in Halo Wars 2?",
         Answers: QuizNaming.Locations.Installation09,
     },
     {

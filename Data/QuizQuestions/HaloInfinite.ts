@@ -206,7 +206,7 @@ export const infiniteQuestions = [
     },
     {
         Question: `Who says the following quote: "You do not understand what you're hiding. What you are. What compromise means."`,
-        Answers: ["The Harbringer"],
+        Answers: ["The Harbinger"],
     },
     {
         Question: `Who says the following quote: "We all fail. We all make mistakes. It's what makes us human."`,

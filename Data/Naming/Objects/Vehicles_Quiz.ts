@@ -68,6 +68,17 @@ export class Vehicles_Quiz {
         "EV-44 Support VTOL",
     ]
 
+    public static Olifant = [
+        "Olifant",
+        "Olifants",
+        "Olephant",
+        "Olifant",
+        "Olifaunt",
+        "Oliphant",
+        "Olifont",
+        "Oliphaunt",
+    ]
+
     public static Phaeton = ["Phaeton", "Phaetons"]
 
     public static Prowler = ["Prowler", "Prowlers"]

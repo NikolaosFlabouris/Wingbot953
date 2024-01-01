@@ -136,6 +136,10 @@ export const halorunsQuestions = [
         Answers: QuizNaming.People.Monopoli,
     },
     {
+        Question: "Which team won the HaloRuns Legendary Relay Race in 2023?",
+        Answers: ["Red Team", "Red"],
+    },
+    {
         Question: "Which team won the HaloRuns Legendary Relay Race in 2022?",
         Answers: ["Red Team", "Red"],
     },
@@ -153,6 +157,10 @@ export const halorunsQuestions = [
         Question:
             "Which team won the HaloRuns Legendary Relay Race at the start of 2020?",
         Answers: ["Red Team", "Red"],
+    },
+    {
+        Question: "Which team won the HaloRuns Easy Relay Race in 2023?",
+        Answers: ["Blue Team", "Blue"],
     },
     {
         Question: "Which team won the HaloRuns Easy Relay Race in 2022?",

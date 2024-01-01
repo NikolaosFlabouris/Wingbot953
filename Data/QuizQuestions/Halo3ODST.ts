@@ -162,7 +162,7 @@ export const odstQuestions = [
     {
         Question:
             "What is the name of the type of garbage trucks that operate in New Mombasa?",
-        Answers: ["Olifant", "Olifants"],
+        Answers: QuizNaming.Vehicles.Olifant,
     },
     {
         Question: "A Silenced SMG with full ammo has how many bullets?",
