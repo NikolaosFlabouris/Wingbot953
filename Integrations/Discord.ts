@@ -104,9 +104,7 @@ export function PublishBimonthlyLeaderboard(
         }
 
         leaderboardMessage =
-            bold(
-                "January - February 2024 Bi-Monthly Quiz Leaderboards - Top 50!"
-            ) +
+            bold("March - April 2024 Bi-Monthly Quiz Leaderboards - Top 50!") +
             `\n\n` +
             leaderboardMessage.replace(/(\*|_|`|~|\\)/g, "\\$1")
 

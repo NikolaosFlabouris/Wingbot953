@@ -26,7 +26,7 @@ let leaderboardsAllTime: any
 let leaderboardsCurrentTime: any
 const leaderboardsFilePath = "./Data/QuizLeaderboards/"
 const leaderboardsAllTimeFileName = "QuizLeaderboards.json"
-const leaderboardsCurrentTimeFileName = "2024JanFeb-QuizLeaderboards.json"
+const leaderboardsCurrentTimeFileName = "2024MarApr-QuizLeaderboards.json"
 
 export async function QuizSetup() {
     totalQuestionCount = 0

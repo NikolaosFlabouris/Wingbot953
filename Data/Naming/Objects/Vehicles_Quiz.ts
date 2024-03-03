@@ -10,6 +10,10 @@ export class Vehicles_Quiz {
         "Condor",
         "G81-Condor",
         "G81 Heavy Gunship",
+        "G81 Condor Heavy Gunship",
+        "Condor Heavy Gunship",
+        "G81 Condor Gunship",
+        "Condor Gunship",
     ]
 
     public static Cyclops = ["Cyclops", "Cyclopses"]

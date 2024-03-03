@@ -112,8 +112,12 @@ export const haloWars = [
         Answers: [
             "Honour Guard Elite",
             "Honour Guard Elites",
+            "Honour Guard",
+            "Honour Guards",
             "Honor Guard Elite",
             "Honor Guard Elites",
+            "Honor Guard",
+            "Honor Guards",
         ],
     },
     {

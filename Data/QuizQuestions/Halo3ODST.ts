@@ -7,7 +7,7 @@ export const odstQuestions = [
     },
     {
         Question: "Oni",
-        Answers: ["Pog"],
+        Answers: ["Pog", "Oni Pog", "onipog"],
     },
     {
         Question:

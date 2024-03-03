@@ -9,6 +9,12 @@ export var commandMap = [
             "Periodically, or via channel point redemption, a quiz question will be asked in chat. Answer the questions to earn points! See the channel description for more info.",
         ],
     },
+    {
+        Command: ["!vip"],
+        Message: [
+            "The VIP badge is awarded to the Top 3 Quizzers for the previous Bi-monthly period.",
+        ],
+    },
     // Haloruns/Speedruns/Socials/Stream
     {
         Command: ["!hr", "!haloruns"],

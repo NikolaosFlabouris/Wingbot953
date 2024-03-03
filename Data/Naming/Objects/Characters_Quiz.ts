@@ -312,6 +312,7 @@ export class Characters_Quiz {
     public static ThreeFourThreeGuiltySpark = [
         "343 Guilty Spark",
         "Guilty Spark",
+        "343 GS",
         "343GS",
         "Spark",
     ]
