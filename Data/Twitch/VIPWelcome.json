@@ -479,7 +479,8 @@
     },
     {
         "Username": [
-            "kidtroublehr"
+            "kidtroublehr",
+            "kidtrouble999"
         ],
         "Message": [
             "naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaah"
@@ -538,6 +539,15 @@
         ],
         "Message": [
             "No fear, Fred is here!"
+        ],
+        "Arrived": false
+    },
+    {
+        "Username": [
+            "Lord_Duxin"
+        ],
+        "Message": [
+            "EleGiggle"
         ],
         "Arrived": false
     }
