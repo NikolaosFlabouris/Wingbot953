@@ -184,9 +184,14 @@ export async function StartMultiUserQuiz() {
             questionIndex -= quizCategories[i].CategoryLength
         }
 
+        let users = "USERS"
+        if (categoryName.includes("Halo Wars")) {
+            users = "UNITS"
+        }
+
         SendMessage(
             "!quizcontroller",
-            `wingma14Think The next Quiz Question is in 20secs! ALL USERS who answer correctly before time runs out will earn a point! The topic will be ${categoryName}! Good luck!`
+            `wingma14Think The next Quiz Question is in 20secs! ALL ${users} who answer correctly before time runs out will earn a point! The topic will be ${categoryName}! Good luck!`
         )
 
         await sleep(17000)

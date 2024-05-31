@@ -218,6 +218,15 @@ export const halo2Questions = [
         Answers: QuizNaming.Numbers.Three,
     },
     {
+        Question: "What is the name of Regret's Carrier?",
+        Answers: ["Solemn Penance", "Solem Penance"],
+    },
+    {
+        Question:
+            "Replaced right before the launch of the game, what title was used instead of Arbiter?",
+        Answers: ["Dervish"],
+    },
+    {
         Question:
             'Complete this quote (6 words): "When you first saw Halo, ___ ___ ___ ___ ___ ___?"',
         Answers: ["were you blinded by its majesty"],

@@ -412,7 +412,7 @@ const periodicMessages = [
     "/me Got a song suggestion? Feel free to share it with the streamer and it may be added to the stream playlist!",
     "/me Join Wingman953's Discord Server here: https://discord.gg/6KPBTApkJ8",
     "You got this streamer! Keep up the good work!",
-    "/me Bi-monthly Quiz Leaderboards are live! Check out the top quizzers with !leaderboards",
+    "wingma14Jam",
 ]
 
 function PeriodicMessages() {

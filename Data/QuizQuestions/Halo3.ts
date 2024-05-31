@@ -87,6 +87,10 @@ export const halo3Questions = [
         Answers: QuizNaming.Levels.H3.Crows,
     },
     {
+        Question: "In how many levels in Halo 3 can rats be found?",
+        Answers: QuizNaming.Numbers.Two,
+    },
+    {
         Question: "How many terminals are the in the Halo 3 campaign?",
         Answers: QuizNaming.Numbers.Seven,
     },

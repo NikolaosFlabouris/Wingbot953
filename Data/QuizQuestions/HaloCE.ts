@@ -11,6 +11,10 @@ export const halo1Questions = [
         Answers: ["2011"],
     },
     {
+        Question: "Halo was first revealed at what technology trade show?",
+        Answers: ["Macworld", "Macworld 1999", "Macworld 99", "1999 Macworld"],
+    },
+    {
         Question: "Which Halo ring is discovered at the start of Halo CE?",
         Answers: QuizNaming.Locations.Installation04,
     },
@@ -34,6 +38,11 @@ export const halo1Questions = [
     },
     {
         Question:
+            "Which level in Halo: CE is the only level to feature needler ammo as a pickup?",
+        Answers: QuizNaming.Levels.HCE.ThreeFourThreeGS,
+    },
+    {
+        Question:
             "Which is the only level to feature a drivable Scorpion tank?",
         Answers: QuizNaming.Levels.HCE.AssaultOnTheControlRoom,
     },
@@ -50,6 +59,10 @@ export const halo1Questions = [
     {
         Question: "How many Hunters are there in all of Halo: CE?",
         Answers: QuizNaming.Numbers.FortySeven,
+    },
+    {
+        Question: "How many levels in Halo: CE do not feature any jackals?",
+        Answers: QuizNaming.Numbers.Four,
     },
     {
         Question:

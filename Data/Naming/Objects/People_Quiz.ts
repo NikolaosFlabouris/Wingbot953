@@ -1,9 +1,17 @@
 export class People_Quiz {
     public static Adversary = ["Adversary", "Sean"]
 
-    public static byNailz = ["byNailz", "Nailz"]
-
     public static BlazeJp = ["TheBlazeJp", "BlazeJp"]
+
+    public static Burnt = [
+        "Burnt",
+        "Burnt-o",
+        "Burnt_o",
+        "BurntKurisu",
+        "Burnt Kurisu",
+    ]
+
+    public static byNailz = ["byNailz", "Nailz"]
 
     public static Chappified = ["Chappified", "Chappy", "Chapp"]
 
@@ -53,7 +61,12 @@ export class People_Quiz {
 
     public static HLGNagato = ["HLGNagato", "Nagato"]
 
-    public static History100 = ["History100", "History"]
+    public static History100 = [
+        "History100",
+        "History 100",
+        "History",
+        "ひすとりー",
+    ]
 
     public static Hoshka = ["Hoshka"]
 

@@ -64,8 +64,18 @@ export const halorunsQuestions = [
     },
     {
         Question:
-            "Who was the first person to achieve a sub-9min on H2A Regret Legendary?",
+            "Who was the first person to achieve a sub-9min run on H2A Regret Legendary?",
         Answers: QuizNaming.People.Synyster,
+    },
+    {
+        Question:
+            "Who was the first person to achieve a sub-11min run on Halo CE Two Betrayals Legendary?",
+        Answers: QuizNaming.People.Burnt,
+    },
+    {
+        Question:
+            "Who was the first person to achieve a sub-11min run on Halo CE Assault on the Control Room Easy?",
+        Answers: QuizNaming.People.sub_WHISTLE,
     },
     {
         Question: "In 2023 Halo 3 was run at SGDQ by which speedrunner?",
