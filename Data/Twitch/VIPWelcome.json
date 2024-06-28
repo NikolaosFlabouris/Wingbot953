@@ -512,7 +512,8 @@
             "sprtnrxb"
         ],
         "Message": [
-            "What's good?"
+            "What's good?",
+            "That blue hedgehog again of all places"
         ],
         "Arrived": false
     },
@@ -562,3 +563,4 @@
         "Arrived": false
     }
 ]
+// Dyse rolled a D20, it landed on $(customapi http://2g.be/twitch/randomnumber.php?&start=1&end=20)

@@ -297,20 +297,21 @@ export function DisplayQuizLeaderboards() {
 
     SendMessage("!quizleaderboard", message)
 
-    message = "BI-MONTHLY QUIZ TOP 5: "
+    // TODO: Bi-monthly Quiz
+    // message = "BI-MONTHLY QUIZ TOP 5: "
 
-    learboardSize =
-        5 > leaderboardsCurrentTime.length ? leaderboardsCurrentTime.length : 5
+    // learboardSize =
+    //     5 > leaderboardsCurrentTime.length ? leaderboardsCurrentTime.length : 5
 
-    for (let i = 0; i < learboardSize; i++) {
-        message +=
-            leaderboardsCurrentTime[i].Username +
-            " - " +
-            leaderboardsCurrentTime[i].Score +
-            "pts | "
-    }
+    // for (let i = 0; i < learboardSize; i++) {
+    //     message +=
+    //         leaderboardsCurrentTime[i].Username +
+    //         " - " +
+    //         leaderboardsCurrentTime[i].Score +
+    //         "pts | "
+    // }
 
-    SendMessage("!quizleaderboard", message)
+    // SendMessage("!quizleaderboard", message)
 }
 
 export function GetMyQuizScore(msg: TwitchPrivateMessage) {
@@ -337,16 +338,17 @@ export function GetMyQuizScore(msg: TwitchPrivateMessage) {
         }
     }
 
-    for (let i = 0; i < leaderboardsCurrentTime.length; i++) {
-        if (
-            leaderboardsCurrentTime[i].Username.toLowerCase() ==
-            user.toLowerCase()
-        ) {
-            scoreMessage +=
-                ` | Bi-Monthly Quiz Score is: ` +
-                leaderboardsCurrentTime[i].Score
-        }
-    }
+    // TODO: Bi-monthly Quiz
+    // for (let i = 0; i < leaderboardsCurrentTime.length; i++) {
+    //     if (
+    //         leaderboardsCurrentTime[i].Username.toLowerCase() ==
+    //         user.toLowerCase()
+    //     ) {
+    //         scoreMessage +=
+    //             ` | Bi-Monthly Quiz Score is: ` +
+    //             leaderboardsCurrentTime[i].Score
+    //     }
+    // }
 
     if (!scoreFound) {
         scoreMessage = `No score found for user: ${user}`

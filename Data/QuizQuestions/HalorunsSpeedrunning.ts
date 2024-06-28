@@ -45,7 +45,7 @@ export const halorunsQuestions = [
     },
     {
         Question:
-            "The first sub-1hr Halo 3: ODST solo time was achieved by who?",
+            "The first sub-1hr Halo 3: ODST Easy solo time was achieved by who?",
         Answers: QuizNaming.People.Harc,
     },
     {
@@ -257,6 +257,16 @@ export const halorunsQuestions = [
         Question:
             "In June 2019 Jon and Pon set their first Halo Speedrunning WR on which level?",
         Answers: QuizNaming.Levels.H4.Shutdown,
+    },
+    {
+        Question:
+            "In October 2018 Burnt set their first Halo Speedrunning WR on which level?",
+        Answers: QuizNaming.Levels.HCE.AssaultOnTheControlRoom,
+    },
+    {
+        Question:
+            "In March 2021 III_Zoo_III set their first Halo Speedrunning WR on which level?",
+        Answers: QuizNaming.Levels.H3.Halo,
     },
     {
         Question:
