@@ -3,6 +3,12 @@ import { SendMessage } from "../Integrations/Twitch"
 import { Between } from "./Utils"
 
 export var commandMap = [
+    // {
+    //     Command: ["!asap"],
+    //     Message: [
+    //         "I'll be running ODST Legendary as part of Aus Speedruns at PAX (ASAP). The run is at 5:40pm Oct 12th in Melbourne. Full Schedule: https://www.ausspeedruns.com/ASAP2024/schedule",
+    //     ],
+    // },
     {
         Command: ["!quiz"],
         Message: [

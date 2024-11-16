@@ -205,8 +205,16 @@ export const reachQuestions = [
         Answers: ["Spade"],
     },
     {
-        Question: "What is the name of first Noble Six?",
-        Answers: ["Thom"],
+        Question:
+            "Prior to the Fall of Reach, name a former member of Noble Team.",
+        Answers: [
+            "Thom or Rosenda",
+            "Thom",
+            "Rosenda",
+            "Rose",
+            "Thom-A293",
+            "Rosenda-A344",
+        ],
     },
     {
         Question:

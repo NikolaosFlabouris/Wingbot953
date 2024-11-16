@@ -150,8 +150,18 @@ export const infiniteQuestions = [
     },
     {
         Question:
+            "What is the name of the vehicle that can carry weapons and other gameplay items on its back?",
+        Answers: QuizNaming.Vehicles.Razorback,
+    },
+    {
+        Question:
             "What is the name of the UNSC rifle introduced in Halo Infinite Season 03?",
         Answers: QuizNaming.Weapons.Bandit,
+    },
+    {
+        Question:
+            "In Halo Infinite What item of food can be wielded as a weapon?",
+        Answers: ["A sandwich", "sandwich"],
     },
     {
         Question:

@@ -231,4 +231,9 @@ export const halo1Questions = [
             'The "DMM 2003" Easter Egg is found on which Multiplayer map?',
         Answers: ["Timberland"],
     },
+    {
+        Question:
+            "Which multiplayer map was used as the main setting for the web series Red vs Blue?",
+        Answers: ["Blood Gulch"],
+    },
 ]

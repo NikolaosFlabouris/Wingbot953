@@ -1,7 +1,11 @@
 export class People_Quiz {
+    public static Adef = ["Adef"]
+
     public static Adversary = ["Adversary", "Sean"]
 
     public static BlazeJp = ["TheBlazeJp", "BlazeJp"]
+
+    public static Bryonato = ["Bryonato"]
 
     public static Burnt = [
         "Burnt",
@@ -86,6 +90,8 @@ export class People_Quiz {
 
     public static NakedEli = ["Naked Eli", "Eli", "Nak3d Eli"]
 
+    public static NervyDestroyer = ["NervyDestroyer", "Nervy"]
+
     public static Pedrogas = ["Pedrogas", "Pedro"]
 
     public static ProAceJoker = ["ProAceJoker", "Joker", "ProAcedJoker"]
@@ -112,7 +118,14 @@ export class People_Quiz {
 
     public static Willzorss = ["Willzorss", "Willzors"]
 
-    public static Wingman953 = ["Wingman953", "Wingman"]
+    public static Wingman953 = [
+        "Wingman953",
+        "Wingman",
+        "953",
+        "Nine Five Three",
+    ]
 
     public static WoLfy = ["WoLfy"]
+
+    public static Zoo = ["Zoo", "III_Zoo_III"]
 }

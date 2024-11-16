@@ -87,6 +87,8 @@ export class Vehicles_Quiz {
 
     public static Prowler = ["Prowler", "Prowlers"]
 
+    public static Razorback = ["Razorback", "Razorbacks"]
+
     public static Reaver = [
         "Reaver",
         "Dovotaa Workshop Sky Protector",

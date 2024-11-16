@@ -162,7 +162,7 @@ export const halo2Questions = [
     },
     {
         Question:
-            "What is the name of the hidden Easter Egg weapon on Metropolis?",
+            "What is the name of the hidden Easter Egg weapon found on Metropolis?",
         Answers: ["Scarab Gun", "the Scarab Gun"],
     },
     {
@@ -191,8 +191,7 @@ export const halo2Questions = [
         Answers: ["Hotel Zanzibar", "Zanzibar"],
     },
     {
-        Question:
-            "What is the name of the vehicle only found on the mission Outskirts?",
+        Question: "Which vehicle can only be found on the mission Outskirts?",
         Answers: ["Shadow", "Ruwaa-pattern Shadow"],
     },
     {

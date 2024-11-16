@@ -78,6 +78,20 @@ export const halorunsQuestions = [
         Answers: QuizNaming.People.sub_WHISTLE,
     },
     {
+        Question:
+            "In 2024 Halo 3 Co-op was run at SGDQ. Name of the runners from this co-op team?",
+        Answers: ["WoLfy & Pedrogas"].concat(
+            QuizNaming.People.Chronos,
+            QuizNaming.People.NervyDestroyer,
+            QuizNaming.People.Bryonato,
+            QuizNaming.People.Adef
+        ),
+    },
+    {
+        Question: "In 2024 Halo 2 was run at SGDQ by which speedrunner?",
+        Answers: QuizNaming.People.Zoo,
+    },
+    {
         Question: "In 2023 Halo 3 was run at SGDQ by which speedrunner?",
         Answers: QuizNaming.People.G3lk_Jr,
     },
@@ -166,6 +180,10 @@ export const halorunsQuestions = [
     {
         Question:
             "Which team won the HaloRuns Legendary Relay Race at the start of 2020?",
+        Answers: ["Red Team", "Red"],
+    },
+    {
+        Question: "Which team won the HaloRuns Easy Relay Race in 2024?",
         Answers: ["Red Team", "Red"],
     },
     {

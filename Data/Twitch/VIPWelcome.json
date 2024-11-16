@@ -10,10 +10,10 @@
     },
     {
         "Username": [
-            "Skilledgames_"
+            "missclinger"
         ],
         "Message": [
-            "Skilled has arrived"
+            "Hey Claire!"
         ],
         "Arrived": false
     },
@@ -443,7 +443,7 @@
     },
     {
         "Username": [
-            "fromthegrave_69"
+            "fromthegraveHR"
         ],
         "Message": [
             "Well if it isn't Wingman's favorite viewer. Hello, fromthegrave",
@@ -484,7 +484,7 @@
             "kidtrouble999"
         ],
         "Message": [
-            "naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaah"
+            "number one odst splicer and cheater has arrived"
         ],
         "Arrived": false
     },
@@ -494,7 +494,8 @@
         ],
         "Message": [
             "Hey PHL, do you also find Ana de Armas pretty attractive?",
-            "Yo PHL, tell a fun fact! Keep it SFW please"
+            "Yo PHL, tell a fun fact! Keep it SFW please",
+            "NA isn't actually a bad level to be honest."
         ],
         "Arrived": false
     },
@@ -531,7 +532,8 @@
             "SauvignonGronk"
         ],
         "Message": [
-            "!ban SauvignonGronk"
+            "!ban SauvignonGronk",
+            "ALL UNITS"
         ],
         "Arrived": false
     },
@@ -561,6 +563,14 @@
             "long time no see . gl today"
         ],
         "Arrived": false
+    },
+    {
+        "Username": [
+            "dyse"
+        ],
+        "Message": [
+            "Dyse rolled a D20, it landed on $(customapi http://2g.be/twitch/randomnumber.php?&start=1&end=20)"
+        ],
+        "Arrived": false
     }
 ]
-// Dyse rolled a D20, it landed on $(customapi http://2g.be/twitch/randomnumber.php?&start=1&end=20)

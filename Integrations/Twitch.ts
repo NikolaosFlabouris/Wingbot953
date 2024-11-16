@@ -435,6 +435,8 @@ const converseResponses = [
     "excellent jack",
     "splendid grant",
     "unquestionably neil",
+    "positively brent",
+    "okeydokey brayden",
 ]
 
 function Converse(user: string, msg: TwitchPrivateMessage) {

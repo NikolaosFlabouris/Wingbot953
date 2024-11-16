@@ -51,6 +51,24 @@ export const franchiseQuestions = [
         Answers: ["Doisac"],
     },
     {
+        Question: "Which species built the Halo rings?",
+        Answers: [
+            "The Forerunners",
+            "Forerunners",
+            "The Forerunner",
+            "Forerunner",
+        ],
+    },
+    {
+        Question:
+            "Which planet fell to the Covenant just weeks before the discovery of Halo?",
+        Answers: ["Reach"],
+    },
+    {
+        Question: "What is the name of the armour worn by Spartans?",
+        Answers: ["MJOLNIR Powered Assault Armor", "Mjolnir"],
+    },
+    {
         Question: "Which was the first Spartan to fall to the Covenant?",
         Answers: QuizNaming.Characters.Samuel,
     },
@@ -76,6 +94,11 @@ export const franchiseQuestions = [
     {
         Question: "Dual Wielding was first included in which Halo game?",
         Answers: QuizNaming.Games.Halo2,
+    },
+    {
+        Question:
+            "The Forge map editor was first introduced in which Halo game?",
+        Answers: QuizNaming.Games.Halo3,
     },
     {
         Question: "Theatre was first included in which Halo game?",
@@ -133,6 +156,11 @@ export const franchiseQuestions = [
     },
     {
         Question:
+            "When killed by strange or unknown circumstances, what will the game say you have been killed by?",
+        Answers: ["The Guardians", "Guardians"],
+    },
+    {
+        Question:
             "What is the name of the first isometric 'twin stick' shooter Halo game developed in collaboration with Vanguard Games?",
         Answers: QuizNaming.Games.HaloSpartanAssault,
     },
@@ -182,5 +210,10 @@ export const franchiseQuestions = [
     {
         Question: "What year was Halo: Fireteam Raven released?",
         Answers: ["2018"],
+    },
+    {
+        Question:
+            "What is the name of the Master Chief's team in the Halo TV Series?",
+        Answers: ["Silver Team", "Silverteam", "Silver"],
     },
 ]
