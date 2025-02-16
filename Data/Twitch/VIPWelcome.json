@@ -1,15 +1,6 @@
 [
     {
         "Username": [
-            "Wingman953"
-        ],
-        "Message": [
-            "Hello streamer!"
-        ],
-        "Arrived": false
-    },
-    {
-        "Username": [
             "missclinger"
         ],
         "Message": [
@@ -514,7 +505,8 @@
         ],
         "Message": [
             "What's good?",
-            "That blue hedgehog again of all places"
+            "That blue hedgehog again of all places",
+            "Traditional hamster greeting 🐹"
         ],
         "Arrived": false
     },
@@ -548,10 +540,10 @@
     },
     {
         "Username": [
-            "Lord_Duxin"
+            "lord_duxzen"
         ],
         "Message": [
-            "EleGiggle"
+            "lord_duxzen has been permanently banned from this channel"
         ],
         "Arrived": false
     },
@@ -570,6 +562,17 @@
         ],
         "Message": [
             "Dyse rolled a D20, it landed on $(customapi http://2g.be/twitch/randomnumber.php?&start=1&end=20)"
+        ],
+        "Arrived": false
+    },
+    {
+        "Username": [
+            "Toy_Chest",
+            "T0y_Chest"
+        ],
+        "Message": [
+            "Oi Chest!",
+            "Oi Chest o7"
         ],
         "Arrived": false
     }
