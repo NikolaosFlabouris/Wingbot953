@@ -57,12 +57,12 @@ export var commandMap = [
         ],
         Message: ["yea nah"],
     },
-    {
-        Command: ["!newvid"],
-        Message: [
-            "ONI Alpha Site - Legendary + Blind Skull Challenge!! https://www.youtube.com/watch?v=hSlM6J9N4Nc",
-        ],
-    },
+    // {
+    //     Command: ["!newvid"],
+    //     Message: [
+    //         "ONI Alpha Site - Legendary + Blind Skull Challenge!! https://www.youtube.com/watch?v=hSlM6J9N4Nc",
+    //     ],
+    // },
     {
         Command: ["!fastfactplaylist"],
         Message: [
@@ -82,6 +82,38 @@ export var commandMap = [
         ],
     },
     {
+        Command: ["!clip"],
+        Message: [
+            "https://www.twitch.tv/wingman953/clip/TawdryCrypticMoosePastaThat-yTbezgBoLiw9TWYB",
+        ],
+    },
+    {
+        Command: ["!clip1"],
+        Message: [
+            "https://www.twitch.tv/wingman953/clip/SpicyAmazonianKittenNinjaGrumpy-jhLOWMDKj26UQQlw",
+        ],
+    },
+    {
+        Command: ["!clip2"],
+        AllMessages: true,
+        Message: [
+            "https://www.twitch.tv/wingman953/clip/UninterestedPhilanthropicJellyfishNomNom-RVvNns5_38sdZQL7",
+            "https://www.twitch.tv/wingman953/clip/CuteTacitWormImGlitch-zVsFUInUUtPEHuWl",
+        ],
+    },
+    {
+        Command: ["!clip3"],
+        Message: [
+            "https://www.twitch.tv/wingman953/clip/CrispyObliqueAnacondaPMSTwin-uWLkBGfxo1nOMc8r",
+        ],
+    },
+    {
+        Command: ["!clip4"],
+        Message: [
+            "https://www.twitch.tv/wingman953/clip/EnchantingGracefulQuailOSsloth-Ft_GzL2MpKOvZahE",
+        ],
+    },
+    {
         Command: ["!playlist", "!music"],
         Message: [
             "Wingman953's Stream Music Playlist: https://open.spotify.com/playlist/19iCkrwBp77MWHfDzn6klA?si=b025f7bb576e4f8f",
@@ -92,10 +124,6 @@ export var commandMap = [
         Message: [
             "The awesome emotes were created by the amazing JustFredrik: https://www.twitch.tv/justfredrik",
         ],
-    },
-    {
-        Command: ["!sr", "!songrequest"],
-        Message: ["If you share a song the streamer may choose to play it."],
     },
     {
         Command: ["!segmented", "!seg", "!odstseg", "!odstsegmented"],
@@ -120,13 +148,6 @@ export var commandMap = [
         AllMessages: true,
         Message: [
             "Heroic, Black Eye, restricted melee (only at full stamina, only on Grunts or by assassinating Jackals), no vehicle hijacking, no vehicle flipping, no Hammer, no turret detaching/carrying, no out of bounds. Optional: All cutscenes, deathless, optional dialogue, Easter Eggs, Audio logs.",
-        ],
-    },
-    {
-        Command: ["!laso"],
-        AllMessages: true,
-        Message: [
-            "Hardest part is just the randomness of explosions (and Coastal). Grenades from from friends or foes can get you or cause lots of chain reactions. This makes ONI and Data Hive hard. However Coastal is the worst cause it's an escort mission, OOB is plausible but requires 1st try launches and then some good RNG. Plan is to not use a digital crosshair (or similar).",
         ],
     },
     {
@@ -204,6 +225,12 @@ export var commandMap = [
     {
         Command: ["!sub1pace", "!subonepace"],
         Message: ["Sub 34:40 into Data Hive. Sub 45:40 into Coastal."],
+    },
+    {
+        Command: ["!bpl"],
+        Message: [
+            "IL: https://youtu.be/L515UNnGk0I?t=66 | Segmented: https://youtu.be/mnMEszaVJM8?t=462",
+        ],
     },
     // People
     {
