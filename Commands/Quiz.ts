@@ -58,6 +58,21 @@ export function ResetUsedQuestions() {
     }
 }
 
+export async function RollBonusQuiz() {
+    sleep(2000)
+
+    if (Between(0, 99) < 7) {
+        SendMessage(
+            "!quizcontroller",
+            `wingma14Think BONUS QUIZ! LET'S GO! wingma14Think`
+        )
+
+        sleep(2000)
+
+        StartQuiz()
+    }
+}
+
 export async function StartBasicQuiz() {
     if (!blockQuiz) {
         blockQuiz = true
@@ -147,6 +162,8 @@ async function BasicQuizAnswer(user: string, msg: TwitchPrivateMessage) {
         SendMessage("!quizcontroller", `/slowoff`)
 
         blockQuiz = false
+
+        RollBonusQuiz()
     }
 }
 
@@ -212,6 +229,8 @@ export async function StartMultiUserQuiz() {
 
         quizActive = false
 
+        let successfulAnswer = false
+
         if (correctUsers.length > 0) {
             const plural = correctUsers.length > 1 ? "users" : "user"
 
@@ -228,6 +247,8 @@ export async function StartMultiUserQuiz() {
                 "!quizcontroller",
                 `${correctUsers.length} ${plural} (${userList}) successfully answered the question. The answer was: ${answer}`
             )
+
+            successfulAnswer = true
         } else {
             SendMessage(
                 "!quizcontroller",
@@ -244,6 +265,10 @@ export async function StartMultiUserQuiz() {
         correctUsers = []
 
         blockQuiz = false
+
+        if (successfulAnswer) {
+            RollBonusQuiz()
+        }
     }
 }
 

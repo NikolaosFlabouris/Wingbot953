@@ -1,6 +1,6 @@
 import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
 import { SelectFromList } from "./Utils"
-import odstQuotesList from "../Data/Twitch/ODSTQuotes.json"
+import odstQuotesList from "../Data/Twitch/ODSTTranscript.json"
 
 export function HandleOdstQuote(msg: TwitchPrivateMessage) {
     SelectFromList(odstQuotesList, msg)
@@ -93,7 +93,7 @@ export var quoteMap = [
     // VIP
     {
         Command: ["!cutscene"],
-        Username: ["Wingman953", "CameraDancer"],
+        Username: ["Wingman953", "CameraDancer", "thiccElite"],
         AllMessages: true,
         Message: [
             "/me View of the Highway at dawn opens. Cut to Dare, The Rookie, Buck, and Vergil moving forward. Covenant CCS-class battlecruisers fly above. Dare points to one.",
