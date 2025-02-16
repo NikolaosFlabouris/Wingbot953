@@ -69,7 +69,7 @@ export const quizCategories = [
     },
     {
         CategoryQuestions: halorunsQuestions,
-        CategoryName: "HaloRuns/Speedrunning",
+        CategoryName: "HaloRuns & Speedrunning",
         CategoryLength: halorunsQuestions.length,
     },
 ]

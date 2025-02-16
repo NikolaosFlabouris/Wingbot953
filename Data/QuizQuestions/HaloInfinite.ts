@@ -105,7 +105,7 @@ export const infiniteQuestions = [
     },
     {
         Question: "What does HVT stand for?",
-        Answers: ["High Value Target"],
+        Answers: ["High Value Target", "High Valued Target"],
     },
     {
         Question: "What does FOB stand for?",

@@ -79,6 +79,11 @@ export const halorunsQuestions = [
     },
     {
         Question:
+            "Who was the first person to complete the Silent Cartographer in under 2mins?",
+        Answers: QuizNaming.People.Burnt,
+    },
+    {
+        Question:
             "In 2024 Halo 3 Co-op was run at SGDQ. Name of the runners from this co-op team?",
         Answers: ["WoLfy & Pedrogas"].concat(
             QuizNaming.People.Chronos,
@@ -158,6 +163,10 @@ export const halorunsQuestions = [
     {
         Question: "In 2014 Halo 2 was run at AGDQ by which speedrunner?",
         Answers: QuizNaming.People.Monopoli,
+    },
+    {
+        Question: "Which team won the HaloRuns Legendary Relay Race in 2024?",
+        Answers: ["Green Team", "Green"],
     },
     {
         Question: "Which team won the HaloRuns Legendary Relay Race in 2023?",
