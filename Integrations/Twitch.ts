@@ -26,7 +26,11 @@ import {
     PublishLeaderboards,
 } from "../Commands/Quiz"
 import { SendDidYouKnowFact, HandleFastFact } from "../Commands/FastFacts"
-import { GetCurrentSong } from "./Spotify"
+import {
+    GetCurrentSong,
+    AddTracksFromPlaylistToQueue,
+    FuzzySearchAndQueue,
+} from "./Spotify"
 import { LivestreamAlert } from "./Discord"
 
 import express = require("express")
@@ -257,7 +261,7 @@ async function ContinueTwitchSetup() {
 
         setTimeout(() => {
             StartQuiz()
-        }, 2500)
+        }, 5000)
     })
 
     chatClient.onResub((channel, user, subInfo) => {
@@ -269,7 +273,7 @@ async function ContinueTwitchSetup() {
 
         setTimeout(() => {
             StartQuiz()
-        }, 2500)
+        }, 5000)
     })
 
     chatClient.onSubGift((channel, user, subInfo) => {
@@ -281,7 +285,19 @@ async function ContinueTwitchSetup() {
 
         setTimeout(() => {
             StartQuiz()
-        }, 2500)
+        }, 5000)
+    })
+
+    chatClient.onRaid((channel, user, raidInfo) => {
+        SendMessage(
+            "raidthanks",
+            `wingma14Blush Thank you ${raidInfo.displayName} for the raid! wingma14Blush Let's celebrate with a Quiz!`,
+            2000
+        )
+
+        setTimeout(() => {
+            StartQuiz()
+        }, 5000)
     })
 }
 
@@ -452,6 +468,10 @@ function Converse(user: string, msg: TwitchPrivateMessage) {
 function HandleRedemption(rewardTitle: string) {
     if (rewardTitle === "Start a Quiz Round") {
         StartQuiz()
+    }
+
+    if (rewardTitle === "") {
+        AddTracksFromPlaylistToQueue("", 7)
     }
 }
 
@@ -661,7 +681,12 @@ const functionMap = [
         Command: ["!song"],
         Function: GetCurrentSong,
     },
-    //
+    {
+        Command: ["!sr", "!songrequest"],
+        Username: ["Wingman953"],
+        Function: FuzzySearchAndQueue,
+    },
+    // HaloRuns
     {
         Command: ["!wr"],
         Function: HandleHaloRunsWr,

@@ -23,6 +23,7 @@
         "discord.js": "^14.7.1",
         "dotenv": "^16.0.3",
         "express": "^4.18.1",
+        "fuse.js": "^7.1.0",
         "http": "^0.0.1-security",
         "open": "^8.4.0",
         "shared-utils": "^2.0.1",
