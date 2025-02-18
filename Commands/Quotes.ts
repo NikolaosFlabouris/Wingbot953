@@ -1,9 +1,44 @@
 import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
 import { SelectFromList } from "./Utils"
-import odstQuotesList from "../Data/Twitch/ODSTTranscript.json"
+import hceTranscript from "../Data/Twitch/HCETranscript.json"
+import h2Transcript from "../Data/Twitch/H2Transcript.json"
+import h3Transcript from "../Data/Twitch/H3Transcript.json"
+import odstTranscript from "../Data/Twitch/ODSTTranscript.json"
+import reachTranscript from "../Data/Twitch/ReachTranscript.json"
+import h4Transcript from "../Data/Twitch/H4Transcript.json"
+import h5Transcript from "../Data/Twitch/H5Transcript.json"
+import infiniteTranscript from "../Data/Twitch/InfiniteTranscript.json"
+
+export function HandleHCEQuote(msg: TwitchPrivateMessage) {
+    SelectFromList(hceTranscript, msg)
+}
+
+export function HandleH2Quote(msg: TwitchPrivateMessage) {
+    SelectFromList(h2Transcript, msg)
+}
+
+export function HandleH3Quote(msg: TwitchPrivateMessage) {
+    SelectFromList(h3Transcript, msg)
+}
 
 export function HandleOdstQuote(msg: TwitchPrivateMessage) {
-    SelectFromList(odstQuotesList, msg)
+    SelectFromList(odstTranscript, msg)
+}
+
+export function HandleReachQuote(msg: TwitchPrivateMessage) {
+    SelectFromList(reachTranscript, msg)
+}
+
+export function HandleH4Quote(msg: TwitchPrivateMessage) {
+    SelectFromList(h4Transcript, msg)
+}
+
+export function HandleH5Quote(msg: TwitchPrivateMessage) {
+    SelectFromList(h5Transcript, msg)
+}
+
+export function HandleInfiniteQuote(msg: TwitchPrivateMessage) {
+    SelectFromList(infiniteTranscript, msg)
 }
 
 export var quoteMap = [

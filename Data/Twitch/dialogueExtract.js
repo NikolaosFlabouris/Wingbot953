@@ -2,22 +2,32 @@ text = `
 
 
 
-
-
 `
 
 // Function to extract dialogue lines
 function extractDialogue(text) {
     const lines = text.split("\n")
-    const dialoguePattern = /^\s*([^:]+)\s*\(?(COM)?\)?:\s*"([^"]+)"/
+
+    // Enhanced pattern to handle multiple formats:
+    // 1. Name: "dialogue"
+    // 2. Name (context): "dialogue"
+    // 3. Name: (context) "dialogue"
+    const dialoguePattern =
+        /^\s*([^:()]+)(?:\s*\(([^)]+)\))?\s*:\s*(?:\(([^)]+)\))?\s*"([^"]+)"/
+
     const dialogues = []
 
     lines.forEach((line) => {
         const match = line.match(dialoguePattern)
         if (match) {
-            const speaker = match[1].trim()
-            const dialogue = match[3].trim()
-            dialogues.push(`"${dialogue}" - ${speaker},`)
+            const [_, speaker, contextBefore, contextAfter, dialogue] = match
+            const context = contextBefore || contextAfter
+
+            // Format the output with context if it exists
+            const formattedLine = `"${dialogue}" - ${speaker.trim()}${
+                context ? ` (${context})` : ""
+            },`
+            dialogues.push(formattedLine)
         }
     })
 

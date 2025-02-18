@@ -14,7 +14,17 @@ import {
     commandMap,
     HandleRandomNumberGeneration,
 } from "../Commands/GeneralCommands"
-import { quoteMap, HandleOdstQuote } from "../Commands/Quotes"
+import {
+    quoteMap,
+    HandleHCEQuote,
+    HandleH2Quote,
+    HandleH3Quote,
+    HandleOdstQuote,
+    HandleReachQuote,
+    HandleH4Quote,
+    HandleH5Quote,
+    HandleInfiniteQuote,
+} from "../Commands/Quotes"
 import {
     onQuizHandler,
     StartQuiz,
@@ -660,8 +670,43 @@ const functionMap = [
         Function: HandleRandomNumberGeneration,
     },
     {
+        Command: [
+            "!cequote",
+            "!cequotes",
+            "!hcequote",
+            "!hcequotes",
+            "!h1quote",
+            "!h1quotes",
+        ],
+        Function: HandleHCEQuote,
+    },
+    {
+        Command: ["!h2quote", "!h2quotes"],
+        Function: HandleH2Quote,
+    },
+    {
+        Command: ["!h3quote", "!h3quotes"],
+        Function: HandleH3Quote,
+    },
+    {
         Command: ["!odstquote", "!odstquotes"],
         Function: HandleOdstQuote,
+    },
+    {
+        Command: ["!reachquote", "!reachquotes"],
+        Function: HandleReachQuote,
+    },
+    {
+        Command: ["!h4quote", "!h4quotes"],
+        Function: HandleH4Quote,
+    },
+    {
+        Command: ["!h5quote", "!h5quotes"],
+        Function: HandleH5Quote,
+    },
+    {
+        Command: ["!infinitequote", "!infinitequotes"],
+        Function: HandleInfiniteQuote,
     },
     {
         Command: ["!fastfact", "!odstfact"],

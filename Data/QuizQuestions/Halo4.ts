@@ -22,6 +22,10 @@ export const halo4Questions = [
         Answers: ["Shadow-of-Sundered-Star"],
     },
     {
+        Question: "Shadow-of-Sundered-Star goes by which other name?",
+        Answers: ["Ur-Didact", "Didact", "Ur Didact"],
+    },
+    {
         Question:
             "What is the name of the Researcher Master Chief meets in the mission Composer?",
         Answers: QuizNaming.Characters.DrTillson,
