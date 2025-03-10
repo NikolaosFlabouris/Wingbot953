@@ -1,11 +1,12 @@
 import SpotifyWebApi from "spotify-web-api-node"
-import Fuse from "fuse.js"
+import Fuse, { FuseResult, FuseSortFunctionArg, IFuseOptions } from "fuse.js"
 import open from "open"
 import { SendMessage, isLive } from "./Twitch.js"
 import "dotenv/config"
 
 import express = require("express")
 import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage.js"
+import { codeBlock } from "discord.js"
 
 const scopes: Array<string> = [
     "user-read-playback-state",
@@ -134,11 +135,6 @@ async function getCurrentlyPlaying(): Promise<CurrentTrack | null> {
     }
 }
 
-/**
- * Finds a playlist by name in the current user's playlists
- * @param playlistName The name of the playlist to find
- * @returns The playlist ID if found, null otherwise
- */
 async function findPlaylistByName(
     playlistName: string
 ): Promise<string | null> {
@@ -329,27 +325,81 @@ function parseQuery(query: string): ParsedQuery {
  * @param query The search query (song name)
  * @returns Promise with the added track or null if no match found
  */
-export async function FuzzySearchAndQueue(msg: TwitchPrivateMessage) {
-    var originalMessage = msg.content.value
-    const indexOfSpace = originalMessage.indexOf(" ")
-
-    if (indexOfSpace === -1) {
-        SendMessage("!sr", "Format: !sr <song name> by <artist>")
-        return
-    }
-
-    var query =
-        indexOfSpace === -1
-            ? originalMessage
-            : originalMessage.substring(indexOfSpace + 1)
-
+export async function AddSongToQueue(msg: TwitchPrivateMessage) {
     // if (!isLive) {
     //     SendMessage("!sr", "Cannot add song to queue right now.")
     //     return
     // }
 
+    var originalMessage = msg.content.value
+    const indexOfSpace = originalMessage.indexOf(" ")
+
+    if (indexOfSpace === -1) {
+        SendMessage(
+            "!sr",
+            "Failed to add song. Format: !sr <link> | !sr <song name> by <artist>"
+        )
+        return
+    }
+
+    var query = originalMessage.substring(indexOfSpace + 1)
+
+    // Check if the query is a Spotify URL
+    var trackId = extractTrackIdFromUrl(query)
+    if (trackId) {
+        try {
+            const response = (await spotifyApi.getTrack(trackId)).body
+
+            // Add the track to the queue using its URI
+            await spotifyApi.addToQueue(`spotify:track:${response.id}`)
+            SendMessage(
+                "!sr",
+                `Added to queue: ${response.name} by ${response.artists
+                    .map((artist) => artist.name)
+                    .join(", ")}`
+            )
+            return null
+        } catch (error) {
+            console.error("Error retrieving track from URL:", error)
+            SendMessage("!sr", `Failed to add song from URL.`)
+            return null
+        }
+    }
+
+    var bestMatch = await FuzzySearchAndQueue(query)
+    if (bestMatch) {
+        try {
+            // Add the track to queue
+            await spotifyApi.addToQueue(`spotify:track:${bestMatch.id}`)
+            SendMessage(
+                "!sr",
+                `Added to queue: ${bestMatch.name} by ${bestMatch.artists
+                    .map((a) => a.name)
+                    .join(" ")}`
+            )
+        } catch (error) {
+            console.error("Error adding track from search:", error)
+            SendMessage("!sr", `Failed to add song from search.`)
+            return null
+        }
+    }
+}
+
+interface FuzzySearchResult {
+    id: string
+    name: string
+    artists: string[]
+    uri: string
+}
+
+export async function FuzzySearchAndQueue(
+    query: string
+): Promise<SpotifyApi.TrackObjectFull | null> {
+    console.log("Fuzzy search query:", query)
+
     try {
         const parsedQuery = parseQuery(query)
+        console.log("Parsed query:", parsedQuery)
 
         // Construct Spotify search query
         let spotifyQuery = parsedQuery.title
@@ -363,96 +413,162 @@ export async function FuzzySearchAndQueue(msg: TwitchPrivateMessage) {
         })
 
         if (!searchResults.body.tracks?.items.length) {
+            console.log("No search results found")
+            SendMessage("!sr", "No results found.")
             return null
         }
 
-        // Format tracks for fuzzy search
-        const tracks = searchResults.body.tracks.items.map((track) => ({
-            id: track.id,
-            name: track.name,
-            artists: track.artists,
-            uri: track.uri,
-        }))
+        return searchResults.body.tracks.items[0]
 
-        // Configure fuzzy search options
-        const fuseOptions = {
-            keys: [
-                {
-                    name: "name",
-                    weight: 0.6,
-                },
-                {
-                    name: "artists",
-                    weight: 0.4,
-                    getFn: (track: SpotifyTrack) =>
-                        track.artists.map((a) => a.name).join(" "),
-                },
-            ],
-            threshold: 0.4,
-            distance: 100,
-        }
+        // // Format tracks for fuzzy search
+        // const tracks = searchResults.body.tracks.items.map((track) => ({
+        //     id: track.id,
+        //     name: track.name,
+        //     artists: track.artists,
+        //     uri: track.uri,
+        // }))
 
-        // Create Fuse instance for fuzzy searching
-        const fuse = new Fuse(tracks, fuseOptions)
+        // console.dir(tracks, { depth: null })
 
-        // Perform fuzzy search with combined score
-        let searchString = parsedQuery.title
-        if (parsedQuery.artist) {
-            searchString += ` ${parsedQuery.artist}`
-        }
+        // // Configure fuzzy search options
+        // const fuseOptions: IFuseOptions<SpotifyTrack> = {
+        //     keys: [
+        //         {
+        //             name: "name",
+        //             weight: 0.7, // Increased weight for exact name matches
+        //         },
+        //         {
+        //             name: "artists",
+        //             weight: 0.3, // Reduced artist weight to prioritize title matches
+        //             getFn: (track: SpotifyTrack) =>
+        //                 track.artists.map((a) => a.name).join(" "),
+        //         },
+        //     ],
+        //     threshold: 0.4, // Lower threshold for stricter matching
+        //     distance: 50, // Reduced distance to favor closer matches
+        //     includeScore: true,
+        //     sortFn: (
+        //         { item: a, score: aScore }: FuseSortFunctionArg,
+        //         { item: b, score: bScore }: FuseSortFunctionArg
+        //     ) => {
+        //         const query = parsedQuery.title.toLowerCase()
 
-        const fuzzyResults = fuse.search(searchString)
+        //         // Calculate length difference penalty
+        //         const aLengthDiff = Math.abs(a.name.length - query.length)
+        //         const bLengthDiff = Math.abs(b.name.length - query.length)
 
-        if (!fuzzyResults.length) {
-            console.log("No fuzzy search results found")
-            return null
-        }
+        //         // Calculate base score difference
+        //         const scoreDiff = (aScore || 0) - (bScore || 0)
 
-        // Apply additional artist matching if artist was specified
-        if (parsedQuery.artist) {
-            const artistFuse = new Fuse(
-                fuzzyResults.map((r) => r.item),
-                {
-                    keys: [
-                        {
-                            name: "artists",
-                            getFn: (track: SpotifyTrack) =>
-                                track.artists.map((a) => a.name).join(" "),
-                        },
-                    ],
-                    threshold: 0.45,
-                }
-            )
+        //         // Penalize results with much longer/shorter names
+        //         const lengthPenalty = (aLengthDiff - bLengthDiff) * 0.01
 
-            const artistResults = artistFuse.search(parsedQuery.artist)
-            if (artistResults.length) {
-                // Prioritize tracks that match both title and artist
-                fuzzyResults.sort((a, b) => {
-                    const aHasArtist = artistResults.some(
-                        (r) => r.item.id === a.item.id
-                    )
-                    const bHasArtist = artistResults.some(
-                        (r) => r.item.id === b.item.id
-                    )
-                    if (aHasArtist && !bHasArtist) return -1
-                    if (!aHasArtist && bHasArtist) return 1
-                    return a.score! - b.score!
-                })
-            }
-        }
+        //         return scoreDiff + lengthPenalty
+        //     },
+        // }
 
-        // Get the best match
-        const bestMatch = fuzzyResults[0].item
+        // // Create Fuse instance for fuzzy searching
+        // const fuse = new Fuse(tracks, fuseOptions)
 
-        // Add the track to queue
-        spotifyApi.addToQueue(`spotify:track:${bestMatch.id}`)
-        SendMessage(
-            "!sr",
-            `Added to queue: ${bestMatch.name} by ${bestMatch.artists
-                .map((artist) => artist.name)
-                .join(", ")}`
-        )
+        // // Perform fuzzy search with combined score
+        // let searchString = parsedQuery.title
+        // if (parsedQuery.artist) {
+        //     searchString += ` ${parsedQuery.artist}`
+        // }
+
+        // const fuzzyResults = fuse.search(searchString)
+
+        // console.log("Fuzzy search results:", fuzzyResults)
+
+        // if (!fuzzyResults.length) {
+        //     console.log("No fuzzy search results found")
+        //     return null
+        // }
+
+        // // Apply additional artist matching if artist was specified
+        // if (parsedQuery.artist) {
+        //     const artistFuse = new Fuse(
+        //         fuzzyResults.map((r) => r.item),
+        //         {
+        //             keys: [
+        //                 {
+        //                     name: "artists",
+        //                     getFn: (track: SpotifyTrack) =>
+        //                         track.artists.map((a) => a.name).join(" "),
+        //                 },
+        //             ],
+        //             threshold: 0.4, // Stricter threshold for artist matching
+        //             includeScore: true,
+        //         }
+        //     )
+
+        //     const artistResults = artistFuse.search(parsedQuery.artist)
+        //     if (artistResults.length) {
+        //         // Enhanced sorting that considers both match quality and length differences
+        //         fuzzyResults.sort((a, b) => {
+        //             const aArtistMatch = artistResults.find(
+        //                 (r) => r.item.id === a.item.id
+        //             )
+        //             const bArtistMatch = artistResults.find(
+        //                 (r) => r.item.id === b.item.id
+        //             )
+
+        //             // If one has artist match and other doesn't, prioritize the match
+        //             if (aArtistMatch && !bArtistMatch) return -1
+        //             if (!aArtistMatch && bArtistMatch) return 1
+
+        //             // If both have artist matches, consider artist match quality
+        //             if (aArtistMatch && bArtistMatch) {
+        //                 const artistScoreDiff =
+        //                     (aArtistMatch.score || 0) -
+        //                     (bArtistMatch.score || 0)
+        //                 if (Math.abs(artistScoreDiff) > 0.1) {
+        //                     return artistScoreDiff
+        //                 }
+        //             }
+
+        //             // Fall back to title match quality
+        //             return (a.score || 0) - (b.score || 0)
+        //         })
+        //     }
+        // }
+
+        // // Get the best match
+        // var result: FuzzySearchResult = {
+        //     id: fuzzyResults[0].item.id,
+        //     name: fuzzyResults[0].item.name,
+        //     artists: fuzzyResults[0].item.artists.map((artist) => artist.name),
+        //     uri: fuzzyResults[0].item.uri,
+        // }
+        // return result
     } catch (error) {
         console.error("Error in fuzzy search and queue:", error)
+        return null
     }
+}
+
+/**
+ * Extracts the track ID from a Spotify URL
+ * @param url Spotify URL (web player, open.spotify.com, or URI format)
+ * @returns The extracted track ID or null if not a valid track URL
+ */
+function extractTrackIdFromUrl(url: string): string | null {
+    // Handle different Spotify URL formats
+
+    // Format: https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT?si=...
+    const webUrlPattern = /open\.spotify\.com\/track\/([a-zA-Z0-9]+)/
+
+    // Format: spotify:track:4cOdK2wGLETKBW3PvgPWqT
+    const uriPattern = /spotify:track:([a-zA-Z0-9]+)/
+
+    // Format: https://play.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT
+    const oldWebUrlPattern = /play\.spotify\.com\/track\/([a-zA-Z0-9]+)/
+
+    // Try each pattern
+    let match =
+        url.match(webUrlPattern) ||
+        url.match(uriPattern) ||
+        url.match(oldWebUrlPattern)
+
+    return match ? match[1] : null
 }

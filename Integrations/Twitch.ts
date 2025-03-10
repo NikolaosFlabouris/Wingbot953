@@ -39,7 +39,7 @@ import { SendDidYouKnowFact, HandleFastFact } from "../Commands/FastFacts"
 import {
     GetCurrentSong,
     AddTracksFromPlaylistToQueue,
-    FuzzySearchAndQueue,
+    AddSongToQueue,
 } from "./Spotify"
 import { LivestreamAlert } from "./Discord"
 
@@ -647,17 +647,38 @@ function HandleCommandsList() {
     SendMessage("!commandslist", commandsList[1])
 }
 
-async function CreateQuizReward() {
-    // await apiClient.channelPoints.createCustomReward(Wingman953?.id as string, {
-    //     autoFulfill: false,
-    //     backgroundColor: "#392e5c",
-    //     cost: 1800,
-    //     globalCooldown: 60,
-    //     isEnabled: true,
-    //     title: "Start a Quiz Round",
-    //     userInputRequired: false,
-    // })
-    // console.log("Reward created!")
+async function CreateReward() {
+    let playlists: string[] = [
+        "[P] Capital Cities", // To Do
+        "[P] Empire of the Sun", // To Do
+        "[P] Bad Suns", // To Do
+        "[P] The Naked and Famous", // To Do
+        "[P] Great Good Fine Ok",
+        "[P] XY&O", // To Do
+        "[P] STARSET",
+        "[P] Cold War Kids",
+        "[P] Penguin Prison",
+        "[P] NCS (NoCopyrightSounds)", // To Do
+        "[P] KOLIDESCOPES",
+        "[P] Moxie",
+    ]
+    // "[P] Foster the People", "[P] Phoenix", "[P] The Killers", "[P] Two Door Cinema Club", "[P] Walk the Moon",
+
+    for (let i = 0; i < playlists.length; i++) {
+        await apiClient.channelPoints.createCustomReward(
+            Wingman953?.id as string,
+            {
+                autoFulfill: false,
+                backgroundColor: "#392e5c",
+                cost: 1800,
+                globalCooldown: 60,
+                isEnabled: true,
+                title: "Start a Quiz Round",
+                userInputRequired: false,
+            }
+        )
+        console.log("Reward created!")
+    }
 }
 
 const functionMap = [
@@ -693,7 +714,7 @@ const functionMap = [
         Function: HandleOdstQuote,
     },
     {
-        Command: ["!reachquote", "!reachquotes"],
+        Command: ["!reachquote", "!reachquotes", "!hrquote", "!hrquotes"],
         Function: HandleReachQuote,
     },
     {
@@ -729,7 +750,7 @@ const functionMap = [
     {
         Command: ["!sr", "!songrequest"],
         Username: ["Wingman953"],
-        Function: FuzzySearchAndQueue,
+        Function: AddSongToQueue,
     },
     // HaloRuns
     {
@@ -777,6 +798,6 @@ const functionMap = [
     {
         Command: ["!createquiz"],
         Username: ["Wingman953"],
-        Function: CreateQuizReward,
+        Function: CreateReward,
     },
 ]
