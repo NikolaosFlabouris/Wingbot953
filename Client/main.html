@@ -8,17 +8,11 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.21.2/babel.min.js"></script>
         <style>
-            @font-face {
-                font-family: "Denmark";
-                src: url("https://cdnjs.cloudflare.com/ajax/libs/fontfaceobserver/2.3.0/fontfaceobserver.standalone.js");
-                /* Note: This is a placeholder. In a real app, you'd need to properly host and load the Denmark font. */
-            }
-
             body {
                 margin: 0;
                 padding: 0;
                 background-color: #222;
-                font-family: "Denmark", sans-serif;
+                font-family: "Aptos", sans-serif;
                 color: white;
                 height: 100vh;
                 display: flex;
@@ -35,7 +29,7 @@
             .chat-container {
                 height: 100%;
                 border-radius: 8px;
-                background-color: #333;
+                background-color: black;
                 padding: 10px;
                 overflow: hidden;
                 display: flex;
@@ -47,6 +41,7 @@
             .message-window {
                 overflow-y: auto;
                 overflow-x: hidden; /* Prevent horizontal scrolling */
+                overflow: hidden; /* Prevent both horizontal and vertical scrolling */
                 display: flex;
                 flex-direction: column;
                 width: 100%;
@@ -76,13 +71,13 @@
             }
 
             .author {
-                color: #aaa;
+                color: #b4b4b4;
                 text-align: right;
                 font-weight: bold;
                 margin-right: 5px;
-                font-size: 0.9em;
-                min-width: 100px; /* Fixed width for username alignment */
-                max-width: 100px;
+                font-size: 1.15em;
+                min-width: 130px; /* Fixed width for username alignment */
+                max-width: 130px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap; /* Keep username on single line */
@@ -95,14 +90,23 @@
             .text {
                 color: white;
                 text-align: left;
+                font-size: 1.3em;
                 word-wrap: break-word;
                 word-break: break-word; /* Allows breaking of long words */
                 overflow-wrap: break-word; /* Modern version of word-wrap */
                 flex-grow: 1;
                 min-width: 0; /* Allow text to shrink below content size */
                 max-width: calc(
-                    100% - 110px
+                    100%
                 ); /* Ensure text doesn't push beyond container */
+            }
+
+            .inline-emote {
+                height: 30px;
+                width: auto;
+                margin: 0 3px;
+                vertical-align: middle;
+                display: inline-block;
             }
         </style>
     </head>
@@ -121,13 +125,94 @@
                 const getPlatformIcon = (platform) => {
                     switch (platform) {
                         case "youtube":
-                            return "./youtube-icon.png" // Placeholder path
+                            return "./images/icons/youtube-icon.png" // Placeholder path
                         case "twitch":
-                            return "./twitch-icon.png" // Placeholder path
+                            return "./images/icons/twitch-icon.png" // Placeholder path
                         case "all":
                         default:
-                            return "./system-icon.png" // Placeholder path
+                            return "./images/icons/system-icon.png" // Placeholder path
                     }
+                }
+
+                // Emote mapping - Add your emotes here
+                const emoteMap = {
+                    wingma14Mombasa: "./images/emotes/NewMombasaLogo.png ",
+                    wingma14Automag: "./images/emotes/WingmanAutomag.png ",
+                    wingma14Cone: "./images/emotes/WingmanCone.png ",
+                    wingma14Turret: "./images/emotes/WingmanTurret.png ",
+                    wingma14KeepItClean: "./images/emotes/KeepItClean.png ",
+                    wingma14Pet: "./images/emotes/WingmanPet.gif ",
+                    wingma14Quiz: "./images/emotes/WingmanQuiz.png ",
+                    wingma14Start: "./images/emotes/WingmanStart.png ",
+                    wingma14ThinkItClean:
+                        "./images/emotes/WingmanThinkItClean.png ",
+                    wingma14Good: "./images/emotes/WingmanGood.png ",
+                    wingma14Blaster: "./images/emotes/WingmanLaserBlaster.png ",
+                    wingma14Evil: "./images/emotes/WingmanEvil.png ",
+                    wingma14Blush: "./images/emotes/WingmanAdore.png ",
+                    wingma14Aim: "./images/emotes/WingmanAim.gif ",
+                    wingma14Arrive: "./images/emotes/WingmanArrive.png ",
+                    wingma14Christmas: "./images/emotes/WingmanChristmas.gif ",
+                    wingma14Jam: "./images/emotes/WingmanJam.gif ",
+                    wingma14Laser: "./images/emotes/WingmanLaser.png ",
+                    wingma14Dutch: "./images/emotes/WingmanLaserDutch.png ",
+                    wingma14LaserHit: "./images/emotes/WingmanLaserHit.png ",
+                    wingma14Mickey: "./images/emotes/WingmanMickey.png ",
+                    wingma14Pray: "./images/emotes/wingmanPray.png ",
+                    wingma14Romeo: "./images/emotes/WingmanRomeo.png ",
+                    wingma14Scared: "./images/emotes/WingmanScared.gif ",
+                    wingma14Think: "./images/emotes/WingmanThink.png ",
+                    wingma14Dance: "./images/emotes/WingmanDance.gif",
+                }
+
+                // Function to parse message text and replace emotes
+                const parseMessageWithEmotes = (text) => {
+                    if (!text) return []
+
+                    // Split the text by potential emotes
+                    const parts = []
+                    let lastIndex = 0
+
+                    const escapedKeys = Object.keys(emoteMap).map((key) =>
+                        key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+                    )
+                    // Regular expression to find emote patterns
+                    const emotePattern = new RegExp(
+                        `(${escapedKeys.join("|")})`,
+                        "g"
+                    )
+
+                    let match
+                    while ((match = emotePattern.exec(text)) !== null) {
+                        // Add text before the emote
+                        if (match.index > lastIndex) {
+                            parts.push({
+                                type: "text",
+                                content: text.substring(lastIndex, match.index),
+                            })
+                        }
+
+                        // Add the emote
+                        parts.push({
+                            type: "emote",
+                            content: match[0],
+                            src: emoteMap[match[0]],
+                        })
+
+                        lastIndex = match.index + match[0].length
+                    }
+
+                    // Add remaining text
+                    if (lastIndex < text.length) {
+                        parts.push({
+                            type: "text",
+                            content: text.substring(lastIndex),
+                        })
+                    }
+
+                    return parts.length > 0
+                        ? parts
+                        : [{ type: "text", content: text }]
                 }
 
                 useEffect(() => {
@@ -195,7 +280,21 @@
                                             {msg.author.displayName}:
                                         </div>
                                         <div className="text">
-                                            {msg.message.text}
+                                            {parseMessageWithEmotes(
+                                                msg.message.text
+                                            ).map((part, i) =>
+                                                part.type === "text" ? (
+                                                    part.content
+                                                ) : (
+                                                    <img
+                                                        key={i}
+                                                        src={part.src}
+                                                        alt={part.content}
+                                                        className="inline-emote"
+                                                        title={part.content}
+                                                    />
+                                                )
+                                            )}
                                         </div>
                                     </div>
                                 </div>

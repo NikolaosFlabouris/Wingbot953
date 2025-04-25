@@ -68,24 +68,29 @@ export function handleChatMessage(msg: UnifiedChatMessage) {
         return
     }
 
+    // Process common logic for both platforms
+    // SEND MESSAGE TO FRONTEND
+
+    // Add ID and timestamp if not provided
+    // if (!msg.id) {
+    //     msg.id = uuidv4()
+    // }
+    sendToWebSocketClients(msg)
+
+    let commandExecuted = false
+
     if (msg.platform === "youtube") {
         // Handle YouTube-specific logic
         Converse(msg.author.displayName, msg)
 
         /* COMMAND DICTIONARIES */
         if (SearchCommandDictionary(msg, commandMap)) {
-            return
-        }
-
-        if (SearchCommandDictionary(msg, quoteMap)) {
-            return
-        }
-
-        if (SearchCommandDictionary(msg, functionMap)) {
-            return
-        }
-
-        if (msg.message.text.charAt(0) == "!") {
+            commandExecuted = true
+        } else if (SearchCommandDictionary(msg, quoteMap)) {
+            commandExecuted = true
+        } else if (SearchCommandDictionary(msg, functionMap)) {
+            commandExecuted = true
+        } else if (!commandExecuted && msg.message.text.charAt(0) == "!") {
             let message = Wingbot953Message
             message.platform = msg.platform
             message.message.text = "Unknown command"
@@ -106,18 +111,12 @@ export function handleChatMessage(msg: UnifiedChatMessage) {
 
         /* COMMAND DICTIONARIES */
         if (SearchCommandDictionary(msg, commandMap)) {
-            return
-        }
-
-        if (SearchCommandDictionary(msg, quoteMap)) {
-            return
-        }
-
-        if (SearchCommandDictionary(msg, functionMap)) {
-            return
-        }
-
-        if (msg.message.text.charAt(0) == "!") {
+            commandExecuted = true
+        } else if (SearchCommandDictionary(msg, quoteMap)) {
+            commandExecuted = true
+        } else if (SearchCommandDictionary(msg, functionMap)) {
+            commandExecuted = true
+        } else if (!commandExecuted && msg.message.text.charAt(0) == "!") {
             let message = Wingbot953Message
             message.platform = msg.platform
             message.message.text = "Unknown command"
@@ -127,15 +126,27 @@ export function handleChatMessage(msg: UnifiedChatMessage) {
             sendChatMessage(message)
         }
     }
+}
 
-    // Process common logic for both platforms
-    // SEND MESSAGE TO FRONTEND
+export function sendChatMessage(msg: UnifiedChatMessage) {
+    console.log(
+        `Sending response to ${msg.replyingTo?.author.name || ""}: ${
+            msg.message.text
+        }`
+    )
 
-    // Add ID and timestamp if not provided
-    // if (!msg.id) {
-    //     msg.id = uuidv4()
-    // }
+    if (msg.platform === "youtube") {
+        // Handle YouTube-specific response logic
+        sendYouTubeMessage(msg.message.text)
+    } else if (msg.platform === "twitch") {
+        // Handle Twitch-specific response logic
+        sendTwitchMessage(msg.message.text)
+    }
 
+    sendToWebSocketClients(msg)
+}
+
+function sendToWebSocketClients(msg: UnifiedChatMessage) {
     if (!msg.timestamp) {
         msg.timestamp = new Date()
     }
@@ -147,18 +158,6 @@ export function handleChatMessage(msg: UnifiedChatMessage) {
             client.send(messageString)
         }
     })
-}
-
-export function sendChatMessage(msg: UnifiedChatMessage) {
-    console.log(`Sending response to ${msg.author.name}: ${msg.message.text}`)
-
-    if (msg.platform === "youtube") {
-        // Handle YouTube-specific response logic
-        sendYouTubeMessage(msg.message.text)
-    } else if (msg.platform === "twitch") {
-        // Handle Twitch-specific response logic
-        sendTwitchMessage(msg.message.text)
-    }
 }
 
 ///

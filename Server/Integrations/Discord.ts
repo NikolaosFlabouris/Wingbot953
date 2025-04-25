@@ -10,10 +10,12 @@ import {
 
 // Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds] })
-const streamAlertChannelId = "1070944970338488321"
+const twitchStreamAlertChannelId = "1070944970338488321"
+const youtubeStreamAlertChannelId = "1365162765601214544"
 const allTimeLeaderboardChannelId = "1071212911231508500"
 const bimonthlyLeaderboardChannelId = "1071213119570972673"
-let streamAlertChannel: TextChannel
+let twitchStreamAlertChannel: TextChannel
+let youtubeStreamAlertChannel: TextChannel
 let allTimeLeaderboardChannel: TextChannel
 let bimonthlyLeaderboardChannel: TextChannel
 
@@ -22,8 +24,11 @@ export function DiscordSetup() {
     client.once(Events.ClientReady, (c) => {
         console.log(`Discord Ready! Logged in as ${c.user.tag}`)
 
-        streamAlertChannel = client.channels.cache.get(
-            streamAlertChannelId
+        twitchStreamAlertChannel = client.channels.cache.get(
+            twitchStreamAlertChannelId
+        ) as TextChannel
+        youtubeStreamAlertChannel = client.channels.cache.get(
+            youtubeStreamAlertChannelId
         ) as TextChannel
         allTimeLeaderboardChannel = client.channels.cache.get(
             allTimeLeaderboardChannelId
@@ -37,7 +42,7 @@ export function DiscordSetup() {
     client.login(process.env.DISCORD_TOKEN)
 }
 
-export function LivestreamAlert(streamTitle: string, streamGame: string) {
+export function TwitchLivestreamAlert(streamTitle: string, streamGame: string) {
     const exampleEmbed = new EmbedBuilder()
         .setColor(0x0099ff)
         .setTitle(streamTitle)
@@ -50,7 +55,27 @@ export function LivestreamAlert(streamTitle: string, streamGame: string) {
         .setTimestamp()
     //.setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
 
-    streamAlertChannel.send({ embeds: [exampleEmbed] })
+    twitchStreamAlertChannel.send({ embeds: [exampleEmbed] })
+}
+
+export function YoutubeLivestreamAlert(
+    streamTitle: string,
+    streamGame: string,
+    streamUrl: string
+) {
+    const exampleEmbed = new EmbedBuilder()
+        .setColor(0x0099ff)
+        .setTitle(streamTitle)
+        .setURL(streamUrl)
+        .setAuthor({ name: "Wingman953 is now live on YouTube!" }) //, iconURL: 'https://i.imgur.com/AfFp7pu.png', url: 'https://discord.js.org' })
+        //.setDescription(streamGame !== "" ? `Playing ` + streamGame : null)
+        //.setThumbnail('https://i.imgur.com/AfFp7pu.png')
+        //.addFields({ name: 'Inline field title', value: 'Some value here', inline: true })
+        //.setImage('https://i.imgur.com/AfFp7pu.png')
+        .setTimestamp()
+    //.setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
+
+    youtubeStreamAlertChannel.send({ embeds: [exampleEmbed] })
 }
 
 export function PublishAlltimeLeaderboard(leaderboard: any) {

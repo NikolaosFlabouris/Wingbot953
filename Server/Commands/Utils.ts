@@ -91,11 +91,12 @@ export function SelectFromList(list: Array<string>, msg: UnifiedChatMessage) {
 
         if (matches.length === 0) {
             itemFromListMessage.message.text = `No word match found.`
+        } else {
+            var matchIndex = Between(0, matches.length - 1)
+            itemFromListMessage.message.text =
+                `[${matches[matchIndex].index + 1}] ` +
+                matches[matchIndex].quote
         }
-
-        var matchIndex = Between(0, matches.length - 1)
-        itemFromListMessage.message.text =
-            `[${matches[matchIndex].index + 1}] ` + matches[matchIndex].quote
     }
 
     sendChatMessage(itemFromListMessage)

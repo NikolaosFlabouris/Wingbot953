@@ -11,7 +11,7 @@ import open from "open"
 import { CheckForVipWelcome, LoadWelcomeMessages } from "../Commands/VipWelcome"
 import { SecondsToDuration, Between, sleep } from "../Commands/Utils"
 
-import { LivestreamAlert } from "./Discord"
+import { TwitchLivestreamAlert } from "./Discord"
 
 import express = require("express")
 import { HaloRunsSetup, HandleHaloRunsWr, HandleWingman953Pb } from "./HaloRuns"
@@ -355,7 +355,7 @@ async function TwitchApiPolling() {
             streamName = streamWingman953.title
             streamGame = streamWingman953.gameName
 
-            LivestreamAlert(streamName, streamGame)
+            TwitchLivestreamAlert(streamName, streamGame)
             LoadWelcomeMessages()
             ResetUsedQuestions()
             HaloRunsSetup()
@@ -428,7 +428,7 @@ async function PollStreamNameAndGame() {
         ) {
             streamName = streamWingman953?.title!
             streamGame = streamWingman953?.gameName!
-            LivestreamAlert(streamName, streamGame)
+            TwitchLivestreamAlert(streamName, streamGame)
         }
     } catch {
         console.log("CATCH: Failed to reach Twitch API.")

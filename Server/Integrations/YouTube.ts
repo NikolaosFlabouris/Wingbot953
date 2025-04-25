@@ -6,6 +6,7 @@ import util from "util"
 import * as fs from "fs"
 import open from "open"
 import * as http from "http"
+import { YoutubeLivestreamAlert } from "./Discord"
 
 // Load environment variables
 dotenv.config()
@@ -17,7 +18,7 @@ let activeLivestream: string | undefined
 let liveChatId: string | undefined
 let nextPageToken: string | undefined
 let isMonitoring: boolean = false
-let pollingInterval: number = 5000 // 5 seconds
+let pollingInterval: number = 30000 // 30 seconds
 let intervalId: NodeJS.Timeout | undefined
 let server: http.Server | undefined
 let youTubeApiPollingInterval: NodeJS.Timeout
@@ -31,25 +32,12 @@ const SCOPES = [
 export async function YoutubeSetup(): Promise<void> {
     console.log("YouTube Integration Setup")
 
-    // Initialize YouTube API
-    youtubeClient = google.youtube({
-        version: "v3",
-        auth: process.env.YOUTUBE_API_KEY,
-    })
-
     // First ensure the oAuth2Client is properly initialized
     oAuth2Client = new google.auth.OAuth2(
         process.env.YOUTUBE_CLIENT_ID,
         process.env.YOUTUBE_CLIENT_SECRET,
         process.env.YOUTUBE_REDIRECT_URI
     )
-
-    // Then get and set the credentials by going through the OAuth flow
-    const authUrl = oAuth2Client.generateAuthUrl({
-        access_type: "offline",
-        scope: SCOPES,
-        prompt: "consent",
-    })
 
     try {
         // Check if we have saved tokens
@@ -62,28 +50,31 @@ export async function YoutubeSetup(): Promise<void> {
 
             // Verify tokens are still valid by making a test request
             try {
-                const youtube = google.youtube({
+                youtubeClient = google.youtube({
                     version: "v3",
                     auth: oAuth2Client,
                 })
-                await youtube.channels.list({ part: ["snippet"], mine: true })
+                await youtubeClient.channels.list({
+                    part: ["snippet"],
+                    mine: true,
+                })
                 console.log("Existing tokens are valid.")
-                return tokens
             } catch (e) {
                 console.log(
                     "Existing tokens are invalid. Starting new authentication flow..."
                 )
                 // Continue with new auth flow
+                await startAuthFlow()
             }
+        } else {
+            await startAuthFlow()
         }
-
-        await startAuthFlow()
     } catch (error) {
         console.error("Authentication error:", error)
         throw error
     }
 
-    youTubeApiPollingInterval = setInterval(youTubeApiPolling, 5000) // 5secs
+    youTubeApiPollingInterval = setInterval(youTubeApiPolling, 120000) // 120secs
 
     return
 }
@@ -127,6 +118,11 @@ async function startAuthFlow(): Promise<any> {
 
                             // Set the credentials
                             oAuth2Client.setCredentials(tokens)
+
+                            youtubeClient = google.youtube({
+                                version: "v3",
+                                auth: oAuth2Client,
+                            })
 
                             // Save tokens to file
                             fs.writeFileSync(
@@ -218,11 +214,11 @@ async function refreshToken(): Promise<any> {
 
         // Save the updated tokens
         fs.writeFileSync(tokenPath, JSON.stringify(newTokens, null, 2))
-        console.log("Tokens refreshed and saved.")
+        console.log("YouTube Tokens refreshed and saved.")
 
         return newTokens
     } catch (error) {
-        console.error("Error refreshing token:", error)
+        console.error("Error refreshing YouTube token:", error)
         throw error
     }
 }
@@ -394,13 +390,24 @@ async function connectToYouTubeLivestream(videoId: string): Promise<boolean> {
         // First, verify that the video is actually a live broadcast
         const videoResponse = await youtubeClient.videos.list({
             id: [videoId],
-            part: ["snippet", "liveStreamingDetails"],
+            part: [
+                "snippet",
+                "liveStreamingDetails",
+                "contentDetails" /*, "gameInfo"*/,
+            ],
         })
 
-        const video = videoResponse.data.items?.[0]
+        // Check if video exists
+        if (
+            !videoResponse.data.items ||
+            videoResponse.data.items.length === 0
+        ) {
+            throw new Error(`Video with ID ${videoId} not found`)
+        }
+
+        const video = videoResponse.data.items[0]
 
         if (
-            !video ||
             !video.liveStreamingDetails ||
             !video.liveStreamingDetails.activeLiveChatId
         ) {
@@ -412,6 +419,25 @@ async function connectToYouTubeLivestream(videoId: string): Promise<boolean> {
         liveChatId = video.liveStreamingDetails.activeLiveChatId
         console.log(`Connected to YouTube livestream: ${video.snippet?.title}`)
         console.log(`Live chat ID: ${liveChatId}`)
+
+        // const anyVideo = video as any
+        // let gameName = ""
+        // // Check if video has gameInfo property
+        // if ("gameInfo" in anyVideo) {
+        //     if ("gameId" in anyVideo.gameInfo) {
+        //         console.log(
+        //             `YouTube Stream Game Title: ${anyVideo.gameInfo.gameTitle}`
+        //         )
+        //         gameName = anyVideo.gameInfo.gameTitle
+        //     }
+        // }
+
+        YoutubeLivestreamAlert(
+            video.snippet?.title || "Livestream",
+            "",
+            `https://www.youtube.com/watch?v=${videoId}`
+        )
+
         return true
     } catch (error) {
         console.error("Error connecting to YouTube livestream:", error)
@@ -478,7 +504,8 @@ async function pollLiveChatMessages(): Promise<void> {
 
         // Update polling interval if suggested by the API
         if (data.pollingIntervalMillis) {
-            pollingInterval = data.pollingIntervalMillis
+            /* pollingInterval = data.pollingIntervalMillis */ // Uncomment this line to use the API's suggested interval
+            pollingInterval = 30000 // Reset to 30 seconds for now
         }
 
         // Save the next page token for subsequent requests
@@ -491,9 +518,9 @@ async function pollLiveChatMessages(): Promise<void> {
     } catch (error: any) {
         console.error("Error polling live chat messages:", error)
         // If we get a "Chat ended" error, stop monitoring
-        if (error.message && error.message.includes("Chat ended")) {
-            stopMonitoring()
-        }
+        // if (error.message && error.message.includes("Chat ended")) {
+        stopMonitoring()
+        //}
     }
 }
 

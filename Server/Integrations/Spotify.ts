@@ -61,7 +61,7 @@ export async function SpotifySetup(server: express.Application) {
 function RefreshToken() {
     spotifyApi.refreshAccessToken().then(
         function (data) {
-            console.log("The access token has been refreshed!")
+            console.log("The Spotify access token has been refreshed!")
 
             // Save the access token so that it's used in future calls
             spotifyApi.setAccessToken(data.body["access_token"])
