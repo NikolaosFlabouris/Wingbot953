@@ -1,13 +1,13 @@
 import { sleep, Between } from "./Utils"
-import { SendMessage } from "../Integrations/Twitch"
 import fs from "fs"
-import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
 import {
     PublishAlltimeLeaderboard,
     PublishBimonthlyLeaderboard,
 } from "../Integrations/Discord"
 
-import { quizCategories } from "../Data/QuizQuestions/QuizCategories"
+import { quizCategories } from "../../Data/QuizQuestions/QuizCategories"
+import { sendChatMessage, Wingbot953Message } from "../MessageHandling"
+import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage"
 
 let blockQuiz = false
 let quizActive = false
@@ -59,15 +59,17 @@ export function ResetUsedQuestions() {
 }
 
 export async function RollBonusQuiz() {
-    sleep(2000)
+    await sleep(2000)
 
     if (Between(0, 99) < 7) {
-        SendMessage(
-            "!quizcontroller",
-            `wingma14Think BONUS QUIZ! LET'S GO! wingma14Think`
-        )
+        let bonusQuizMessage = Wingbot953Message
+        bonusQuizMessage.platform = "twitch"
+        bonusQuizMessage.message.text =
+            "wingma14Think BONUS QUIZ! LET'S GO! wingma14Think"
 
-        sleep(2000)
+        sendChatMessage(bonusQuizMessage)
+
+        await sleep(2000)
 
         StartQuiz()
     }
@@ -76,6 +78,9 @@ export async function RollBonusQuiz() {
 export async function StartBasicQuiz() {
     if (!blockQuiz) {
         blockQuiz = true
+
+        let quizMessage = Wingbot953Message
+        quizMessage.platform = "twitch"
 
         let findingNumber = true
         while (findingNumber) {
@@ -103,14 +108,13 @@ export async function StartBasicQuiz() {
             questionIndex -= quizCategories[i].CategoryLength
         }
 
-        SendMessage(
-            "!quizcontroller",
-            `wingma14Think The next Quiz Question is in 20secs! Be the FIRST to answer correctly to earn a point. The topic will be ${categoryName}! Good luck!`
-        )
+        quizMessage.message.text = `wingma14Think The next Quiz Question is in 20secs! Be the FIRST to answer correctly to earn a point. The topic will be ${categoryName}! Good luck!`
+        sendChatMessage(quizMessage)
 
         await sleep(17000)
 
-        SendMessage("!quizcontroller", `/slow 3`)
+        quizMessage.message.text = `/slow 3`
+        sendChatMessage(quizMessage)
 
         ReadLeaderboardsFromFile()
 
@@ -119,47 +123,50 @@ export async function StartBasicQuiz() {
         QuizAnswerHandler = BasicQuizAnswer
         quizActive = true
 
-        SendMessage("!quizcontroller", `wingma14Think ${question}`)
+        quizMessage.message.text = `wingma14Think ${question}`
+        sendChatMessage(quizMessage)
 
         await sleep(25000)
 
         if (quizActive) {
             quizActive = false
 
-            SendMessage(
-                "!quizcontroller",
-                `No one successfully answered the question. The answer was: ${answer}`
-            )
+            quizMessage.message.text = `No one successfully answered the question. The answer was: ${answer}`
+            sendChatMessage(quizMessage)
 
             await sleep(1000)
 
-            SendMessage("!quizcontroller", `/slowoff`)
+            quizMessage.message.text = `/slowoff`
+            sendChatMessage(quizMessage)
 
             blockQuiz = false
         }
     }
 }
 
-async function BasicQuizAnswer(user: string, msg: TwitchPrivateMessage) {
-    const username = msg.userInfo.displayName
+async function BasicQuizAnswer(user: string, msg: UnifiedChatMessage) {
+    const username = msg.author.displayName
+
+    let quizMessage = Wingbot953Message
+    quizMessage.platform = "twitch"
 
     if (
         quizCategories[categoryIndex].CategoryQuestions[
             questionIndex
         ].Answers.findIndex((element: string) => {
-            return element.toLowerCase() == msg.content.value.toLowerCase()
+            return element.toLowerCase() == msg.message.text.toLowerCase()
         }) >= 0
     ) {
         quizActive = false
         UpdateQuizScore([username], 1)
-        SendMessage(
-            "!quizcontroller",
-            `Congratulations ${username}! You answered the question correctly! The answer was: ${answer}.`
-        )
+
+        quizMessage.message.text = `Congratulations ${username}! You answered the question correctly! The answer was: ${answer}.`
+        sendChatMessage(quizMessage)
 
         await sleep(1000)
 
-        SendMessage("!quizcontroller", `/slowoff`)
+        quizMessage.message.text = `/slowoff`
+        sendChatMessage(quizMessage)
 
         blockQuiz = false
 
@@ -170,6 +177,9 @@ async function BasicQuizAnswer(user: string, msg: TwitchPrivateMessage) {
 export async function StartMultiUserQuiz() {
     if (!blockQuiz) {
         blockQuiz = true
+
+        let quizMessage = Wingbot953Message
+        quizMessage.platform = "twitch"
 
         let findingNumber = true
         while (findingNumber) {
@@ -206,14 +216,13 @@ export async function StartMultiUserQuiz() {
             users = "UNITS"
         }
 
-        SendMessage(
-            "!quizcontroller",
-            `wingma14Think The next Quiz Question is in 20secs! ALL ${users} who answer correctly before time runs out will earn a point! The topic will be ${categoryName}! Good luck!`
-        )
+        quizMessage.message.text = `wingma14Think The next Quiz Question is in 20secs! ALL ${users} who answer correctly before time runs out will earn a point! The topic will be ${categoryName}! Good luck!`
+        sendChatMessage(quizMessage)
 
         await sleep(17000)
 
-        SendMessage("!quizcontroller", `/slow 3`)
+        quizMessage.message.text = `/slow 3`
+        sendChatMessage(quizMessage)
 
         ReadLeaderboardsFromFile()
 
@@ -223,7 +232,8 @@ export async function StartMultiUserQuiz() {
         QuizAnswerHandler = MultiUserQuizAnswer
         quizActive = true
 
-        SendMessage("!quizcontroller", `wingma14Think ${question}`)
+        quizMessage.message.text = `wingma14Think ${question}`
+        sendChatMessage(quizMessage)
 
         await sleep(25000)
 
@@ -243,24 +253,21 @@ export async function StartMultiUserQuiz() {
                 }
             }
 
-            SendMessage(
-                "!quizcontroller",
-                `${correctUsers.length} ${plural} (${userList}) successfully answered the question. The answer was: ${answer}`
-            )
+            quizMessage.message.text = `${correctUsers.length} ${plural} (${userList}) successfully answered the question. The answer was: ${answer}`
+            sendChatMessage(quizMessage)
 
             successfulAnswer = true
         } else {
-            SendMessage(
-                "!quizcontroller",
-                `No one successfully answered the question. The answer was: ${answer}`
-            )
+            quizMessage.message.text = `No one successfully answered the question. The answer was: ${answer}`
+            sendChatMessage(quizMessage)
         }
 
         UpdateQuizScore(correctUsers, 1)
 
         await sleep(1000)
 
-        SendMessage("!quizcontroller", `/slowoff`)
+        quizMessage.message.text = `/slowoff`
+        sendChatMessage(quizMessage)
 
         correctUsers = []
 
@@ -272,14 +279,14 @@ export async function StartMultiUserQuiz() {
     }
 }
 
-async function MultiUserQuizAnswer(user: string, msg: TwitchPrivateMessage) {
-    const username = msg.userInfo.displayName
+async function MultiUserQuizAnswer(user: string, msg: UnifiedChatMessage) {
+    const username = msg.author.displayName
 
     if (
         quizCategories[categoryIndex].CategoryQuestions[
             questionIndex
         ].Answers.findIndex((element: string) => {
-            return element.toLowerCase() == msg.content.value.toLowerCase()
+            return element.toLowerCase() == msg.message.text.toLowerCase()
         }) >= 0
     ) {
         if (!correctUsers.includes(username)) {
@@ -288,7 +295,7 @@ async function MultiUserQuizAnswer(user: string, msg: TwitchPrivateMessage) {
     }
 }
 
-export async function onQuizHandler(user: string, msg: TwitchPrivateMessage) {
+export async function onQuizHandler(user: string, msg: UnifiedChatMessage) {
     if (quizActive) {
         QuizAnswerHandler(user, msg)
     }
@@ -320,7 +327,10 @@ export function DisplayQuizLeaderboards() {
             "pts | "
     }
 
-    SendMessage("!quizleaderboard", message)
+    let quizMessage = Wingbot953Message
+    quizMessage.platform = "twitch"
+    quizMessage.message.text = message
+    sendChatMessage(quizMessage)
 
     // TODO: Bi-monthly Quiz
     // message = "BI-MONTHLY QUIZ TOP 5: "
@@ -339,13 +349,15 @@ export function DisplayQuizLeaderboards() {
     // SendMessage("!quizleaderboard", message)
 }
 
-export function GetMyQuizScore(msg: TwitchPrivateMessage) {
+export function GetMyQuizScore(msg: UnifiedChatMessage) {
     ReadLeaderboardsFromFile()
 
-    const originalMessage = msg.content.value
-    let user = msg.userInfo.displayName
+    const originalMessage = msg.message.text
+    let user = msg.author.displayName
 
-    let scoreMessage = ""
+    let quizMessage = Wingbot953Message
+    quizMessage.platform = msg.platform
+
     let scoreFound = false
 
     if (originalMessage.split(" ").length >= 2) {
@@ -356,7 +368,7 @@ export function GetMyQuizScore(msg: TwitchPrivateMessage) {
         if (
             leaderboardsAllTime[i].Username.toLowerCase() == user.toLowerCase()
         ) {
-            scoreMessage =
+            quizMessage.message.text =
                 `${leaderboardsAllTime[i].Username}'s All-time Quiz Score is: ` +
                 leaderboardsAllTime[i].Score
             scoreFound = true
@@ -376,21 +388,25 @@ export function GetMyQuizScore(msg: TwitchPrivateMessage) {
     // }
 
     if (!scoreFound) {
-        scoreMessage = `No score found for user: ${user}`
+        quizMessage.message.text = `No score found for user: ${user}`
     }
 
-    SendMessage("!quizscore", scoreMessage)
+    sendChatMessage(quizMessage)
 }
 
-export function AddQuizScore(msg: TwitchPrivateMessage) {
-    var originalMessage = msg.content.value
+export function AddQuizScore(msg: UnifiedChatMessage) {
+    var originalMessage = msg.message.text
     originalMessage.split(" ")[0].trim()
 
     if (originalMessage.split(" ").length === 2) {
         var user = originalMessage.split(" ")[1].trim()
         ReadLeaderboardsFromFile()
         UpdateQuizScore([user], 1)
-        SendMessage("!addscore", `Score added for user: ${user}`)
+
+        let quizMessage = Wingbot953Message
+        quizMessage.platform = msg.platform
+        quizMessage.message.text = `Score added for user: ${user}`
+        sendChatMessage(quizMessage)
     }
 }
 

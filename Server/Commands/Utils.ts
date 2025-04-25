@@ -1,6 +1,5 @@
-import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
-import { AutoModerationRuleKeywordPresetType } from "discord.js"
-import { SendMessage } from "../Integrations/Twitch"
+import { sendChatMessage, Wingbot953Message } from "../MessageHandling"
+import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage"
 
 export function SecondsToDuration(numIn: number) {
     var d = Math.floor(numIn / 60 / 60 / 24)
@@ -43,19 +42,18 @@ export function Between(min: number, max: number) {
 /// Selects a random item from the list or the specified item
 /// at the human-readable index given as an argument.
 ///
-export function SelectFromList(list: Array<string>, msg: TwitchPrivateMessage) {
-    var originalMessage = msg.content.value
+export function SelectFromList(list: Array<string>, msg: UnifiedChatMessage) {
+    var originalMessage = msg.message.text
     var command = originalMessage.split(" ")[0].trim().toLowerCase()
     var argumentCount = originalMessage.split(" ").length - 1
     var index = Between(0, list.length - 1)
 
-    if (argumentCount === 0) {
-        SendMessage(command, `[${index + 1}] ` + list[index])
-        return
-    }
+    let itemFromListMessage = Wingbot953Message
+    itemFromListMessage.platform = msg.platform
 
-    // Check if a number has been given
-    if (
+    if (argumentCount === 0) {
+        itemFromListMessage.message.text = `[${index + 1}] ` + list[index]
+    } else if (
         argumentCount === 1 &&
         !Number.isNaN(parseInt(originalMessage.split(" ")[1].trim(), 10))
     ) {
@@ -63,16 +61,12 @@ export function SelectFromList(list: Array<string>, msg: TwitchPrivateMessage) {
         index = parseInt(originalMessage.split(" ")[1].trim(), 10) - 1
 
         if (index < 0 || index >= list.length) {
-            SendMessage(command, `Value out of range: 1 to ${list.length}`)
-            return
+            itemFromListMessage.message.text = `Value out of range: 1 to ${list.length}`
         }
 
-        SendMessage(command, `[${index + 1}] ` + list[index])
-        return
-    }
-
-    // Check if words have been given
-    if (argumentCount >= 1) {
+        itemFromListMessage.message.text = `[${index + 1}] ` + list[index]
+    } else if (argumentCount >= 1) {
+        // Check if words have been given and match a quote in the list.
         let matchWords = originalMessage.split(" ").slice(1)
 
         let matches: Array<{ quote: string; index: number }> = []
@@ -96,17 +90,15 @@ export function SelectFromList(list: Array<string>, msg: TwitchPrivateMessage) {
         }
 
         if (matches.length === 0) {
-            SendMessage(command, "No word match found.")
-            return
+            itemFromListMessage.message.text = `No word match found.`
         }
 
         var matchIndex = Between(0, matches.length - 1)
-        SendMessage(
-            command,
+        itemFromListMessage.message.text =
             `[${matches[matchIndex].index + 1}] ` + matches[matchIndex].quote
-        )
-        return
     }
+
+    sendChatMessage(itemFromListMessage)
 }
 
 ///

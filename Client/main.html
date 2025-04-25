@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Simple WebSocket Chat</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.21.2/babel.min.js"></script>
+        <style>
+            @font-face {
+                font-family: "Denmark";
+                src: url("https://cdnjs.cloudflare.com/ajax/libs/fontfaceobserver/2.3.0/fontfaceobserver.standalone.js");
+                /* Note: This is a placeholder. In a real app, you'd need to properly host and load the Denmark font. */
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                background-color: #222;
+                font-family: "Denmark", sans-serif;
+                color: white;
+                height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            #root {
+                width: 100%;
+                max-width: 600px;
+                height: 80vh;
+            }
+
+            .chat-container {
+                height: 100%;
+                border-radius: 8px;
+                background-color: #333;
+                padding: 10px;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end; /* Align content to bottom */
+                max-width: 100%;
+            }
+
+            .message-window {
+                overflow-y: auto;
+                overflow-x: hidden; /* Prevent horizontal scrolling */
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .message {
+                margin-bottom: 12px;
+                display: flex;
+                align-items: flex-start;
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .platform-icon {
+                width: 20px;
+                height: 20px;
+                margin-right: 8px;
+                flex-shrink: 0;
+            }
+
+            .message-content {
+                flex-grow: 1;
+                display: flex;
+                align-items: baseline;
+                min-width: 0; /* Allows flex items to shrink below content size */
+                flex-wrap: wrap; /* Allow wrapping for very long messages */
+            }
+
+            .author {
+                color: #aaa;
+                text-align: right;
+                font-weight: bold;
+                margin-right: 5px;
+                font-size: 0.9em;
+                min-width: 100px; /* Fixed width for username alignment */
+                max-width: 100px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap; /* Keep username on single line */
+                flex-shrink: 0; /* Prevent username from shrinking */
+                word-wrap: break-word;
+                word-break: break-word; /* Allows breaking of long words */
+                overflow-wrap: break-word; /* Modern version of word-wrap */
+            }
+
+            .text {
+                color: white;
+                text-align: left;
+                word-wrap: break-word;
+                word-break: break-word; /* Allows breaking of long words */
+                overflow-wrap: break-word; /* Modern version of word-wrap */
+                flex-grow: 1;
+                min-width: 0; /* Allow text to shrink below content size */
+                max-width: calc(
+                    100% - 110px
+                ); /* Ensure text doesn't push beyond container */
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script type="text/babel">
+            const { useState, useEffect, useRef } = React
+
+            const ChatApp = () => {
+                const [messages, setMessages] = useState([])
+                const [socket, setSocket] = useState(null)
+                const messageWindowRef = useRef(null)
+
+                // Function to get platform icon
+                const getPlatformIcon = (platform) => {
+                    switch (platform) {
+                        case "youtube":
+                            return "./youtube-icon.png" // Placeholder path
+                        case "twitch":
+                            return "./twitch-icon.png" // Placeholder path
+                        case "all":
+                        default:
+                            return "./system-icon.png" // Placeholder path
+                    }
+                }
+
+                useEffect(() => {
+                    // Initialize WebSocket connection
+                    const ws = new WebSocket("ws://localhost:8080")
+
+                    ws.onopen = () => {
+                        console.log("Connected to WebSocket server")
+                    }
+
+                    ws.onmessage = (event) => {
+                        try {
+                            const message = JSON.parse(event.data)
+                            setMessages((prevMessages) => {
+                                // Keep only the most recent 20 messages
+                                const updatedMessages = [
+                                    ...prevMessages,
+                                    message,
+                                ]
+                                return updatedMessages.slice(-20)
+                            })
+                        } catch (error) {
+                            console.error("Error parsing message:", error)
+                        }
+                    }
+
+                    ws.onerror = (error) => {
+                        console.error("WebSocket error:", error)
+                    }
+
+                    ws.onclose = () => {
+                        console.log("Disconnected from WebSocket server")
+                    }
+
+                    setSocket(ws)
+
+                    // Clean up WebSocket connection when component unmounts
+                    return () => {
+                        if (ws) {
+                            ws.close()
+                        }
+                    }
+                }, [])
+
+                useEffect(() => {
+                    // Auto-scroll to the bottom when new messages arrive
+                    if (messageWindowRef.current) {
+                        messageWindowRef.current.scrollTop =
+                            messageWindowRef.current.scrollHeight
+                    }
+                }, [messages])
+
+                return (
+                    <div className="chat-container">
+                        <div className="message-window" ref={messageWindowRef}>
+                            {messages.map((msg, index) => (
+                                <div className="message" key={index}>
+                                    <img
+                                        className="platform-icon"
+                                        src={getPlatformIcon(msg.platform)}
+                                        alt={msg.platform}
+                                    />
+                                    <div className="message-content">
+                                        <div className="author">
+                                            {msg.author.displayName}:
+                                        </div>
+                                        <div className="text">
+                                            {msg.message.text}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )
+            }
+
+            ReactDOM.render(<ChatApp />, document.getElementById("root"))
+        </script>
+    </body>
+</html>

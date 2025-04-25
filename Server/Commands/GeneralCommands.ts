@@ -1,7 +1,3 @@
-import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
-import { SendMessage } from "../Integrations/Twitch"
-import { Between } from "./Utils"
-
 export var commandMap = [
     // {
     //     Command: ["!asap"],
@@ -318,44 +314,3 @@ export var commandMap = [
         Message: ["Kiko Ricochet Ending: https://youtu.be/1rY7vjc_a7w"],
     },
 ]
-
-///
-/// Handles the command to produce random number.
-///
-export function HandleRandomNumberGeneration(msg: TwitchPrivateMessage) {
-    var originalMessage = msg.content.value
-    var command = originalMessage.split(" ")[0].trim().toLowerCase()
-
-    // Check if 2 arguments have been given
-    if (originalMessage.split(" ").length >= 3) {
-        // Parse the numbers
-        var lower = parseInt(originalMessage.split(" ")[1].trim(), 10)
-        var upper = parseInt(originalMessage.split(" ")[2].trim(), 10)
-
-        if (!Number.isNaN(lower) && !Number.isNaN(upper)) {
-            var num = Between(lower, upper).toString()
-
-            if (num == "15") {
-                num = `${num} moment`
-            }
-
-            if (num == "953") {
-                num = `${num} hype`
-            }
-
-            if (num == "2019") {
-                num = `${num}, the Year of ODST!`
-            }
-
-            SendMessage(command, `Your number is: ${num}.`)
-            return
-        }
-    }
-
-    // Command used without correct arguments
-    SendMessage(
-        command,
-        "Usage: Randomly selects a number between the given numbers (inclusive): !random <number> <number>"
-    )
-    return
-}

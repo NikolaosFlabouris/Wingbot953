@@ -1,9 +1,10 @@
-import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
+import { ChatMessage } from "@twurple/chat/lib/commands/ChatMessage"
 import https from "https"
 
-import { CommandNaming } from "../Data/Naming/CommandNaming"
-import { SendMessage } from "./Twitch"
+import { CommandNaming } from "../../Data/Naming/CommandNaming"
 import { SecsToHMS } from "../Commands/Utils"
+import { sendChatMessage, Wingbot953Message } from "../MessageHandling"
+import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage"
 
 const hrApiHostName = "https://haloruns.z20.web.core.windows.net"
 
@@ -63,18 +64,21 @@ export function HaloRunsSetup() {
     })
 }
 
-export function HandleHaloRunsWr(msg: TwitchPrivateMessage) {
-    let msgSplitArray = msg.content.value.toLowerCase().split(" ")
+export function HandleHaloRunsWr(msg: UnifiedChatMessage) {
+    let msgSplitArray = msg.message.text.toLowerCase().split(" ")
 
     if (
         msgSplitArray.length === 1 &&
-        msg.content.value.toLowerCase() === "!wr"
+        msg.message.text.toLowerCase() === "!wr"
     ) {
-        GetHaloRunsWr("Halo 3: ODST", "Solo", "Full Game", "Easy")
-        GetHaloRunsWr("Halo 3: ODST", "Solo", "Full Game", "Legendary")
+        GetHaloRunsWr("Halo 3: ODST", "Solo", "Full Game", "Easy", msg)
+        GetHaloRunsWr("Halo 3: ODST", "Solo", "Full Game", "Legendary", msg)
         return
     } else if (msgSplitArray.length != 5) {
-        SendMessage("!wr", `Incorrect number of parameters for !wr command`)
+        let hrMessage = Wingbot953Message
+        hrMessage.platform = msg.platform
+        hrMessage.message.text = `Incorrect number of parameters for !wr command`
+        sendChatMessage(hrMessage)
         return
     }
 
@@ -82,11 +86,12 @@ export function HandleHaloRunsWr(msg: TwitchPrivateMessage) {
         msgSplitArray[1].trim().toLowerCase(), //gameName
         msgSplitArray[2].trim().toLowerCase(), //category
         msgSplitArray[3].trim().toLowerCase(), //runnableSegment
-        msgSplitArray[4].trim().toLowerCase() //difficulty
+        msgSplitArray[4].trim().toLowerCase(), //difficulty
+        msg
     )
 
     if (hrNames.length === 4) {
-        GetHaloRunsWr(hrNames[0], hrNames[1], hrNames[2], hrNames[3])
+        GetHaloRunsWr(hrNames[0], hrNames[1], hrNames[2], hrNames[3], msg)
     }
 }
 
@@ -94,9 +99,13 @@ function GetHaloRunsWr(
     hrGameName: string,
     hrCategory: string,
     hrRunnableSegment: string,
-    hrDifficulty: string
+    hrDifficulty: string,
+    msg: UnifiedChatMessage
 ) {
     // Search HaloRuns global.json for Game, Category and Runnable Segment IDs
+
+    let hrMessage = Wingbot953Message
+    hrMessage.platform = msg.platform
 
     console.log(hrGameName, hrCategory, hrRunnableSegment, hrDifficulty)
 
@@ -105,7 +114,8 @@ function GetHaloRunsWr(
     })
 
     if (hrGameIndex < 0) {
-        SendMessage("!wr", "Failed to find game on HaloRuns")
+        hrMessage.message.text = "Failed to find game on HaloRuns"
+        sendChatMessage(hrMessage)
         return
     }
 
@@ -116,7 +126,8 @@ function GetHaloRunsWr(
     )
 
     if (hrCategoryIndex < 0) {
-        SendMessage("!wr", "Failed to find category on HaloRuns")
+        hrMessage.message.text = "Failed to find category on HaloRuns"
+        sendChatMessage(hrMessage)
         return
     }
 
@@ -127,7 +138,8 @@ function GetHaloRunsWr(
     })
 
     if (hrRunnableSegmentIndex < 0) {
-        SendMessage("!wr", "Failed to find runnable segment on HaloRuns")
+        hrMessage.message.text = "Failed to find runnable segment on HaloRuns"
+        sendChatMessage(hrMessage)
         return
     }
 
@@ -165,15 +177,14 @@ function GetHaloRunsWr(
                 try {
                     leaderboardJson = JSON.parse(data)
                 } catch {
-                    SendMessage("!wr", `Failed to access HaloRuns Leaderboards`)
+                    hrMessage.message.text = `Failed to access HaloRuns Leaderboards`
+                    sendChatMessage(hrMessage)
                     return
                 }
 
                 if (leaderboardJson.Entries.length === 0) {
-                    SendMessage(
-                        "!wr",
-                        `There is no HaloRuns Record for ${hrGameName} ${hrCategory} ${hrRunnableSegment} ${hrDifficulty}`
-                    )
+                    hrMessage.message.text = `There is no HaloRuns Record for ${hrGameName} ${hrCategory} ${hrRunnableSegment} ${hrDifficulty}`
+                    sendChatMessage(hrMessage)
                 }
 
                 let wrTime: string = SecsToHMS(
@@ -221,31 +232,33 @@ function GetHaloRunsWr(
                     }
                 }
 
-                SendMessage(
-                    "!wr",
-                    `The HaloRuns Record for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty} is ${wrTime} by ${wrUsernames} | ${wrVideo}`
-                )
+                hrMessage.message.text = `The HaloRuns Record for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty} is ${wrTime} by ${wrUsernames} | ${wrVideo}`
+                sendChatMessage(hrMessage)
             })
         }
     )
 
     req.on("error", function (e: { message: any }) {
-        SendMessage("!wr", `Failed to access HaloRuns Leaderboards`)
+        hrMessage.message.text = `Failed to access HaloRuns Leaderboards`
+        sendChatMessage(hrMessage)
     })
 }
 
-export function HandleWingman953Pb(msg: TwitchPrivateMessage) {
-    let msgSplitArray = msg.content.value.toLowerCase().split(" ")
+export function HandleWingman953Pb(msg: UnifiedChatMessage) {
+    let msgSplitArray = msg.message.text.toLowerCase().split(" ")
 
     if (
         msgSplitArray.length === 1 &&
-        msg.content.value.toLowerCase() === "!pb"
+        msg.message.text.toLowerCase() === "!pb"
     ) {
-        GetHaloRunsPb("Halo 3: ODST", "Solo", "Full Game", "Easy")
-        GetHaloRunsPb("Halo 3: ODST", "Solo", "Full Game", "Legendary")
+        GetHaloRunsPb("Halo 3: ODST", "Solo", "Full Game", "Easy", msg)
+        GetHaloRunsPb("Halo 3: ODST", "Solo", "Full Game", "Legendary", msg)
         return
     } else if (msgSplitArray.length != 5) {
-        SendMessage("!pb", `Incorrect number of parameters for !pb command`)
+        let hrMessage = Wingbot953Message
+        hrMessage.platform = msg.platform
+        hrMessage.message.text = `Incorrect number of parameters for !pb command`
+        sendChatMessage(hrMessage)
         return
     }
 
@@ -253,11 +266,12 @@ export function HandleWingman953Pb(msg: TwitchPrivateMessage) {
         msgSplitArray[1].trim().toLowerCase(), //gameName
         msgSplitArray[2].trim().toLowerCase(), //category
         msgSplitArray[3].trim().toLowerCase(), //runnableSegment
-        msgSplitArray[4].trim().toLowerCase() //difficulty
+        msgSplitArray[4].trim().toLowerCase(), //difficulty
+        msg
     )
 
     if (hrNames.length === 4) {
-        GetHaloRunsPb(hrNames[0], hrNames[1], hrNames[2], hrNames[3])
+        GetHaloRunsPb(hrNames[0], hrNames[1], hrNames[2], hrNames[3], msg)
     }
 }
 
@@ -265,15 +279,20 @@ function GetHaloRunsPb(
     hrGameName: string,
     hrCategory: string,
     hrRunnableSegment: string,
-    hrDifficulty: string
+    hrDifficulty: string,
+    msg: UnifiedChatMessage
 ) {
+    let hrMessage = Wingbot953Message
+    hrMessage.platform = msg.platform
+
     // Search HaloRuns global.json for Game and Runnable Segment IDs
     let hrGameIndex = hrGeneralJson.Games.findIndex((element: any) => {
         return element.Name === hrGameName
     })
 
     if (hrGameIndex < 0) {
-        SendMessage("!pb", "Failed to find game on HaloRuns")
+        hrMessage.message.text = "Failed to find game on HaloRuns"
+        sendChatMessage(hrMessage)
         return
     }
 
@@ -284,7 +303,8 @@ function GetHaloRunsPb(
     })
 
     if (hrRunnableSegmentIndex < 0) {
-        SendMessage("!pb", "Failed to find runnable segment on HaloRuns")
+        hrMessage.message.text = "Failed to find runnable segment on HaloRuns"
+        sendChatMessage(hrMessage)
         return
     }
 
@@ -313,10 +333,8 @@ function GetHaloRunsPb(
                 let pbVideo: string =
                     pbRuns[runIndex].Participants[0].EvidenceLink
 
-                SendMessage(
-                    "!pb",
-                    `Wingman953's PB for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty} is ${pbTime} | ${pbVideo}`
-                )
+                hrMessage.message.text = `Wingman953's PB for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty} is ${pbTime} | ${pbVideo}`
+                sendChatMessage(hrMessage)
 
                 return
             }
@@ -369,18 +387,14 @@ function GetHaloRunsPb(
         }
 
         if (pbTime !== "") {
-            SendMessage(
-                "!pb",
-                `Wingman953's PB for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty} is ${pbTime}${coopUsernames} | ${pbVideo}`
-            )
+            hrMessage.message.text = `Wingman953's PB for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty} is ${pbTime}${coopUsernames} | ${pbVideo}`
+            sendChatMessage(hrMessage)
             return
         }
     }
 
-    SendMessage(
-        "!pb",
-        `Wingman953 does not have a submitted time for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty}`
-    )
+    hrMessage.message.text = `Wingman953 does not have a submitted time for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty}`
+    sendChatMessage(hrMessage)
 
     return
 }
@@ -389,19 +403,25 @@ function FindHaloRunsCompatibleNames(
     gameName: string,
     category: string,
     runnableSegment: string,
-    difficulty: string
+    difficulty: string,
+    msg: UnifiedChatMessage
 ) {
     let hrGameName = FindCommandMatch(CommandNaming.Games, gameName)
 
+    let hrMessage = Wingbot953Message
+    hrMessage.platform = msg.platform
+
     if (hrGameName === "") {
-        SendMessage("!wr/!pb", "Failed to parse game")
+        hrMessage.message.text = "Failed to parse game"
+        sendChatMessage(hrMessage)
         return []
     }
 
     let hrCategory = FindCommandMatch(CommandNaming.Categories, category)
 
     if (hrCategory === "") {
-        SendMessage("!wr/!pb", "Failed to parse category")
+        hrMessage.message.text = "Failed to parse category"
+        sendChatMessage(hrMessage)
         return []
     }
 
@@ -423,14 +443,16 @@ function FindHaloRunsCompatibleNames(
     }
 
     if (hrRunnableSegment === "") {
-        SendMessage("!wr/!pb", "Failed to parse runnable segment")
+        hrMessage.message.text = "Failed to parse runnable segment"
+        sendChatMessage(hrMessage)
         return []
     }
 
     let hrDifficulty = FindCommandMatch(CommandNaming.Difficulty, difficulty)
 
     if (hrDifficulty === "") {
-        SendMessage("!wr/!pb", "Failed to parse difficulty")
+        hrMessage.message.text = "Failed to parse difficulty"
+        sendChatMessage(hrMessage)
         return []
     }
 

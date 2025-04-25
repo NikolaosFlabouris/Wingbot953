@@ -1,43 +1,43 @@
-import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
 import { SelectFromList } from "./Utils"
-import hceTranscript from "../Data/Twitch/HCETranscript.json"
-import h2Transcript from "../Data/Twitch/H2Transcript.json"
-import h3Transcript from "../Data/Twitch/H3Transcript.json"
-import odstTranscript from "../Data/Twitch/ODSTTranscript.json"
-import reachTranscript from "../Data/Twitch/ReachTranscript.json"
-import h4Transcript from "../Data/Twitch/H4Transcript.json"
-import h5Transcript from "../Data/Twitch/H5Transcript.json"
-import infiniteTranscript from "../Data/Twitch/InfiniteTranscript.json"
+import hceTranscript from "../../Data/Quotes/HCETranscript.json"
+import h2Transcript from "../../Data/Quotes/H2Transcript.json"
+import h3Transcript from "../../Data/Quotes/H3Transcript.json"
+import odstTranscript from "../../Data/Quotes/ODSTTranscript.json"
+import reachTranscript from "../../Data/Quotes/ReachTranscript.json"
+import h4Transcript from "../../Data/Quotes/H4Transcript.json"
+import h5Transcript from "../../Data/Quotes/H5Transcript.json"
+import infiniteTranscript from "../../Data/Quotes/InfiniteTranscript.json"
+import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage"
 
-export function HandleHCEQuote(msg: TwitchPrivateMessage) {
+export function HandleHCEQuote(msg: UnifiedChatMessage) {
     SelectFromList(hceTranscript, msg)
 }
 
-export function HandleH2Quote(msg: TwitchPrivateMessage) {
+export function HandleH2Quote(msg: UnifiedChatMessage) {
     SelectFromList(h2Transcript, msg)
 }
 
-export function HandleH3Quote(msg: TwitchPrivateMessage) {
+export function HandleH3Quote(msg: UnifiedChatMessage) {
     SelectFromList(h3Transcript, msg)
 }
 
-export function HandleOdstQuote(msg: TwitchPrivateMessage) {
+export function HandleOdstQuote(msg: UnifiedChatMessage) {
     SelectFromList(odstTranscript, msg)
 }
 
-export function HandleReachQuote(msg: TwitchPrivateMessage) {
+export function HandleReachQuote(msg: UnifiedChatMessage) {
     SelectFromList(reachTranscript, msg)
 }
 
-export function HandleH4Quote(msg: TwitchPrivateMessage) {
+export function HandleH4Quote(msg: UnifiedChatMessage) {
     SelectFromList(h4Transcript, msg)
 }
 
-export function HandleH5Quote(msg: TwitchPrivateMessage) {
+export function HandleH5Quote(msg: UnifiedChatMessage) {
     SelectFromList(h5Transcript, msg)
 }
 
-export function HandleInfiniteQuote(msg: TwitchPrivateMessage) {
+export function HandleInfiniteQuote(msg: UnifiedChatMessage) {
     SelectFromList(infiniteTranscript, msg)
 }
 

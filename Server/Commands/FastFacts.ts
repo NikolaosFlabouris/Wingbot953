@@ -1,14 +1,18 @@
 import { SelectFromList, Between } from "./Utils"
-import { SendMessage } from "../Integrations/Twitch"
-import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage"
+import { sendChatMessage, Wingbot953Message } from "../MessageHandling"
+import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage"
 
-export function HandleFastFact(originalMessage: TwitchPrivateMessage) {
+export function HandleFastFact(originalMessage: UnifiedChatMessage) {
     SelectFromList(fastFactList, originalMessage)
 }
 
 export function SendDidYouKnowFact() {
     var index = Between(0, didYouKnowList.length - 1)
-    SendMessage("!didyouknow", "/me " + didYouKnowList[index])
+
+    let didYouKnowMessage = Wingbot953Message
+    didYouKnowMessage.platform = "twitch"
+    didYouKnowMessage.message.text = "/me " + didYouKnowList[index]
+    sendChatMessage(didYouKnowMessage)
 }
 
 const fastFactList = [

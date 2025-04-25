@@ -1,12 +1,11 @@
 import SpotifyWebApi from "spotify-web-api-node"
-import Fuse, { FuseResult, FuseSortFunctionArg, IFuseOptions } from "fuse.js"
 import open from "open"
-import { SendMessage, isLive } from "./Twitch.js"
+import { isLive } from "./Twitch.js"
 import "dotenv/config"
 
 import express = require("express")
-import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage.js"
-import { codeBlock } from "discord.js"
+import { sendChatMessage, Wingbot953Message } from "../MessageHandling.js"
+import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage"
 
 const scopes: Array<string> = [
     "user-read-playback-state",
@@ -73,23 +72,24 @@ function RefreshToken() {
     )
 }
 
-export async function GetCurrentSong() {
-    // if (!isLive) {
-    //     SendMessage("!song", "No song is currently playing.")
-    //     return
-    // }
+export async function GetCurrentSong(msg: UnifiedChatMessage) {
+    let currentTrackMessage = Wingbot953Message
+    currentTrackMessage.platform = msg.platform
+    currentTrackMessage.message.text = "No song is currently playing."
+
+    if (!isLive) {
+        sendChatMessage(currentTrackMessage)
+        return
+    }
 
     const currentTrack = await getCurrentlyPlaying()
     if (currentTrack) {
-        SendMessage(
-            "!song",
-            `Currently playing: ${
-                currentTrack.name
-            } by ${currentTrack.artists.join(", ")}`
-        )
-    } else {
-        SendMessage("!song", "No song is currently playing.")
+        currentTrackMessage.message.text = `Currently playing: ${
+            currentTrack.name
+        } by ${currentTrack.artists.join(", ")}`
     }
+
+    sendChatMessage(currentTrackMessage)
 }
 
 interface CurrentTrack {
@@ -325,20 +325,34 @@ function parseQuery(query: string): ParsedQuery {
  * @param query The search query (song name)
  * @returns Promise with the added track or null if no match found
  */
-export async function AddSongToQueue(msg: TwitchPrivateMessage) {
-    // if (!isLive) {
-    //     SendMessage("!sr", "Cannot add song to queue right now.")
-    //     return
-    // }
+export async function AddSongToQueue(msg: UnifiedChatMessage) {
+    let addSongMessage = Wingbot953Message
+    addSongMessage.platform = msg.platform
 
-    var originalMessage = msg.content.value
+    if (!isLive) {
+        addSongMessage.message.text = "Cannot add song to queue right now."
+        sendChatMessage(addSongMessage)
+        return
+    }
+
+    if (
+        !msg.author.isSubscriber &&
+        !msg.author.isModerator &&
+        !msg.author.isOwner
+    ) {
+        addSongMessage.message.text =
+            "Only subscribers, and moderators can add songs to the queue."
+        sendChatMessage(addSongMessage)
+        return
+    }
+
+    var originalMessage = msg.message.text
     const indexOfSpace = originalMessage.indexOf(" ")
 
     if (indexOfSpace === -1) {
-        SendMessage(
-            "!sr",
+        addSongMessage.message.text =
             "Failed to add song. Format: !sr <link> | !sr <song name> by <artist>"
-        )
+        sendChatMessage(addSongMessage)
         return
     }
 
@@ -352,36 +366,39 @@ export async function AddSongToQueue(msg: TwitchPrivateMessage) {
 
             // Add the track to the queue using its URI
             await spotifyApi.addToQueue(`spotify:track:${response.id}`)
-            SendMessage(
-                "!sr",
-                `Added to queue: ${response.name} by ${response.artists
-                    .map((artist) => artist.name)
-                    .join(", ")}`
-            )
-            return null
+            addSongMessage.message.text = `Added to queue: ${
+                response.name
+            } by ${response.artists.map((artist) => artist.name).join(", ")}`
+            return
         } catch (error) {
             console.error("Error retrieving track from URL:", error)
-            SendMessage("!sr", `Failed to add song from URL.`)
-            return null
+            addSongMessage.message.text = `Failed to add song from URL.`
+            return
+        } finally {
+            sendChatMessage(addSongMessage)
+            return
         }
     }
 
-    var bestMatch = await FuzzySearchAndQueue(query)
+    var bestMatch = await FuzzySearchSpotifySong(query)
     if (bestMatch) {
         try {
             // Add the track to queue
             await spotifyApi.addToQueue(`spotify:track:${bestMatch.id}`)
-            SendMessage(
-                "!sr",
-                `Added to queue: ${bestMatch.name} by ${bestMatch.artists
-                    .map((a) => a.name)
-                    .join(" ")}`
-            )
+            addSongMessage.message.text = `Added to queue: ${
+                bestMatch.name
+            } by ${bestMatch.artists.map((a) => a.name).join(" ")}`
         } catch (error) {
             console.error("Error adding track from search:", error)
-            SendMessage("!sr", `Failed to add song from search.`)
-            return null
+            addSongMessage.message.text = `Failed to add song from search.`
+            return
+        } finally {
+            sendChatMessage(addSongMessage)
         }
+    } else {
+        addSongMessage.message.text = "No results found for song request."
+        sendChatMessage(addSongMessage)
+        return
     }
 }
 
@@ -392,7 +409,7 @@ interface FuzzySearchResult {
     uri: string
 }
 
-export async function FuzzySearchAndQueue(
+export async function FuzzySearchSpotifySong(
     query: string
 ): Promise<SpotifyApi.TrackObjectFull | null> {
     console.log("Fuzzy search query:", query)
@@ -413,8 +430,7 @@ export async function FuzzySearchAndQueue(
         })
 
         if (!searchResults.body.tracks?.items.length) {
-            console.log("No search results found")
-            SendMessage("!sr", "No results found.")
+            console.log("No search results found for song request")
             return null
         }
 
@@ -542,7 +558,7 @@ export async function FuzzySearchAndQueue(
         // }
         // return result
     } catch (error) {
-        console.error("Error in fuzzy search and queue:", error)
+        console.error("Error in fuzzy search:", error)
         return null
     }
 }

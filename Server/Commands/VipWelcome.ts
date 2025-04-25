@@ -1,13 +1,12 @@
-import { Between } from "./Utils"
-import { SendMessage } from "./../Integrations/Twitch"
+import { sendChatMessage, Wingbot953Message } from "../MessageHandling"
+import { Between, sleep } from "./Utils"
 import fs from "fs"
 
-const vipWelcomeFilePath = "./Data/Twitch/VIPWelcome.json"
+const vipWelcomeFilePath = "./Data/Users/VIPWelcome.json"
 
 var vipWelcome: string | any[]
 
-export function LoadWelcomeMessages()
-{
+export function LoadWelcomeMessages() {
     try {
         const data = fs.readFileSync(vipWelcomeFilePath, "utf8")
         vipWelcome = JSON.parse(data)
@@ -28,12 +27,14 @@ export function CheckForVipWelcome(messageUsername: string) {
 
             vipWelcome[i].Arrived = true
 
-            SendMessage(
-                "VIP Welcome",
-                vipWelcome[i].Message[greetingIndex],
-                1000,
-                2000
-            )
+            let vipWelcomeMessage = Wingbot953Message
+            vipWelcomeMessage.platform = "twitch"
+            vipWelcomeMessage.message.text =
+                vipWelcome[i].Message[greetingIndex]
+
+            sleep(1500).then(() => {
+                sendChatMessage(vipWelcomeMessage)
+            })
         }
     }
 }
