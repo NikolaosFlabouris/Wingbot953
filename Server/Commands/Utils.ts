@@ -48,7 +48,7 @@ export function SelectFromList(list: Array<string>, msg: UnifiedChatMessage) {
     var argumentCount = originalMessage.split(" ").length - 1
     var index = Between(0, list.length - 1)
 
-    let itemFromListMessage = Wingbot953Message
+    let itemFromListMessage = structuredClone(Wingbot953Message)
     itemFromListMessage.platform = msg.platform
 
     if (argumentCount === 0) {

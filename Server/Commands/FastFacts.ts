@@ -9,7 +9,7 @@ export function HandleFastFact(originalMessage: UnifiedChatMessage) {
 export function SendDidYouKnowFact() {
     var index = Between(0, didYouKnowList.length - 1)
 
-    let didYouKnowMessage = Wingbot953Message
+    let didYouKnowMessage = structuredClone(Wingbot953Message)
     didYouKnowMessage.platform = "twitch"
     didYouKnowMessage.message.text = "/me " + didYouKnowList[index]
     sendChatMessage(didYouKnowMessage)

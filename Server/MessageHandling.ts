@@ -3,7 +3,7 @@ import {
     sendTwitchMessage as sendTwitchMessage,
 } from "./Integrations/Twitch"
 import { CheckForVipWelcome } from "./Commands/VipWelcome"
-import { onQuizHandler } from "./Commands/Quiz"
+import { onQuizHandler, quizActive } from "./Commands/Quiz"
 import { Between } from "./Commands/Utils"
 import { commandMap } from "./Commands/GeneralCommands"
 import { quoteMap } from "./Commands/Quotes"
@@ -75,75 +75,70 @@ export function handleChatMessage(msg: UnifiedChatMessage) {
     // if (!msg.id) {
     //     msg.id = uuidv4()
     // }
+
     sendToWebSocketClients(msg)
 
     let commandExecuted = false
 
-    if (msg.platform === "youtube") {
-        // Handle YouTube-specific logic
-        Converse(msg.author.displayName, msg)
+    if (quizActive) {
+        // Check if the message is an answer to a quiz
+        onQuizHandler(msg)
+    }
 
-        /* COMMAND DICTIONARIES */
-        if (SearchCommandDictionary(msg, commandMap)) {
-            commandExecuted = true
-        } else if (SearchCommandDictionary(msg, quoteMap)) {
-            commandExecuted = true
-        } else if (SearchCommandDictionary(msg, functionMap)) {
-            commandExecuted = true
-        } else if (!commandExecuted && msg.message.text.charAt(0) == "!") {
-            let message = Wingbot953Message
-            message.platform = msg.platform
-            message.message.text = "Unknown command"
-            message.replyingTo = msg
-            message.channel = msg.channel
+    Converse(msg.author.displayName, msg)
 
-            sendChatMessage(message)
-        }
-    } else if (msg.platform === "twitch") {
-        // Handle Twitch-specific logic
-        if (isLive) {
-            CheckForVipWelcome(msg.author.displayName)
-        }
+    if (isLive) {
+        CheckForVipWelcome(msg)
+    }
 
-        Converse(msg.author.displayName, msg)
+    /* COMMAND DICTIONARIES */
+    if (SearchCommandDictionary(msg, commandMap)) {
+        commandExecuted = true
+    } else if (SearchCommandDictionary(msg, quoteMap)) {
+        commandExecuted = true
+    } else if (SearchCommandDictionary(msg, functionMap)) {
+        commandExecuted = true
+    } else if (!commandExecuted && msg.message.text.charAt(0) == "!") {
+        let message = structuredClone(Wingbot953Message)
+        message.platform = msg.platform
+        message.message.text = "Unknown command"
+        message.replyingTo = msg
+        message.channel = msg.channel
 
-        onQuizHandler(msg.author.displayName, msg)
-
-        /* COMMAND DICTIONARIES */
-        if (SearchCommandDictionary(msg, commandMap)) {
-            commandExecuted = true
-        } else if (SearchCommandDictionary(msg, quoteMap)) {
-            commandExecuted = true
-        } else if (SearchCommandDictionary(msg, functionMap)) {
-            commandExecuted = true
-        } else if (!commandExecuted && msg.message.text.charAt(0) == "!") {
-            let message = Wingbot953Message
-            message.platform = msg.platform
-            message.message.text = "Unknown command"
-            message.replyingTo = msg
-            message.channel = msg.channel
-
-            sendChatMessage(message)
-        }
+        sendChatMessage(message)
     }
 }
 
-export function sendChatMessage(msg: UnifiedChatMessage) {
-    console.log(
-        `Sending response to ${msg.replyingTo?.author.name || ""}: ${
-            msg.message.text
-        }`
-    )
+export function sendChatMessage(
+    msg: UnifiedChatMessage,
+    sendToWebSocket: boolean = true
+) {
+    // console.log(
+    //     `Sending response to ${msg.replyingTo?.author.name || ""}: ${
+    //         msg.message.text
+    //     }`
+    // )
 
-    if (msg.platform === "youtube") {
+    // console.log(
+    //     util.inspect(msg, {
+    //         showHidden: false,
+    //         depth: null,
+    //         colors: true,
+    //     })
+    // )
+
+    if (msg.platform === "youtube" || msg.platform === "all") {
         // Handle YouTube-specific response logic
         sendYouTubeMessage(msg.message.text)
-    } else if (msg.platform === "twitch") {
+    }
+    if (msg.platform === "twitch" || msg.platform === "all") {
         // Handle Twitch-specific response logic
         sendTwitchMessage(msg.message.text)
     }
 
-    sendToWebSocketClients(msg)
+    if (sendToWebSocket) {
+        sendToWebSocketClients(msg)
+    }
 }
 
 function sendToWebSocketClients(msg: UnifiedChatMessage) {
@@ -170,7 +165,7 @@ function SearchCommandDictionary(
 ) {
     const command = msg.message.text.split(" ")[0].trim().toLowerCase()
 
-    let commandMessage = Wingbot953Message
+    let commandMessage = structuredClone(Wingbot953Message)
     commandMessage.platform = msg.platform
 
     for (let i = 0; i < commandDictionary.length; i++) {
@@ -214,26 +209,41 @@ function SearchCommandDictionary(
     return false
 }
 
-const periodicMessages = [
-    "/me Enjoying the stream? Watching, chatting, following, cheering, subscribing or donating are all great ways to support the stream. Your support allows me to continue investing time into the channel and it is greatly appreciated!",
+const periodicTwitchMessages = [
+    "/me Enjoying the stream? Check out below the stream for different ways to support the stream! Your support allows me to continue investing time into the channel and it is greatly appreciated!",
     "/me Got a song to share? Subs can add songs to the queue with !sr.",
-    "/me Join Wingman953's Discord Server here: https://discord.gg/6KPBTApkJ8",
+    "/me Join the Wingman953 Discord Server here: https://discord.gg/6KPBTApkJ8",
+    "/me I also stream on YouTube, make sure to subscribe there! https://www.youtube.com/@Wingman953",
     "You got this streamer! Keep up the good work!",
     "wingma14Jam",
 ]
 
-export function PeriodicMessages() {
-    let periodicMessage = Wingbot953Message
+const periodicYouTubeMessages = [
+    "Enjoying the stream? Make sure to subscribe and check the description for different ways to support the stream! All support is greatly appreciated!",
+    "Join the Wingman953 Discord Server here: https://discord.gg/6KPBTApkJ8",
+    "You got this streamer! Keep up the good work!",
+]
+
+export function PeriodicTwitchMessages() {
+    let periodicMessage = structuredClone(Wingbot953Message)
     periodicMessage.platform = "twitch"
     periodicMessage.message.text =
-        periodicMessages[Between(0, periodicMessages.length - 1)]
-    sendChatMessage(periodicMessage)
+        periodicTwitchMessages[Between(0, periodicTwitchMessages.length - 1)]
+    sendChatMessage(periodicMessage, false)
+}
+
+export function PeriodicYouTubeMessages() {
+    let periodicMessage = structuredClone(Wingbot953Message)
+    periodicMessage.platform = "youtube"
+    periodicMessage.message.text =
+        periodicYouTubeMessages[Between(0, periodicYouTubeMessages.length - 1)]
+    sendChatMessage(periodicMessage, false)
 }
 
 function Converse(user: string, msg: UnifiedChatMessage) {
     const msgWords = msg.message.text.split(" ")[0].trim().toLowerCase()
     if (msgWords === "is" && Between(0, 99) < 40) {
-        let converseMessage = Wingbot953Message
+        let converseMessage = structuredClone(Wingbot953Message)
         converseMessage.platform = msg.platform
         converseMessage.message.text =
             converseResponses[Between(0, converseResponses.length - 1)]

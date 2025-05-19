@@ -73,7 +73,7 @@ function RefreshToken() {
 }
 
 export async function GetCurrentSong(msg: UnifiedChatMessage) {
-    let currentTrackMessage = Wingbot953Message
+    let currentTrackMessage = structuredClone(Wingbot953Message)
     currentTrackMessage.platform = msg.platform
     currentTrackMessage.message.text = "No song is currently playing."
 
@@ -92,6 +92,34 @@ export async function GetCurrentSong(msg: UnifiedChatMessage) {
     sendChatMessage(currentTrackMessage)
 }
 
+export async function Is2013Song(msg: UnifiedChatMessage) {
+    let releaseYearMessage = structuredClone(Wingbot953Message)
+    releaseYearMessage.platform = msg.platform
+    releaseYearMessage.message.text = "No song is currently playing."
+
+    if (!isLive) {
+        sendChatMessage(releaseYearMessage)
+        return
+    }
+
+    const currentTrack = await getCurrentlyPlaying()
+    if (currentTrack) {
+        if (currentTrack.releaseYear === 2013) {
+            releaseYearMessage.message.text = `${
+                currentTrack.name
+            } by ${currentTrack.artists.join(", ")} is a 2013 song! wingma14Jam`
+        } else {
+            releaseYearMessage.message.text = `${
+                currentTrack.name
+            } by ${currentTrack.artists.join(
+                ", "
+            )} is not a 2013 song. It is from ${currentTrack.releaseYear}.`
+        }
+    }
+
+    sendChatMessage(releaseYearMessage)
+}
+
 interface CurrentTrack {
     name: string
     artists: string[]
@@ -99,6 +127,7 @@ interface CurrentTrack {
     albumName: string
     albumArt: string | null
     isPlaying: boolean
+    releaseYear?: number
 }
 
 /**
@@ -118,6 +147,14 @@ async function getCurrentlyPlaying(): Promise<CurrentTrack | null> {
         }
 
         const track = response.body.item
+
+        const albumInfo = await spotifyApi.getAlbum(track.album.id)
+
+        // The release date format can be YYYY, YYYY-MM, or YYYY-MM-DD
+        // Extract just the year portion
+        const releaseDate = albumInfo.body.release_date
+        const releaseYear = parseInt(releaseDate.split("-")[0])
+
         return {
             name: track.name,
             artists: track.artists.map((artist) => artist.name),
@@ -125,6 +162,7 @@ async function getCurrentlyPlaying(): Promise<CurrentTrack | null> {
             albumName: track.album.name,
             albumArt: track.album.images[0]?.url || null,
             isPlaying: response.body.is_playing,
+            releaseYear: releaseYear,
         }
     } catch (error) {
         console.error(
@@ -326,7 +364,7 @@ function parseQuery(query: string): ParsedQuery {
  * @returns Promise with the added track or null if no match found
  */
 export async function AddSongToQueue(msg: UnifiedChatMessage) {
-    let addSongMessage = Wingbot953Message
+    let addSongMessage = structuredClone(Wingbot953Message)
     addSongMessage.platform = msg.platform
 
     if (!isLive) {

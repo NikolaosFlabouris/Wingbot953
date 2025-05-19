@@ -20,27 +20,25 @@ export var commandMap = [
     // Haloruns/Speedruns/Socials/Stream
     {
         Command: ["!hr", "!haloruns"],
-        Message: ["haloruns.com"],
+        Message: ["https://haloruns.com"],
     },
     {
         Command: ["!discord"],
-        Message: ["Server link: https://discord.gg/6KPBTApkJ8"],
+        Message: ["Wingman953's Discord Server: https://discord.gg/6KPBTApkJ8"],
     },
     {
         Command: ["!hrprofile"],
         Message: [
-            "Wingman953's HaloRuns Profile: haloruns.com/profiles/Wingman953",
+            "Wingman953's HaloRuns Profile: https://haloruns.com/profiles/Wingman953",
         ],
     },
     {
         Command: ["!youtube", "!yt"],
-        Message: [
-            "Wingman953's YouTube: www.youtube.com/channel/UCOwR4betNPOGARQqHUBFQRw/videos",
-        ],
+        Message: ["Wingman953's YouTube: https://www.youtube.com/@Wingman953"],
     },
     {
         Command: ["!twitch"],
-        Message: ["Wingman953's Twitch: www.twitch.tv/wingman953"],
+        Message: ["Wingman953's Twitch: https://www.twitch.tv/wingman953"],
     },
     {
         Command: [

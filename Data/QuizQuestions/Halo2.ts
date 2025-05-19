@@ -96,7 +96,8 @@ export const halo2Questions = [
         Answers: QuizNaming.Numbers.Eight,
     },
     {
-        Question: "Name a level which feature a ladder?",
+        Question:
+            "Name a Halo 2 campaign level which features a climbable ladder?",
         Answers: ["Outskirts, Metropolis, High Charity"].concat(
             QuizNaming.Levels.H2.Outskirts,
             QuizNaming.Levels.H2.Metro,

@@ -2,7 +2,7 @@
 export interface UnifiedChatMessage {
     // Common fields for both platforms
     id?: string
-    platform: "youtube" | "twitch" | "all"
+    platform: "youtube" | "twitch" | "system" | "all"
     timestamp?: Date
     channel: {
         id?: string

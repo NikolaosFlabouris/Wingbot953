@@ -4,11 +4,15 @@ import {
     AccessToken,
 } from "@twurple/auth"
 import { ChatClient } from "@twurple/chat"
-import { ApiClient, HelixCustomReward, HelixUser } from "@twurple/api"
-import { ChatMessage } from "@twurple/chat/lib/commands/ChatMessage"
+import {
+    ApiClient,
+    HelixCustomReward,
+    HelixCustomRewardRedemption,
+    HelixUser,
+} from "@twurple/api"
 import open from "open"
 
-import { CheckForVipWelcome, LoadWelcomeMessages } from "../Commands/VipWelcome"
+import { AddVipWelcome, LoadWelcomeMessages } from "../Commands/VipWelcome"
 import { SecondsToDuration, Between, sleep } from "../Commands/Utils"
 
 import { TwitchLivestreamAlert } from "./Discord"
@@ -17,7 +21,7 @@ import express = require("express")
 import { HaloRunsSetup, HandleHaloRunsWr, HandleWingman953Pb } from "./HaloRuns"
 import {
     handleChatMessage,
-    PeriodicMessages,
+    PeriodicTwitchMessages,
     sendChatMessage,
     Wingbot953Message,
 } from "../MessageHandling"
@@ -33,7 +37,7 @@ let botAuthProvider
 let streamerAuthProvider
 let server: express.Application
 let chatClient: ChatClient
-let apiClient: ApiClient
+export let apiClient: ApiClient
 
 // Intervals
 let quizInterval: NodeJS.Timeout
@@ -47,7 +51,12 @@ export let isLive = false
 let streamName: string = ""
 let streamGame: string = ""
 let isFirstAuth = true
-let quizStartReward: HelixCustomReward
+type TwitchRewardHandler = {
+    reward: HelixCustomReward
+    lastRedemptionTime: number
+    handler: (reward: HelixCustomRewardRedemption) => void
+}
+let twitchRewards: TwitchRewardHandler[] = []
 let latestRedemptionDate: number = Date.now()
 
 const authorizeURL =
@@ -217,17 +226,34 @@ async function ContinueTwitchSetup() {
 
     for (let reward = 0; reward < rewardsWingman953.length; reward++) {
         if (rewardsWingman953[reward].title == "Start a Quiz Round") {
-            quizStartReward = rewardsWingman953[reward]
+            twitchRewards.push({
+                reward: rewardsWingman953[reward],
+                lastRedemptionTime: Date.now(),
+                handler: HandleQuizStartRedemption,
+            })
+        }
+        if (rewardsWingman953[reward].title == "G'Day Streamer") {
+            twitchRewards.push({
+                reward: rewardsWingman953[reward],
+                lastRedemptionTime: Date.now(),
+                handler: HandleGDayRedemption,
+            })
+        }
+        if (rewardsWingman953[reward].title == "G'Night Streamer") {
+            twitchRewards.push({
+                reward: rewardsWingman953[reward],
+                lastRedemptionTime: Date.now(),
+                handler: HandleGNightRedemption,
+            })
+        }
+        if (rewardsWingman953[reward].title == "Add Custom Greeting") {
+            twitchRewards.push({
+                reward: rewardsWingman953[reward],
+                lastRedemptionTime: Date.now(),
+                handler: HandleAddCustomGreetingRedemption,
+            })
         }
     }
-
-    const redemptionsWingman953 =
-        await apiClient.channelPoints.getRedemptionsForBroadcaster(
-            Wingman953?.id as string,
-            quizStartReward.id,
-            "UNFULFILLED",
-            { newestFirst: true }
-        )
 
     await chatClient.connect()
 
@@ -267,7 +293,7 @@ async function ContinueTwitchSetup() {
     })
 
     chatClient.onSub((channel, user) => {
-        let subMessage: UnifiedChatMessage = Wingbot953Message
+        let subMessage: UnifiedChatMessage = structuredClone(Wingbot953Message)
         subMessage.message.text = `wingma14Blush Thank you @${user} for subscribing to the channel! wingma14Blush Let's celebrate with a Quiz!`
         subMessage.platform = "twitch"
 
@@ -281,7 +307,8 @@ async function ContinueTwitchSetup() {
     })
 
     chatClient.onResub((channel, user, subInfo) => {
-        let resubMessage: UnifiedChatMessage = Wingbot953Message
+        let resubMessage: UnifiedChatMessage =
+            structuredClone(Wingbot953Message)
         resubMessage.message.text = `wingma14Blush Thank you @${user} for resubscribing to the channel for a total of ${subInfo.months} months! wingma14Blush Let's celebrate with a Quiz!`
         resubMessage.platform = "twitch"
 
@@ -295,7 +322,8 @@ async function ContinueTwitchSetup() {
     })
 
     chatClient.onSubGift((channel, user, subInfo) => {
-        let subGiftMessage: UnifiedChatMessage = Wingbot953Message
+        let subGiftMessage: UnifiedChatMessage =
+            structuredClone(Wingbot953Message)
         subGiftMessage.message.text = `wingma14Blush Thank you ${subInfo.gifter} for gifting a subscription to ${user}! wingma14Blush Let's celebrate with a Quiz!`
         subGiftMessage.platform = "twitch"
 
@@ -309,7 +337,7 @@ async function ContinueTwitchSetup() {
     })
 
     chatClient.onRaid((channel, user, raidInfo) => {
-        let raidMessage: UnifiedChatMessage = Wingbot953Message
+        let raidMessage: UnifiedChatMessage = structuredClone(Wingbot953Message)
         raidMessage.message.text = `wingma14Blush Thank you ${raidInfo.displayName} for the raid! wingma14Blush Let's celebrate with a Quiz!`
         raidMessage.platform = "twitch"
 
@@ -340,7 +368,8 @@ async function TwitchApiPolling() {
             clearInterval(periodicMessagesInterval)
             clearInterval(streamNameAndGameInterval)
 
-            let endstreamMessage: UnifiedChatMessage = Wingbot953Message
+            let endstreamMessage: UnifiedChatMessage =
+                structuredClone(Wingbot953Message)
             endstreamMessage.platform = "twitch"
             endstreamMessage.message.text = `wingma14Blush Thanks for the stream!`
             sendChatMessage(endstreamMessage)
@@ -363,38 +392,43 @@ async function TwitchApiPolling() {
             // Automatic messages on timers
             quizInterval = setInterval(StartQuiz, Between(2100000, 2700000)) // 35-45mins
             //didYouKnowInterval = setInterval(SendDidYouKnowFact, 2580000) // 43mins
-            periodicMessagesInterval = setInterval(PeriodicMessages, 3300000) // 55mins
+            periodicMessagesInterval = setInterval(
+                PeriodicTwitchMessages,
+                3300000
+            ) // 55mins
             streamNameAndGameInterval = setInterval(
                 PollStreamNameAndGame,
                 60000
             ) // 1min
 
-            let startStreamMessage: UnifiedChatMessage = Wingbot953Message
+            let startStreamMessage: UnifiedChatMessage =
+                structuredClone(Wingbot953Message)
             startStreamMessage.platform = "twitch"
             startStreamMessage.message.text = `wingma14Arrive Good Luck Streamer! wingma14Blush`
             sendChatMessage(startStreamMessage)
         }
 
-        // Quiz Start!
-        const redemptionsWingman953 =
-            await apiClient.channelPoints.getRedemptionsForBroadcaster(
-                Wingman953?.id as string,
-                quizStartReward.id,
-                "UNFULFILLED",
-                { newestFirst: true }
-            )
+        for (const reward of twitchRewards) {
+            const redemptions =
+                await apiClient.channelPoints.getRedemptionsForBroadcaster(
+                    Wingman953?.id as string,
+                    reward.reward.id,
+                    "UNFULFILLED",
+                    { newestFirst: true }
+                )
 
-        if (
-            redemptionsWingman953.data.length > 0 &&
-            redemptionsWingman953.data[0].redemptionDate.getTime() >
-                latestRedemptionDate
-        ) {
-            latestRedemptionDate =
-                redemptionsWingman953.data[0].redemptionDate.getTime()
-            HandleRedemption(redemptionsWingman953.data[0].rewardTitle)
+            if (
+                redemptions.data.length > 0 &&
+                redemptions.data[0].redemptionDate.getTime() >
+                    latestRedemptionDate
+            ) {
+                latestRedemptionDate =
+                    redemptions.data[0].redemptionDate.getTime()
+                reward.handler(redemptions.data[0])
+            }
         }
-    } catch {
-        console.log("CATCH: Failed to reach Twitch API.")
+    } catch (error: any) {
+        console.log(`* ERROR: Twitch API polling failed: ${error.message}`)
     }
 }
 
@@ -435,15 +469,71 @@ async function PollStreamNameAndGame() {
     }
 }
 
-function HandleRedemption(rewardTitle: string) {
+function HandleQuizStartRedemption(reward: HelixCustomRewardRedemption) {
+    const rewardTitle = reward.rewardTitle
+
     if (rewardTitle === "Start a Quiz Round") {
         StartQuiz()
     }
-
-    if (rewardTitle === "") {
-        AddTracksFromPlaylistToQueue("", 7)
-    }
 }
+
+async function HandleGDayRedemption(reward: HelixCustomRewardRedemption) {
+    let userDisplayName = (await reward.getUser()).displayName
+    console.log(`${userDisplayName} redeemed G'Day Streamer!`)
+
+    let gDayMessage: UnifiedChatMessage = structuredClone(Wingbot953Message)
+    gDayMessage.platform = "system"
+    gDayMessage.message.text = `${userDisplayName} says: wingma14Arrive G'Day ${Wingman953.displayName}!`
+
+    sendChatMessage(gDayMessage)
+}
+
+async function HandleGNightRedemption(reward: HelixCustomRewardRedemption) {
+    let userDisplayName = (await reward.getUser()).displayName
+    console.log(`${userDisplayName} redeemed G'Night Streamer!`)
+
+    let gNightMessage: UnifiedChatMessage = structuredClone(Wingbot953Message)
+    gNightMessage.platform = "system"
+    gNightMessage.message.text = `${userDisplayName} says: wingma14Good Good night, ${Wingman953.displayName}!`
+
+    sendChatMessage(gNightMessage)
+}
+
+async function HandleAddCustomGreetingRedemption(
+    reward: HelixCustomRewardRedemption
+) {
+    let userDisplayName = (await reward.getUser()).displayName
+    console.log(`${userDisplayName} redeemed Add Custom Greeting!`)
+
+    let customGreetingMessage: UnifiedChatMessage =
+        structuredClone(Wingbot953Message)
+    customGreetingMessage.platform = "system"
+    customGreetingMessage.message.text = `Twitch user ${userDisplayName} added a Custom Greeting!`
+
+    sendChatMessage(customGreetingMessage)
+
+    AddVipWelcome(
+        userDisplayName,
+        reward.userId,
+        "twitch",
+        (reward.userInput as string) || ""
+    )
+
+    console.log("Custom Greeting added!")
+
+    let customGreetingResponseMessage: UnifiedChatMessage =
+        structuredClone(Wingbot953Message)
+    customGreetingResponseMessage.platform = "twitch"
+    customGreetingResponseMessage.message.text = `@${userDisplayName}, your custom greeting has been added for future streams!`
+
+    sleep(1000).then(() => {
+        sendChatMessage(customGreetingResponseMessage, false)
+    })
+}
+
+// function HandlePlaylistRedemption(reward: HelixCustomRewardRedemption) {
+//         AddTracksFromPlaylistToQueue("", 7)
+// }
 
 export async function HandleFollowAge(msg: UnifiedChatMessage) {
     try {
@@ -452,7 +542,8 @@ export async function HandleFollowAge(msg: UnifiedChatMessage) {
             msg.author.id
         )
 
-        let followMessage: UnifiedChatMessage = Wingbot953Message
+        let followMessage: UnifiedChatMessage =
+            structuredClone(Wingbot953Message)
         followMessage.platform = "twitch"
 
         // Check if the user is following the broadcaster
@@ -497,7 +588,7 @@ export async function HandleUptime(msg: UnifiedChatMessage) {
             const currentTimestamp = Date.now()
             const streamStartTimestamp = stream.startDate.getTime()
 
-            let uptimeMessage = Wingbot953Message
+            let uptimeMessage = structuredClone(Wingbot953Message)
             uptimeMessage.message.text = `@${
                 msg.author.displayName
             } Stream uptime: ${SecondsToDuration(
@@ -515,35 +606,44 @@ export async function HandleUptime(msg: UnifiedChatMessage) {
 }
 
 async function CreateReward() {
-    let playlists: string[] = [
-        "[P] Capital Cities", // To Do
-        "[P] Empire of the Sun", // To Do
-        "[P] Bad Suns", // To Do
-        "[P] The Naked and Famous", // To Do
-        "[P] Great Good Fine Ok",
-        "[P] XY&O", // To Do
-        "[P] STARSET",
-        "[P] Cold War Kids",
-        "[P] Penguin Prison",
-        "[P] NCS (NoCopyrightSounds)", // To Do
-        "[P] KOLIDESCOPES",
-        "[P] Moxie",
-    ]
-    // "[P] Foster the People", "[P] Phoenix", "[P] The Killers", "[P] Two Door Cinema Club", "[P] Walk the Moon",
+    await apiClient.channelPoints.createCustomReward(Wingman953?.id as string, {
+        autoFulfill: false,
+        backgroundColor: "#6aaafe",
+        cost: 1000,
+        isEnabled: true,
+        title: "Add Custom Greeting",
+        userInputRequired: false,
+    })
 
-    for (let i = 0; i < playlists.length; i++) {
-        await apiClient.channelPoints.createCustomReward(
-            Wingman953?.id as string,
-            {
-                autoFulfill: false,
-                backgroundColor: "#392e5c",
-                cost: 1800,
-                globalCooldown: 60,
-                isEnabled: true,
-                title: "Start a Quiz Round",
-                userInputRequired: false,
-            }
-        )
-        console.log("Reward created!")
-    }
+    // let playlists: string[] = [
+    //     "[P] Capital Cities", // To Do
+    //     "[P] Empire of the Sun", // To Do
+    //     "[P] Bad Suns", // To Do
+    //     "[P] The Naked and Famous", // To Do
+    //     "[P] Great Good Fine Ok",
+    //     "[P] XY&O", // To Do
+    //     "[P] STARSET",
+    //     "[P] Cold War Kids",
+    //     "[P] Penguin Prison",
+    //     "[P] NCS (NoCopyrightSounds)", // To Do
+    //     "[P] KOLIDESCOPES",
+    //     "[P] Moxie",
+    // ]
+    // // "[P] Foster the People", "[P] Phoenix", "[P] The Killers", "[P] Two Door Cinema Club", "[P] Walk the Moon",
+
+    // for (let i = 0; i < playlists.length; i++) {
+    //     await apiClient.channelPoints.createCustomReward(
+    //         Wingman953?.id as string,
+    //         {
+    //             autoFulfill: false,
+    //             backgroundColor: "#392e5c",
+    //             cost: 1800,
+    //             globalCooldown: 60,
+    //             isEnabled: true,
+    //             title: "Start a Quiz Round",
+    //             userInputRequired: false,
+    //         }
+    //     )
+    //     console.log("Reward created!")
+    // }
 }

@@ -1,8 +1,7 @@
 import { google, youtube_v3 } from "googleapis"
 import * as dotenv from "dotenv"
-import { handleChatMessage } from "../MessageHandling"
+import { handleChatMessage, PeriodicYouTubeMessages } from "../MessageHandling"
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage"
-import util from "util"
 import * as fs from "fs"
 import open from "open"
 import * as http from "http"
@@ -22,6 +21,7 @@ let pollingInterval: number = 30000 // 30 seconds
 let intervalId: NodeJS.Timeout | undefined
 let server: http.Server | undefined
 let youTubeApiPollingInterval: NodeJS.Timeout
+let periodicMessagesInterval: NodeJS.Timeout | undefined
 let tokenPath: string = "./Data/Tokens/youtube-tokens.json"
 
 const SCOPES = [
@@ -29,7 +29,19 @@ const SCOPES = [
     "https://www.googleapis.com/auth/youtube.force-ssl",
 ]
 
+let TEST = false // Set to true for testing purposes
+
 export async function YoutubeSetup(): Promise<void> {
+    if (TEST) {
+        console.log(
+            "TESTING: Skipping YouTube integration setup, starting test messages..."
+        )
+
+        let testInterval = setInterval(generateTestYouTubeMessage, 10000) // 10secs
+
+        return
+    }
+
     console.log("YouTube Integration Setup")
 
     // First ensure the oAuth2Client is properly initialized
@@ -74,6 +86,7 @@ export async function YoutubeSetup(): Promise<void> {
         throw error
     }
 
+    youTubeApiPolling()
     youTubeApiPollingInterval = setInterval(youTubeApiPolling, 120000) // 120secs
 
     return
@@ -470,6 +483,8 @@ async function startMonitoring(): Promise<void> {
     // Set up interval to poll for new messages
     intervalId = setInterval(() => pollLiveChatMessages(), pollingInterval)
 
+    periodicMessagesInterval = setInterval(PeriodicYouTubeMessages, 3300000) // 55mins
+
     console.log(
         `Started monitoring YouTube chat with ${pollingInterval}ms polling interval`
     )
@@ -503,10 +518,9 @@ async function pollLiveChatMessages(): Promise<void> {
         const { data } = response
 
         // Update polling interval if suggested by the API
-        if (data.pollingIntervalMillis) {
-            /* pollingInterval = data.pollingIntervalMillis */ // Uncomment this line to use the API's suggested interval
-            pollingInterval = 30000 // Reset to 30 seconds for now
-        }
+        // if (data.pollingIntervalMillis) {
+        //     pollingInterval = data.pollingIntervalMillis // Uncomment this line to use the API's suggested interval
+        // }
 
         // Save the next page token for subsequent requests
         nextPageToken = data.nextPageToken || undefined
@@ -610,4 +624,53 @@ export async function sendYouTubeMessage(message: string) {
 
         return false
     }
+}
+
+let testUsernames: string[] = [
+    "Short",
+    "LoooooongUserName",
+    "ThisIsAReallyLongUserNameThatIsInfactQuiteLongAndShouldBeTested",
+]
+
+let testMessages: string[] = [
+    "Hello, this is a test message!",
+    "This is another test message.",
+    "Testing, testing, 1, 2, 3...",
+    "Super Chat Test!",
+    "This is a very long message that should be truncated in the UI because it exceeds the maximum character limit for a single chat message.",
+]
+
+/**
+ * Process a single YouTube chat message and convert to unified format
+ */
+function generateTestYouTubeMessage(): void {
+    let name = testUsernames[Math.floor(Math.random() * testUsernames.length)]
+
+    let messageText =
+        testMessages[Math.floor(Math.random() * testMessages.length)]
+
+    let unifiedMessage: UnifiedChatMessage = {
+        id: "",
+        platform: "youtube",
+        timestamp: new Date(),
+        channel: {
+            id: "",
+            name: "Wingman953",
+        },
+        author: {
+            id: "",
+            name: name,
+            displayName: name,
+            isModerator: false,
+            isSubscriber: false,
+            isOwner: false,
+        },
+        message: {
+            text: messageText,
+            isHighlighted: false,
+        },
+    }
+
+    // Pass the message to the handler
+    handleChatMessage(unifiedMessage)
 }

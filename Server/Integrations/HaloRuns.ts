@@ -75,7 +75,7 @@ export function HandleHaloRunsWr(msg: UnifiedChatMessage) {
         GetHaloRunsWr("Halo 3: ODST", "Solo", "Full Game", "Legendary", msg)
         return
     } else if (msgSplitArray.length != 5) {
-        let hrMessage = Wingbot953Message
+        let hrMessage = structuredClone(Wingbot953Message)
         hrMessage.platform = msg.platform
         hrMessage.message.text = `Incorrect number of parameters for !wr command`
         sendChatMessage(hrMessage)
@@ -104,7 +104,7 @@ function GetHaloRunsWr(
 ) {
     // Search HaloRuns global.json for Game, Category and Runnable Segment IDs
 
-    let hrMessage = Wingbot953Message
+    let hrMessage = structuredClone(Wingbot953Message)
     hrMessage.platform = msg.platform
 
     console.log(hrGameName, hrCategory, hrRunnableSegment, hrDifficulty)
@@ -255,7 +255,7 @@ export function HandleWingman953Pb(msg: UnifiedChatMessage) {
         GetHaloRunsPb("Halo 3: ODST", "Solo", "Full Game", "Legendary", msg)
         return
     } else if (msgSplitArray.length != 5) {
-        let hrMessage = Wingbot953Message
+        let hrMessage = structuredClone(Wingbot953Message)
         hrMessage.platform = msg.platform
         hrMessage.message.text = `Incorrect number of parameters for !pb command`
         sendChatMessage(hrMessage)
@@ -282,7 +282,7 @@ function GetHaloRunsPb(
     hrDifficulty: string,
     msg: UnifiedChatMessage
 ) {
-    let hrMessage = Wingbot953Message
+    let hrMessage = structuredClone(Wingbot953Message)
     hrMessage.platform = msg.platform
 
     // Search HaloRuns global.json for Game and Runnable Segment IDs
@@ -408,7 +408,7 @@ function FindHaloRunsCompatibleNames(
 ) {
     let hrGameName = FindCommandMatch(CommandNaming.Games, gameName)
 
-    let hrMessage = Wingbot953Message
+    let hrMessage = structuredClone(Wingbot953Message)
     hrMessage.platform = msg.platform
 
     if (hrGameName === "") {

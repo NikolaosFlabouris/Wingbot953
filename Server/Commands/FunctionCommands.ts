@@ -10,17 +10,19 @@ import {
     HandleInfiniteQuote,
 } from "../Commands/Quotes"
 import {
-    onQuizHandler,
     StartQuiz,
     GetMyQuizScore,
     DisplayQuizLeaderboards,
-    ResetUsedQuestions,
     AddQuizScore,
     PublishNewLeaderboard,
     PublishLeaderboards,
 } from "../Commands/Quiz"
 import { HandleFastFact } from "../Commands/FastFacts"
-import { GetCurrentSong, AddSongToQueue } from "../Integrations/Spotify"
+import {
+    GetCurrentSong,
+    AddSongToQueue,
+    Is2013Song,
+} from "../Integrations/Spotify"
 import { commandMap } from "./GeneralCommands"
 import { HandleFollowAge } from "../Integrations/Twitch"
 import { HandleUptime } from "../Integrations/Twitch"
@@ -70,7 +72,7 @@ export function GenerateCommandsList() {
 
 function HandleCommandsList(msg: UnifiedChatMessage) {
     // Commands list too long, split somehow
-    let commandsListMessage = Wingbot953Message
+    let commandsListMessage = structuredClone(Wingbot953Message)
     commandsListMessage.platform = msg.platform
     commandsListMessage.message.text = commandsList[0]
     sendChatMessage(commandsListMessage)
@@ -106,7 +108,7 @@ export function HandleRandomNumberGeneration(msg: UnifiedChatMessage) {
                 num = `${num}, the Year of ODST!`
             }
 
-            let randomNumberMessage = Wingbot953Message
+            let randomNumberMessage = structuredClone(Wingbot953Message)
             randomNumberMessage.platform = msg.platform
             randomNumberMessage.message.text = `Your number is: ${num}.`
             sendChatMessage(randomNumberMessage)
@@ -114,7 +116,7 @@ export function HandleRandomNumberGeneration(msg: UnifiedChatMessage) {
         }
     }
 
-    let randomNumberMessage = Wingbot953Message
+    let randomNumberMessage = structuredClone(Wingbot953Message)
     randomNumberMessage.platform = msg.platform
     randomNumberMessage.message.text =
         "Usage: Randomly selects a number between the given numbers (inclusive): !random <number> <number>"
@@ -192,6 +194,11 @@ const functionMap = [
         Command: ["!sr", "!songrequest"],
         Function: AddSongToQueue,
     },
+    {
+        Command: ["!2013"],
+        Username: ["Wingman953", "thiccElite"],
+        Function: Is2013Song,
+    },
     // HaloRuns
     {
         Command: ["!wr"],
@@ -236,7 +243,7 @@ const functionMap = [
         Function: PublishNewLeaderboard,
     },
     // {
-    //     Command: ["!createquiz"],
+    //     Command: ["!createreward"],
     //     Username: ["Wingman953"],
     //     Function: CreateReward,
     // },
