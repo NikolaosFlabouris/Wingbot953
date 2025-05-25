@@ -1,4 +1,14 @@
 // Type definitions for unified chat message format
+
+// Types for emote information
+export interface EmoteInfo {
+    id: string
+    name: string
+    startIndex: number
+    endIndex: number
+    url: string
+}
+
 export interface UnifiedChatMessage {
     // Common fields for both platforms
     id?: string
@@ -10,6 +20,7 @@ export interface UnifiedChatMessage {
     }
     author: {
         id?: string
+        colour?: string
         name: string
         displayName: string
         isModerator?: boolean
@@ -19,6 +30,7 @@ export interface UnifiedChatMessage {
     }
     message: {
         text: string
+        emoteMap?: EmoteInfo[]
         isHighlighted?: boolean
         isSuperChat?: boolean
         superChatDetails?: {

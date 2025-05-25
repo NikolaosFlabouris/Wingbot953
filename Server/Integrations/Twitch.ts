@@ -3,7 +3,7 @@ import {
     exchangeCode,
     AccessToken,
 } from "@twurple/auth"
-import { ChatClient } from "@twurple/chat"
+import { ChatClient, ChatMessage } from "@twurple/chat"
 import {
     ApiClient,
     HelixCustomReward,
@@ -27,7 +27,7 @@ import {
 } from "../MessageHandling"
 import { ResetUsedQuestions, StartQuiz } from "../Commands/Quiz"
 import { AddTracksFromPlaylistToQueue } from "./Spotify"
-import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage"
+import { EmoteInfo, UnifiedChatMessage } from "../../Common/UnifiedChatMessage"
 
 let Wingman953: HelixUser
 
@@ -259,7 +259,7 @@ async function ContinueTwitchSetup() {
 
     twitchApiPollingInterval = setInterval(TwitchApiPolling, 5000) // 5secs
 
-    chatClient.onMessage(async (channel, user, message, msg) => {
+    chatClient.onMessage(async (channel, user, message, msg: ChatMessage) => {
         const badges = msg.userInfo.badges
 
         const unifiedMessage: UnifiedChatMessage = {
@@ -272,6 +272,7 @@ async function ContinueTwitchSetup() {
             },
             author: {
                 id: msg.userInfo.userId,
+                colour: msg.userInfo.color || "#FFFFFF",
                 name: user,
                 displayName: msg.userInfo.displayName || user,
                 isModerator: msg.userInfo.isMod || false,
@@ -281,6 +282,7 @@ async function ContinueTwitchSetup() {
             message: {
                 text: message,
                 isHighlighted: msg.isHighlight || false,
+                emoteMap: parseEmotesFromMessage(message, msg),
             },
             platformSpecific: {
                 bits: msg.bits,
@@ -603,6 +605,61 @@ export async function HandleUptime(msg: UnifiedChatMessage) {
     } catch {
         console.log("CATCH: Failed to reach Twitch API.")
     }
+}
+
+export async function TwitchEnableSlowMode(delay_seconds: number) {
+    try {
+        await apiClient.chat.updateSettings(Wingman953.id, {
+            slowModeEnabled: true,
+            slowModeDelay: delay_seconds,
+        })
+        console.log(`* Slow mode enabled for ${delay_seconds} seconds.`)
+    } catch (error: any) {
+        console.log(`* ERROR: Failed to enable slow mode: ${error.message}`)
+    }
+}
+
+export async function TwitchDisableSlowMode() {
+    try {
+        await apiClient.chat.updateSettings(Wingman953.id, {
+            slowModeEnabled: false,
+            slowModeDelay: 0,
+        })
+        console.log("* Slow mode disabled.")
+    } catch (error: any) {
+        console.log(`* ERROR: Failed to disable slow mode: ${error.message}`)
+    }
+}
+
+/**
+ * Parse emotes from a chat message using Twurple's built-in emote parsing
+ */
+function parseEmotesFromMessage(
+    message: string,
+    msg: ChatMessage
+): EmoteInfo[] {
+    const emotes: EmoteInfo[] = []
+
+    // Process emotes from the emoteOffsets Map provided by Twurple
+    for (const [emoteId, positions] of msg.emoteOffsets.entries()) {
+        for (const position of positions) {
+            const [start, end] = position.split("-").map(Number)
+            const emoteName = message.substring(start, end + 1)
+
+            emotes.push({
+                id: emoteId,
+                name: emoteName,
+                startIndex: start,
+                endIndex: end,
+                url: `https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default/dark/1.0`,
+            })
+        }
+    }
+
+    // Re-sort emotes by original position
+    emotes.sort((a, b) => a.startIndex - b.startIndex)
+
+    return emotes
 }
 
 async function CreateReward() {

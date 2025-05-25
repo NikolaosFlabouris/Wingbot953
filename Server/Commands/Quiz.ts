@@ -8,7 +8,11 @@ import {
 import { quizCategories } from "../../Data/QuizQuestions/QuizCategories"
 import { sendChatMessage, Wingbot953Message } from "../MessageHandling"
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage"
-import { apiClient } from "../Integrations/Twitch"
+import {
+    apiClient,
+    TwitchDisableSlowMode,
+    TwitchEnableSlowMode,
+} from "../Integrations/Twitch"
 
 export let quizActive = false
 let blockQuiz = false
@@ -138,6 +142,8 @@ export async function StartBasicQuiz() {
 
         ReadLeaderboardsFromFile()
 
+        TwitchEnableSlowMode(3)
+
         await sleep(3000)
 
         QuizAnswerHandler = BasicQuizAnswer
@@ -160,6 +166,8 @@ export async function StartBasicQuiz() {
             sendChatMessage(quizFailedMessage)
 
             await sleep(1000)
+
+            TwitchDisableSlowMode()
 
             // quizMessage.message.text = `/slowoff`
             // sendChatMessage(quizMessage)
@@ -197,6 +205,8 @@ async function BasicQuizAnswer(msg: UnifiedChatMessage) {
         sendChatMessage(quizMessage)
 
         await sleep(1000)
+
+        TwitchDisableSlowMode()
 
         // quizMessage.message.text = `/slowoff`
         // sendChatMessage(quizMessage)
@@ -263,6 +273,8 @@ export async function StartMultiUserQuiz() {
         // sendChatMessage(quizMessage)
 
         ReadLeaderboardsFromFile()
+
+        TwitchEnableSlowMode(3)
 
         await sleep(3000)
 
@@ -331,6 +343,8 @@ export async function StartMultiUserQuiz() {
         }
 
         await sleep(1000)
+
+        TwitchDisableSlowMode()
 
         // quizMessage.message.text = `/slowoff`
         // sendChatMessage(quizMessage)

@@ -1,10 +1,10 @@
 export var commandMap = [
-    // {
-    //     Command: ["!asap"],
-    //     Message: [
-    //         "I'll be running ODST Legendary as part of Aus Speedruns at PAX (ASAP). The run is at 5:40pm Oct 12th in Melbourne. Full Schedule: https://www.ausspeedruns.com/ASAP2024/schedule",
-    //     ],
-    // },
+    {
+        Command: ["!asm"],
+        Message: [
+            "I'll be running ODST at the Australian Speedrun Marathon 2025! The run is at 10:45pm Tuesday 15th July ACST. Full Schedule: https://ausspeedruns.com/ASM2025/schedule",
+        ],
+    },
     {
         Command: ["!quiz"],
         Message: [

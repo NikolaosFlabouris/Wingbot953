@@ -149,19 +149,31 @@
                         return "./images/icons/twitch-icon.png"
                     case "system":
                     default:
-                        return "./images/icons/system-icon.png"
+                        return "./images/icons/wrench-icon.png" // https://iconduck.com/icons/255547/setting-wrench
                 }
             }
 
             // Function to parse message text and replace emotes
-            const parseMessageWithEmotes = (text) => {
+            const parseMessageWithEmotes = (text, msgEmoteMap) => {
                 if (!text) return []
+
+                // Combine predefined emotes with message-specific emotes
+                const combinedEmoteMap = { ...emoteMap }
+
+                // Add message-specific emotes if they exist
+                if (msgEmoteMap && Array.isArray(msgEmoteMap)) {
+                    msgEmoteMap.forEach((emote) => {
+                        if (emote.name && emote.url) {
+                            combinedEmoteMap[emote.name] = emote.url
+                        }
+                    })
+                }
 
                 // Split the text by potential emotes
                 const parts = []
                 let lastIndex = 0
 
-                const escapedKeys = Object.keys(emoteMap).map((key) =>
+                const escapedKeys = Object.keys(combinedEmoteMap).map((key) =>
                     key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
                 )
 
@@ -185,7 +197,7 @@
                     parts.push({
                         type: "emote",
                         content: match[0],
-                        src: emoteMap[match[0]],
+                        src: combinedEmoteMap[match[0]],
                     })
 
                     lastIndex = match.index + match[0].length
@@ -206,32 +218,32 @@
 
             // Alphabet color mapping - high contrast colors for dark backgrounds
             const alphabetColors = {
-                a: "#FF5F5F", // Bright red
-                b: "#5FFF5F", // Bright green
-                c: "#5F5FFF", // Bright blue
-                d: "#FFFF5F", // Bright yellow
-                e: "#FF5FFF", // Bright magenta
-                f: "#5FFFFF", // Bright cyan
-                g: "#FF9F5F", // Bright orange
-                h: "#5FFF9F", // Bright mint
-                i: "#9F5FFF", // Bright purple
-                j: "#FFFF9F", // Pale yellow
-                k: "#FF5F9F", // Bright pink
-                l: "#9FFFFF", // Pale cyan
-                m: "#FFFFFF", // White
-                n: "#FF7F7F", // Light red
-                o: "#7FFF7F", // Light green
-                p: "#7F7FFF", // Light blue
-                q: "#FFFF7F", // Light yellow
-                r: "#FF7FFF", // Light magenta
-                s: "#7FFFFF", // Light cyan
-                t: "#FFBF7F", // Light orange
-                u: "#7FFFBF", // Light mint
-                v: "#BF7FFF", // Light purple
-                w: "#FFFFBF", // Very pale yellow
-                x: "#FF7FBF", // Light pink
-                y: "#BFFFFF", // Very pale cyan
-                z: "#DFDFDF", // Near white
+                a: "#FF0000", // Saturated red
+                b: "#00FF00", // Saturated green
+                c: "#0000FF", // Saturated blue
+                d: "#FFFF00", // Saturated yellow
+                e: "#FF00FF", // Saturated magenta
+                f: "#00FFFF", // Saturated cyan
+                g: "#FF6600", // Saturated orange
+                h: "#00FF66", // Saturated mint
+                i: "#6600FF", // Saturated purple
+                j: "#FFFF00", // Saturated yellow (was pale)
+                k: "#FF0066", // Saturated pink
+                l: "#00FFFF", // Saturated cyan (was pale)
+                m: "#FFFFFF", // White (unchanged)
+                n: "#FF3333", // More saturated red
+                o: "#33FF33", // More saturated green
+                p: "#3333FF", // More saturated blue
+                q: "#FFFF33", // More saturated yellow
+                r: "#FF33FF", // More saturated magenta
+                s: "#33FFFF", // More saturated cyan
+                t: "#FF9900", // More saturated orange
+                u: "#33FF99", // More saturated mint
+                v: "#9933FF", // More saturated purple
+                w: "#FFFF66", // More saturated yellow
+                x: "#FF3399", // More saturated pink
+                y: "#66FFFF", // More saturated cyan
+                z: "#CCCCCC", // Light gray (more saturated than near-white)
             }
 
             // Default color for non-alphabet characters
@@ -255,7 +267,10 @@
                 const additionalIcons = msg.additionalIcons || []
 
                 // Get color for this author
-                const authorColor = getAuthorColor(msg.author.displayName)
+                let authorColor = getAuthorColor(msg.author.displayName)
+                if (msg.author.colour) {
+                    authorColor = msg.author.colour
+                }
 
                 return (
                     <div className="message">
@@ -279,19 +294,21 @@
                             {msg.author.displayName}:
                         </div>
                         <div className="message-text">
-                            {parseMessageWithEmotes(msg.message.text).map(
-                                (part, i) =>
-                                    part.type === "text" ? (
-                                        <span key={i}>{part.content}</span>
-                                    ) : (
-                                        <img
-                                            key={i}
-                                            src={part.src}
-                                            alt={part.content}
-                                            className="inline-emote"
-                                            title={part.content}
-                                        />
-                                    )
+                            {parseMessageWithEmotes(
+                                msg.message.text,
+                                msg.message.emoteMap
+                            ).map((part, i) =>
+                                part.type === "text" ? (
+                                    <span key={i}>{part.content}</span>
+                                ) : (
+                                    <img
+                                        key={i}
+                                        src={part.src}
+                                        alt={part.content}
+                                        className="inline-emote"
+                                        title={part.content}
+                                    />
+                                )
                             )}
                         </div>
                     </div>

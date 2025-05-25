@@ -216,12 +216,14 @@ const periodicTwitchMessages = [
     "/me I also stream on YouTube, make sure to subscribe there! https://www.youtube.com/@Wingman953",
     "You got this streamer! Keep up the good work!",
     "wingma14Jam",
+    "/me I'll be running ODST at the Australian Speedrun Marathon 2025! The run is at 10:45pm Tuesday 15th July ACST. Full Schedule: https://ausspeedruns.com/ASM2025/schedule",
 ]
 
 const periodicYouTubeMessages = [
     "Enjoying the stream? Make sure to subscribe and check the description for different ways to support the stream! All support is greatly appreciated!",
     "Join the Wingman953 Discord Server here: https://discord.gg/6KPBTApkJ8",
     "You got this streamer! Keep up the good work!",
+    "I'll be running ODST at the Australian Speedrun Marathon 2025! The run is at 10:45pm Tuesday 15th July ACST. Full Schedule: https://ausspeedruns.com/ASM2025/schedule",
 ]
 
 export function PeriodicTwitchMessages() {
