@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>WebSocket Image Display</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                background: #000;
+            }
+
+            img {
+                max-width: 100vw;
+                max-height: 100vh;
+                object-fit: contain;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+
+        <script>
+            // Image mapping - replace URLs with your actual image URLs
+            const imageMap = {
+                Angry: "./images/virgil/Super-Angry.png",
+                Disappointed: "./images/virgil/Super-Disappointed.png",
+                Happy: "./images/virgil/Super-Happy.png",
+                Neutral: "./images/virgil/Super-Neutral.png",
+                Questioning: "./images/virgil/Super-Questioning.png",
+                Sleep: "./images/virgil/Super-Sleep.png",
+            }
+
+            const { useState, useEffect } = React
+
+            function ImageDisplay() {
+                const [currentImage, setCurrentImage] = useState(imageMap.Happy)
+
+                useEffect(() => {
+                    const ws = new WebSocket("ws://localhost:8081")
+
+                    ws.onmessage = (event) => {
+                        const message = event.data.trim()
+                        if (imageMap[message]) {
+                            setCurrentImage(imageMap[message])
+                        }
+                    }
+
+                    ws.onerror = (error) => {
+                        console.error("WebSocket error:", error)
+                    }
+
+                    return () => ws.close()
+                }, [])
+
+                return currentImage
+                    ? React.createElement("img", {
+                          src: currentImage,
+                          alt: "Display",
+                      })
+                    : null
+            }
+
+            ReactDOM.render(
+                React.createElement(ImageDisplay),
+                document.getElementById("root")
+            )
+        </script>
+    </body>
+</html>

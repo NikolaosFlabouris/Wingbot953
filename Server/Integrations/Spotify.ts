@@ -92,6 +92,28 @@ export async function GetCurrentSong(msg: UnifiedChatMessage) {
     sendChatMessage(currentTrackMessage)
 }
 
+export async function GetSongYear(msg: UnifiedChatMessage) {
+    let releaseYearMessage = structuredClone(Wingbot953Message)
+    releaseYearMessage.platform = msg.platform
+    releaseYearMessage.message.text = "No song is currently playing."
+
+    if (!isLive) {
+        sendChatMessage(releaseYearMessage)
+        return
+    }
+
+    const currentTrack = await getCurrentlyPlaying()
+    if (currentTrack) {
+        releaseYearMessage.message.text = `${
+            currentTrack.name
+        } by ${currentTrack.artists.join(", ")} is from ${
+            currentTrack.releaseYear
+        }.`
+
+        sendChatMessage(releaseYearMessage)
+    }
+}
+
 export async function Is2013Song(msg: UnifiedChatMessage) {
     let releaseYearMessage = structuredClone(Wingbot953Message)
     releaseYearMessage.platform = msg.platform

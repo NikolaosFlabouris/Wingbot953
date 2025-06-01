@@ -8,9 +8,12 @@ import { GenerateCommandsList } from "./Server/Commands/FunctionCommands"
 import express = require("express")
 import { YoutubeSetup } from "./Server/Integrations/YouTube"
 import { createWebSocket } from "./Server/MessageHandling"
+import { LiveSplitClient } from "./Server/Integrations/LiveSplit"
 
 const server = express()
 const port = 3000
+
+let liveSplit: LiveSplitClient
 
 async function main() {
     server.listen(port)
@@ -24,6 +27,16 @@ async function main() {
     await TwitchSetup(server)
 
     await YoutubeSetup()
+
+    // Usage
+    liveSplit = new LiveSplitClient()
+    liveSplit.connect()
+    // Graceful shutdown
+    process.on("SIGINT", () => {
+        console.log("\nShutting down...")
+        liveSplit.disconnect()
+        process.exit(0)
+    })
 
     QuizSetup()
 

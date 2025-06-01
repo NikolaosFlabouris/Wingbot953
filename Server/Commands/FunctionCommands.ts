@@ -22,6 +22,7 @@ import {
     GetCurrentSong,
     AddSongToQueue,
     Is2013Song,
+    GetSongYear,
 } from "../Integrations/Spotify"
 import { commandMap } from "./GeneralCommands"
 import { HandleFollowAge } from "../Integrations/Twitch"
@@ -193,6 +194,10 @@ const functionMap = [
     {
         Command: ["!sr", "!songrequest"],
         Function: AddSongToQueue,
+    },
+    {
+        Command: ["!songyear"],
+        Function: GetSongYear,
     },
     {
         Command: ["!2013"],

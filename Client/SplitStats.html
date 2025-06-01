@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>LiveSplit Data</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 20px;
+                font-family: "Courier New", monospace;
+                background: #1a1a1a;
+                color: #fff;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                background: #2a2a2a;
+                border: 2px solid #444;
+            }
+
+            th,
+            td {
+                padding: 12px;
+                text-align: left;
+                border: 1px solid #444;
+            }
+
+            th {
+                background: #333;
+                font-weight: bold;
+            }
+
+            .previous {
+                background: #2a2a3a;
+            }
+            .current {
+                background: #3a2a2a;
+            }
+            .next {
+                background: #2a3a2a;
+            }
+
+            .time {
+                font-family: "Courier New", monospace;
+                text-align: right;
+            }
+        </style>
+    </head>
+    <body>
+        <table id="splitTable">
+            <thead>
+                <tr>
+                    <th>Level</th>
+                    <th>World Record</th>
+                    <th>Personal Best</th>
+                    <th>Best Split</th>
+                    <th>Current Comparison</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <script>
+            class LiveSplitDisplay {
+                constructor() {
+                    this.tableBody = document.querySelector("#splitTable tbody")
+                    this.connectWebSocket()
+                }
+
+                connectWebSocket() {
+                    this.ws = new WebSocket("ws://localhost:8082")
+
+                    this.ws.onmessage = (event) => {
+                        const splitInfo = JSON.parse(event.data)
+                        this.updateTable(splitInfo)
+                    }
+
+                    this.ws.onclose = () => {
+                        setTimeout(() => this.connectWebSocket(), 1000)
+                    }
+                }
+
+                createRow(split, type, label) {
+                    const row = document.createElement("tr")
+                    row.className = type
+
+                    row.innerHTML = `
+                        <td>${split.name}</td>
+                        <td class="time">${split.worldRecord}</td>
+                        <td class="time">${split.personalBest}</td>
+                        <td class="time">${split.bestSplit}</td>
+                        <td class="time">${split.currentComparison}</td>
+                    `
+
+                    return row
+                }
+
+                updateTable(splitInfo) {
+                    this.tableBody.innerHTML = ""
+
+                    if (splitInfo.previousSplit) {
+                        // this.tableBody.appendChild(
+                        //     this.createRow(
+                        //         splitInfo.previousSplit,
+                        //         "previous",
+                        //         "Previous"
+                        //     )
+                        // )
+                    }
+
+                    this.tableBody.appendChild(
+                        this.createRow(
+                            splitInfo.currentSplit,
+                            "current",
+                            "Current"
+                        )
+                    )
+
+                    if (splitInfo.nextSplit) {
+                        // this.tableBody.appendChild(
+                        //     this.createRow(splitInfo.nextSplit, "next", "Next")
+                        // )
+                    }
+                }
+            }
+
+            new LiveSplitDisplay()
+        </script>
+    </body>
+</html>

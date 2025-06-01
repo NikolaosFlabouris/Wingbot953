@@ -18,7 +18,7 @@ let liveChatId: string | undefined
 let nextPageToken: string | undefined
 let isMonitoring: boolean = false
 let pollingInterval: number = 30000 // 30 seconds
-let intervalId: NodeJS.Timeout | undefined
+let youTubeChatPollingInterval: NodeJS.Timeout | undefined
 let server: http.Server | undefined
 let youTubeApiPollingInterval: NodeJS.Timeout
 let periodicMessagesInterval: NodeJS.Timeout | undefined
@@ -29,7 +29,7 @@ const SCOPES = [
     "https://www.googleapis.com/auth/youtube.force-ssl",
 ]
 
-let TEST = false // Set to true for testing purposes
+let TEST = true // Set to true for testing purposes
 
 export async function YoutubeSetup(): Promise<void> {
     if (TEST) {
@@ -481,7 +481,10 @@ async function startMonitoring(): Promise<void> {
     await pollLiveChatMessages()
 
     // Set up interval to poll for new messages
-    intervalId = setInterval(() => pollLiveChatMessages(), pollingInterval)
+    youTubeChatPollingInterval = setInterval(
+        () => pollLiveChatMessages(),
+        pollingInterval
+    )
 
     periodicMessagesInterval = setInterval(PeriodicYouTubeMessages, 3300000) // 55mins
 
@@ -494,9 +497,9 @@ async function startMonitoring(): Promise<void> {
  * Stop monitoring YouTube livestream chat
  */
 function stopMonitoring(): void {
-    if (intervalId) {
-        clearInterval(intervalId)
-        intervalId = undefined
+    if (youTubeChatPollingInterval) {
+        clearInterval(youTubeChatPollingInterval)
+        youTubeChatPollingInterval = undefined
     }
     isMonitoring = false
     console.log("Stopped monitoring YouTube chat")
