@@ -29,7 +29,7 @@ const SCOPES = [
     "https://www.googleapis.com/auth/youtube.force-ssl",
 ]
 
-let TEST = true // Set to true for testing purposes
+let TEST = false // Set to true for testing purposes
 
 export async function YoutubeSetup(): Promise<void> {
     if (TEST) {

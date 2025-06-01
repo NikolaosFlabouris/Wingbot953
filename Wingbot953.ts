@@ -18,15 +18,19 @@ let liveSplit: LiveSplitClient
 async function main() {
     server.listen(port)
 
-    // createWebSocket()
+    createWebSocket()
 
-    // await DiscordSetup()
+    await DiscordSetup()
 
-    // await SpotifySetup(server)
+    await SpotifySetup(server)
 
-    // await TwitchSetup(server)
+    await TwitchSetup(server)
 
-    // await YoutubeSetup()
+    await YoutubeSetup()
+
+    QuizSetup()
+
+    HaloRunsSetup()
 
     liveSplit = new LiveSplitClient()
     liveSplit.connect()
@@ -37,11 +41,7 @@ async function main() {
         process.exit(0)
     })
 
-    // QuizSetup()
-
-    // HaloRunsSetup()
-
-    // GenerateCommandsList()
+    GenerateCommandsList()
 }
 
 main()

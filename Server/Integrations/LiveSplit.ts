@@ -1,6 +1,7 @@
 import * as WebSocket from "ws"
 import * as net from "net"
 import { TimeSpan } from "../TimeSpan"
+import { GetHaloRunsWr, GetHaloRunsPb } from "./HaloRuns"
 
 interface SplitData {
     name: string
@@ -16,6 +17,24 @@ interface SplitInfo {
     nextSplit?: SplitData
 }
 
+const odstSplitNames: { [key: number]: string } = {
+    0: "Prepare to Drop",
+    1: "Tayari Plaza",
+    2: "Streets: Drone Optic",
+    3: "Uplift Reserve",
+    4: "Streets: Gauss Turret",
+    5: "ONI Alpha Site",
+    6: "-",
+    7: "Kizingo Blvd.",
+    8: "-",
+    9: "NMPD HQ",
+    10: "-",
+    11: "Kikowani Station",
+    12: "-",
+    13: "Data Hive",
+    14: "Coastal Highway",
+}
+
 // Time formats: [-][[[d.]hh:]mm:]ss[.fffffff]
 export class LiveSplitClient {
     host: string
@@ -27,6 +46,12 @@ export class LiveSplitClient {
     wssVirgil: WebSocket.Server
     wssSplitData: WebSocket.Server
     currentSplitIndex: number
+    previousSplitData: SplitData
+    currentSplitData: SplitData
+    nextSplitData: SplitData
+    previousBestSplit: TimeSpan
+    previousComparisonSplit: TimeSpan
+    previousPreviousComparisonSplit: TimeSpan
 
     constructor(host = "localhost", port = 16834) {
         this.host = host
@@ -38,6 +63,30 @@ export class LiveSplitClient {
         this.wssVirgil = new WebSocket.Server({ port: 8081 })
         this.wssSplitData = new WebSocket.Server({ port: 8082 })
         this.currentSplitIndex = -1
+        this.previousSplitData = {
+            name: "",
+            worldRecord: "",
+            personalBest: "",
+            bestSplit: "",
+            currentComparison: "",
+        }
+        this.currentSplitData = {
+            name: "",
+            worldRecord: "",
+            personalBest: "",
+            bestSplit: "",
+            currentComparison: "",
+        }
+        this.nextSplitData = {
+            name: "",
+            worldRecord: "",
+            personalBest: "",
+            bestSplit: "",
+            currentComparison: "",
+        }
+        this.previousBestSplit = TimeSpan.zero
+        this.previousComparisonSplit = TimeSpan.zero
+        this.previousPreviousComparisonSplit = TimeSpan.zero
     }
 
     public connect() {
@@ -115,8 +164,7 @@ export class LiveSplitClient {
     private async getCurrentSplitIndex(): Promise<number> {
         try {
             const response = await this.sendCommand("getsplitindex")
-            console.log("Current split index response:", response)
-            return parseInt(response) || -1
+            return parseInt(response)
         } catch (error) {
             console.error("Error getting current split index:", error)
             return this.currentSplitIndex
@@ -127,11 +175,35 @@ export class LiveSplitClient {
     // For Real Time splits, returns hh:mm:ss.fffffff
     private async getCurrentBestSplit(): Promise<TimeSpan> {
         try {
-            return TimeSpan.fromString(
+            const currentBestSplitResponse = TimeSpan.fromString(
                 await this.sendCommand("getcomparisonsplittime Best Segments")
             )
+
+            const currentBestSplit = currentBestSplitResponse.subtract(
+                this.previousBestSplit
+            )
+            this.previousBestSplit = currentBestSplitResponse
+
+            return currentBestSplit
         } catch (error) {
             console.error(`Error getting best split:`, error)
+            return TimeSpan.zero
+        }
+    }
+
+    private async getPreviousSplitTime(): Promise<TimeSpan> {
+        try {
+            const previousSplitResponse = TimeSpan.fromString(
+                await this.sendCommand("getlastsplittime")
+            )
+
+            const previousComparisonSplit = previousSplitResponse.subtract(
+                this.previousPreviousComparisonSplit
+            )
+            this.previousComparisonSplit = previousSplitResponse
+            return previousComparisonSplit
+        } catch (error) {
+            console.error(`Error getting comparison:`, error)
             return TimeSpan.zero
         }
     }
@@ -140,64 +212,106 @@ export class LiveSplitClient {
     // For Real Time splits, returns hh:mm:ss.fffffff
     private async getCurrentComparison(): Promise<TimeSpan> {
         try {
-            return TimeSpan.fromString(
-                await this.sendCommand("getcurrentsplittime")
+            const currentComparisonSplitResponse = TimeSpan.fromString(
+                await this.sendCommand("getcomparisonsplittime")
             )
+
+            const currentComparisonSplit =
+                currentComparisonSplitResponse.subtract(
+                    this.previousComparisonSplit
+                )
+            this.previousComparisonSplit = currentComparisonSplitResponse
+
+            return currentComparisonSplit
         } catch (error) {
             console.error(`Error getting comparison:`, error)
             return TimeSpan.zero
         }
     }
 
-    private async getCurrentSplitName(): Promise<string> {
-        try {
-            return await this.sendCommand("getcurrentsplitname")
-        } catch (error) {
-            console.error(`Error getting current split name.`, error)
-            return "-"
-        }
+    private getCurrentSplitName(): string {
+        return odstSplitNames[this.currentSplitIndex] || "-"
+    }
+
+    private getNextSplitName(): string {
+        return odstSplitNames[this.currentSplitIndex + 1] || "-"
     }
 
     private async getWorldRecord(levelName: string): Promise<TimeSpan> {
-        // This is still a placeholder as LiveSplit server doesn't have direct WR commands
-        // You might need to implement custom logic to get WR data
-        return TimeSpan.fromString("00:30.00")
+        const hrWR = await GetHaloRunsWr(
+            "Halo 3: ODST",
+            "Solo",
+            levelName,
+            "Easy"
+        )
+        return hrWR.Time
     }
 
-    private async getPersonalBest(levelName: string): Promise<TimeSpan> {
+    private getPersonalBest(levelName: string): TimeSpan {
         // This is still a placeholder as LiveSplit server doesn't have direct PB commands
         // You might need to implement custom logic to get PB data
-        return TimeSpan.fromString("00:30.00")
+        return GetHaloRunsPb("Halo 3: ODST", "Solo", levelName, "Easy").Time
     }
 
-    private async getPreviousSplitData(): Promise<SplitData | null> {}
-
     private async getCurrentSplitData(): Promise<SplitData> {
-        const name = await this.getCurrentSplitName()
+        if (this.currentSplitIndex < 0) {
+            return {
+                name: "",
+                worldRecord: "",
+                personalBest: "",
+                bestSplit: "",
+                currentComparison: "",
+            }
+        }
+
+        const name = this.getCurrentSplitName()
         const bestSplit = await this.getCurrentBestSplit()
         const currentComparison = await this.getCurrentComparison()
         const worldRecord = await this.getWorldRecord(name)
-        const personalBest = await this.getPersonalBest(name)
+        const personalBest = this.getPersonalBest(name)
 
-        console.log(
-            "Split Data:",
-            name,
-            worldRecord.string,
-            personalBest.string,
-            bestSplit.string,
-            currentComparison.string
-        )
+        const worldRecordTime =
+            worldRecord.string === "00:00" ? "" : worldRecord.string
+        const personalBestTime =
+            personalBest.string === "00:00" ? "" : personalBest.string
 
         return {
             name,
-            worldRecord: worldRecord.string,
-            personalBest: personalBest.string,
+            worldRecord: worldRecordTime,
+            personalBest: personalBestTime,
             bestSplit: bestSplit.string,
             currentComparison: currentComparison.string,
         }
     }
 
-    private async getNextSplitData(): Promise<SplitData | null> {}
+    private async getNextSplitData(): Promise<SplitData> {
+        if (this.currentSplitIndex < 0) {
+            return {
+                name: "",
+                worldRecord: "",
+                personalBest: "",
+                bestSplit: "",
+                currentComparison: "",
+            }
+        }
+
+        const nextSplitName = this.getNextSplitName()
+        const worldRecord = await this.getWorldRecord(nextSplitName)
+        const personalBest = await this.getPersonalBest(nextSplitName)
+
+        const worldRecordTime =
+            worldRecord.string === "00:00" ? "" : worldRecord.string
+        const personalBestTime =
+            personalBest.string === "00:00" ? "" : personalBest.string
+
+        return {
+            name: nextSplitName,
+            worldRecord: worldRecordTime,
+            personalBest: personalBestTime,
+            bestSplit: "",
+            currentComparison: "",
+        }
+    }
 
     private async getDelta(): Promise<TimeSpan> {
         try {
@@ -224,23 +338,58 @@ export class LiveSplitClient {
         }
     }
 
-    private async broadcastUpdate() {
-        try {
-            //const previousSplit = await this.getPreviousSplitData()
-            const currentSplit = await this.getCurrentSplitData()
-            //const nextSplit = await this.getNextSplitData()
-            const splitInfo: SplitInfo = {
-                previousSplit: currentSplit,
-                currentSplit: currentSplit,
-                nextSplit: currentSplit,
-            }
-            const splitMessage = JSON.stringify(splitInfo)
+    private sendTableInfo() {
+        const splitInfo: SplitInfo = {
+            previousSplit: this.previousSplitData,
+            currentSplit: this.currentSplitData,
+            nextSplit: this.nextSplitData,
+        }
+        const splitMessage = JSON.stringify(splitInfo)
 
-            this.wssSplitData.clients.forEach((client) => {
-                if (client.readyState === WebSocket.OPEN) {
-                    client.send(splitMessage)
+        this.wssSplitData.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(splitMessage)
+            }
+        })
+    }
+
+    private async updateTableInfo() {
+        try {
+            if (this.currentSplitIndex < 0) {
+                this.previousSplitData = {
+                    name: "",
+                    worldRecord: "",
+                    personalBest: "",
+                    bestSplit: "",
+                    currentComparison: "",
                 }
-            })
+                this.currentSplitData = {
+                    name: "",
+                    worldRecord: "",
+                    personalBest: "",
+                    bestSplit: "",
+                    currentComparison: "",
+                }
+                this.nextSplitData = {
+                    name: "",
+                    worldRecord: "",
+                    personalBest: "",
+                    bestSplit: "",
+                    currentComparison: "",
+                }
+                this.previousBestSplit = TimeSpan.zero
+                this.previousComparisonSplit = TimeSpan.zero
+                this.previousPreviousComparisonSplit = TimeSpan.zero
+            } else {
+                this.previousSplitData = this.currentSplitData
+                this.previousSplitData.currentComparison = (
+                    await this.getPreviousSplitTime()
+                ).string
+                this.currentSplitData = await this.getCurrentSplitData()
+                this.nextSplitData = await this.getNextSplitData()
+            }
+
+            this.sendTableInfo()
 
             const virgilMood = await this.getVirgilMood()
 
@@ -260,17 +409,20 @@ export class LiveSplitClient {
         this.pingInterval = setInterval(async () => {
             try {
                 const currentIndex = await this.getCurrentSplitIndex()
-                console.log(
-                    `Current split index: ${currentIndex}, Previous: ${this.currentSplitIndex}`
-                )
-                //if (this.currentSplitIndex !== currentIndex) {
-                //    this.currentSplitIndex = currentIndex
-                await this.broadcastUpdate()
-                //}
+
+                if (this.currentSplitIndex !== currentIndex) {
+                    this.currentSplitIndex = currentIndex
+                    console.log(
+                        `Current split index: ${this.currentSplitIndex}`
+                    )
+                    await this.updateTableInfo()
+                }
             } catch (error: any) {
                 // Handle polling failure
                 console.error(`Ping failed: ${error.message}`)
             }
-        }, 5000)
+        }, 2000)
+
+        setInterval(() => this.sendTableInfo(), 10000)
     }
 }
