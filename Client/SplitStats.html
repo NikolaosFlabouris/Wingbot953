@@ -5,31 +5,41 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>LiveSplit Data</title>
         <style>
-            body {
-                margin: 0;
-                padding: 20px;
-                font-family: "Courier New", monospace;
-                background: #1a1a1a;
-                color: #fff;
+            @font-face {
+                font-family: "Denmark";
+                src: url("./fonts/DENMARK.TTF") format("woff2"),
+                    url("./fonts/DENMARK.TTF") format("woff");
+                font-weight: normal;
+                font-style: normal;
             }
 
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                background: #2a2a2a;
-                border: 2px solid #444;
-            }
-
+            /* Increase the base font size for table cells */
             th,
             td {
-                padding: 12px;
-                text-align: left;
+                padding: 3px 5px; /* Reduce padding slightly */
+                text-align: center;
                 border: 1px solid #444;
+                font-size: 1.5em;
+                line-height: 1.2; /* Add tighter line height */
             }
 
+            /* Increase header font size */
             th {
-                background: #333;
+                background: #00000000;
+                font-family: "Denmark", sans-serif;
                 font-weight: bold;
+                font-size: 1.5em;
+                text-align: right;
+                width: calc((100% - 220px) / 3);
+                border: none;
+            }
+
+            .row-title {
+                width: 220px; /* Limit width of row titles */
+            }
+
+            .col-title {
+                text-align: center;
             }
 
             .previous {
@@ -44,28 +54,86 @@
 
             .time {
                 font-family: "Courier New", monospace;
-                text-align: right;
+                font-weight: bold;
+                color: #fff;
+            }
+
+            /* Make table fill available space */
+            table {
+                height: 200px;
+                width: 100%;
+                max-width: 100%; /* Ensure it doesn't exceed viewport */
+                border: none;
+                /* border: 2px solid #444; */
+                border-collapse: collapse;
+                background: #00000000;
+            }
+
+            /* Optimize padding in the body */
+            body {
+                margin: 0;
+                padding: 3px; /* Reduced from 5px */
+                font-family: "Courier New", monospace;
+                background: #000;
+                color: #fff;
+            }
+
+            /* Reduce spacing around headings if any exist in table */
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6 {
+                margin: 0.3em 0; /* Tighter margins */
             }
         </style>
     </head>
     <body>
         <table id="splitTable">
-            <thead>
+            <tbody>
                 <tr>
-                    <th>Level</th>
-                    <th>World Record</th>
-                    <th>Personal Best</th>
-                    <th>Best Split</th>
-                    <th>Current Comparison</th>
+                    <th></th>
+                    <th class="col-title" id="previous-name">Previous Split</th>
+                    <th class="col-title" id="current-name">Current Split</th>
+                    <th class="col-title" id="next-name">Next Split</th>
                 </tr>
-            </thead>
-            <tbody></tbody>
+                <tr>
+                    <th class="row-title">World Record</th>
+                    <td class="previous time" id="previous-worldRecord"></td>
+                    <td class="current time" id="current-worldRecord"></td>
+                    <td class="next time" id="next-worldRecord"></td>
+                </tr>
+                <tr>
+                    <th class="row-title">Personal Best</th>
+                    <td class="previous time" id="previous-personalBest"></td>
+                    <td class="current time" id="current-personalBest"></td>
+                    <td class="next time" id="next-personalBest"></td>
+                </tr>
+                <tr>
+                    <th class="row-title">Best Split</th>
+                    <td class="previous time" id="previous-bestSplit"></td>
+                    <td class="current time" id="current-bestSplit"></td>
+                    <td class="next time" id="next-bestSplit"></td>
+                </tr>
+                <tr>
+                    <th class="row-title">Comparison Split</th>
+                    <td
+                        class="previous time"
+                        id="previous-currentComparison"
+                    ></td>
+                    <td
+                        class="current time"
+                        id="current-currentComparison"
+                    ></td>
+                    <td class="next time" id="next-currentComparison"></td>
+                </tr>
+            </tbody>
         </table>
 
         <script>
             class LiveSplitDisplay {
                 constructor() {
-                    this.tableBody = document.querySelector("#splitTable tbody")
                     this.connectWebSocket()
                 }
 
@@ -82,47 +150,51 @@
                     }
                 }
 
-                createRow(split, type, label) {
-                    const row = document.createElement("tr")
-                    row.className = type
-
-                    row.innerHTML = `
-                        <td>${split.name}</td>
-                        <td class="time">${split.worldRecord}</td>
-                        <td class="time">${split.personalBest}</td>
-                        <td class="time">${split.bestSplit}</td>
-                        <td class="time">${split.currentComparison}</td>
-                    `
-
-                    return row
-                }
-
                 updateTable(splitInfo) {
-                    this.tableBody.innerHTML = ""
+                    // Update previous split data
+                    document.getElementById(
+                        "previous-name"
+                    ).textContent = `${splitInfo.previousSplit.name}`
+                    document.getElementById(
+                        "previous-worldRecord"
+                    ).textContent = splitInfo.previousSplit.worldRecord
+                    document.getElementById(
+                        "previous-personalBest"
+                    ).textContent = splitInfo.previousSplit.personalBest
+                    document.getElementById("previous-bestSplit").textContent =
+                        splitInfo.previousSplit.bestSplit
+                    document.getElementById(
+                        "previous-currentComparison"
+                    ).textContent = splitInfo.previousSplit.currentComparison
 
-                    if (splitInfo.previousSplit) {
-                        // this.tableBody.appendChild(
-                        //     this.createRow(
-                        //         splitInfo.previousSplit,
-                        //         "previous",
-                        //         "Previous"
-                        //     )
-                        // )
-                    }
+                    // Update current split data
+                    document.getElementById(
+                        "current-name"
+                    ).textContent = `${splitInfo.currentSplit.name}`
+                    document.getElementById("current-worldRecord").textContent =
+                        splitInfo.currentSplit.worldRecord
+                    document.getElementById(
+                        "current-personalBest"
+                    ).textContent = splitInfo.currentSplit.personalBest
+                    document.getElementById("current-bestSplit").textContent =
+                        splitInfo.currentSplit.bestSplit
+                    document.getElementById(
+                        "current-currentComparison"
+                    ).textContent = splitInfo.currentSplit.currentComparison
 
-                    this.tableBody.appendChild(
-                        this.createRow(
-                            splitInfo.currentSplit,
-                            "current",
-                            "Current"
-                        )
-                    )
-
-                    if (splitInfo.nextSplit) {
-                        // this.tableBody.appendChild(
-                        //     this.createRow(splitInfo.nextSplit, "next", "Next")
-                        // )
-                    }
+                    // Update next split data
+                    document.getElementById(
+                        "next-name"
+                    ).textContent = `${splitInfo.nextSplit.name}`
+                    document.getElementById("next-worldRecord").textContent =
+                        splitInfo.nextSplit.worldRecord
+                    document.getElementById("next-personalBest").textContent =
+                        splitInfo.nextSplit.personalBest
+                    document.getElementById("next-bestSplit").textContent =
+                        splitInfo.nextSplit.bestSplit
+                    document.getElementById(
+                        "next-currentComparison"
+                    ).textContent = splitInfo.nextSplit.currentComparison
                 }
             }
 

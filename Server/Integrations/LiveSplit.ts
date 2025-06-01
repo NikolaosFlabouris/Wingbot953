@@ -52,7 +52,6 @@ export class LiveSplitClient {
 
         this.client.on("data", (data) => {
             const response = data.toString().trim()
-            console.log(`Response: ${response}`)
 
             // Resolve the oldest pending command
             const entries = Array.from(this.pendingCommands.entries())
@@ -171,13 +170,12 @@ export class LiveSplitClient {
         return TimeSpan.fromString("00:30.00")
     }
 
-    private async createSplitData(): Promise<SplitData> {
-        const [name, bestSplit, currentComparison] = await Promise.all([
-            this.getCurrentSplitName(),
-            this.getCurrentBestSplit(),
-            this.getCurrentComparison(),
-        ])
+    private async getPreviousSplitData(): Promise<SplitData | null> {}
 
+    private async getCurrentSplitData(): Promise<SplitData> {
+        const name = await this.getCurrentSplitName()
+        const bestSplit = await this.getCurrentBestSplit()
+        const currentComparison = await this.getCurrentComparison()
         const worldRecord = await this.getWorldRecord(name)
         const personalBest = await this.getPersonalBest(name)
 
@@ -199,6 +197,8 @@ export class LiveSplitClient {
         }
     }
 
+    private async getNextSplitData(): Promise<SplitData | null> {}
+
     private async getDelta(): Promise<TimeSpan> {
         try {
             return TimeSpan.fromString(await this.sendCommand("getdelta"))
@@ -215,7 +215,7 @@ export class LiveSplitClient {
             if (delta.totalMilliseconds < 0) {
                 return "Happy"
             } else if (delta.totalMilliseconds > 0) {
-                return "Sad"
+                return "Disappointed"
             }
             return "Neutral"
         } catch (error) {
@@ -226,8 +226,13 @@ export class LiveSplitClient {
 
     private async broadcastUpdate() {
         try {
+            //const previousSplit = await this.getPreviousSplitData()
+            const currentSplit = await this.getCurrentSplitData()
+            //const nextSplit = await this.getNextSplitData()
             const splitInfo: SplitInfo = {
-                currentSplit: await this.createSplitData(),
+                previousSplit: currentSplit,
+                currentSplit: currentSplit,
+                nextSplit: currentSplit,
             }
             const splitMessage = JSON.stringify(splitInfo)
 
@@ -240,7 +245,7 @@ export class LiveSplitClient {
             const virgilMood = await this.getVirgilMood()
 
             console.log("Virgil's mood:", virgilMood)
-            const virgilMessage = JSON.stringify({ mood: virgilMood })
+            const virgilMessage = JSON.stringify(virgilMood)
             this.wssVirgil.clients.forEach((client) => {
                 if (client.readyState === WebSocket.OPEN) {
                     client.send(virgilMessage)
@@ -255,14 +260,17 @@ export class LiveSplitClient {
         this.pingInterval = setInterval(async () => {
             try {
                 const currentIndex = await this.getCurrentSplitIndex()
-                if (this.currentSplitIndex !== currentIndex) {
-                    this.currentSplitIndex = currentIndex
-                    await this.broadcastUpdate()
-                }
+                console.log(
+                    `Current split index: ${currentIndex}, Previous: ${this.currentSplitIndex}`
+                )
+                //if (this.currentSplitIndex !== currentIndex) {
+                //    this.currentSplitIndex = currentIndex
+                await this.broadcastUpdate()
+                //}
             } catch (error: any) {
                 // Handle polling failure
                 console.error(`Ping failed: ${error.message}`)
             }
-        }, 1000)
+        }, 5000)
     }
 }

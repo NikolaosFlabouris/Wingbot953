@@ -42,14 +42,18 @@
             const { useState, useEffect } = React
 
             function ImageDisplay() {
-                const [currentImage, setCurrentImage] = useState(imageMap.Happy)
+                const [currentImage, setCurrentImage] = useState(
+                    imageMap.Neutral
+                )
 
                 useEffect(() => {
                     const ws = new WebSocket("ws://localhost:8081")
 
                     ws.onmessage = (event) => {
-                        const message = event.data.trim()
+                        const message = event.data.trim().replace(/['"]+/g, "")
+                        console.log("Received message:", message)
                         if (imageMap[message]) {
+                            console.log("Set Image:", imageMap[message])
                             setCurrentImage(imageMap[message])
                         }
                     }
