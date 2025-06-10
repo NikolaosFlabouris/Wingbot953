@@ -3,7 +3,14 @@ import {
     exchangeCode,
     AccessToken,
 } from "@twurple/auth"
-import { ChatClient, ChatMessage } from "@twurple/chat"
+import {
+    ChatClient,
+    ChatMessage,
+    ChatRaidInfo,
+    ChatSubGiftInfo,
+    ChatSubInfo,
+    UserNotice,
+} from "@twurple/chat"
 import {
     ApiClient,
     HelixCustomReward,
@@ -259,98 +266,164 @@ async function ContinueTwitchSetup() {
 
     twitchApiPollingInterval = setInterval(TwitchApiPolling, 5000) // 5secs
 
-    chatClient.onMessage(async (channel, user, message, msg: ChatMessage) => {
-        const badges = msg.userInfo.badges
+    chatClient.onMessage(
+        async (
+            channel: string,
+            user: string,
+            message: string,
+            msg: ChatMessage
+        ) => {
+            const badges = msg.userInfo.badges
 
-        const unifiedMessage: UnifiedChatMessage = {
-            id: msg.id,
-            platform: "twitch",
-            timestamp: new Date(),
-            channel: {
-                id: msg?.channelId || undefined,
-                name: channel.replace("#", ""),
-            },
-            author: {
-                id: msg.userInfo.userId,
-                colour: msg.userInfo.color || "#FFFFFF",
-                name: user,
-                displayName: msg.userInfo.displayName || user,
-                isModerator: msg.userInfo.isMod || false,
-                isSubscriber: msg.userInfo.isSubscriber || false,
-                isOwner: msg.userInfo.isBroadcaster || false,
-            },
-            message: {
-                text: message,
-                isHighlighted: msg.isHighlight || false,
-                emoteMap: parseEmotesFromMessage(message, msg),
-            },
-            platformSpecific: {
-                bits: msg.bits,
-                firstMessage: msg.isFirst,
-                returningChatter: msg.isReturningChatter,
-            },
+            const unifiedMessage: UnifiedChatMessage = {
+                id: msg.id,
+                platform: "twitch",
+                timestamp: new Date(),
+                channel: {
+                    id: msg?.channelId || undefined,
+                    name: channel.replace("#", ""),
+                },
+                author: {
+                    id: msg.userInfo.userId,
+                    colour: msg.userInfo.color || "#FFFFFF",
+                    name: user,
+                    displayName: msg.userInfo.displayName || user,
+                    isModerator: msg.userInfo.isMod || false,
+                    isSubscriber: msg.userInfo.isSubscriber || false,
+                    isOwner: msg.userInfo.isBroadcaster || false,
+                },
+                message: {
+                    text: message,
+                    isHighlighted: msg.isHighlight || false,
+                    emoteMap: parseEmotesFromMessage(message, msg),
+                },
+                platformSpecific: {
+                    bits: msg.bits,
+                    firstMessage: msg.isFirst,
+                    returningChatter: msg.isReturningChatter,
+                },
+            }
+
+            handleChatMessage(unifiedMessage)
         }
+    )
 
-        handleChatMessage(unifiedMessage)
-    })
+    chatClient.onSub(
+        (
+            channel: string,
+            user: string,
+            subInfo: ChatSubInfo,
+            msg: UserNotice
+        ) => {
+            const monthsSubbed =
+                subInfo.months > 1
+                    ? `${subInfo.months} months`
+                    : `${subInfo.months} month`
 
-    chatClient.onSub((channel, user) => {
-        let subMessage: UnifiedChatMessage = structuredClone(Wingbot953Message)
-        subMessage.message.text = `wingma14Blush Thank you @${user} for subscribing to the channel! wingma14Blush Let's celebrate with a Quiz!`
-        subMessage.platform = "twitch"
+            let subMessage: UnifiedChatMessage =
+                structuredClone(Wingbot953Message)
+            subMessage.message.text = `wingma14Blush Thank you @${user} for subscribing to the channel for ${monthsSubbed}! wingma14Blush Let's celebrate with a Quiz!`
+            subMessage.platform = "twitch"
 
-        sleep(1000).then(() => {
-            sendChatMessage(subMessage)
-        })
+            sleep(1000).then(() => {
+                sendChatMessage(subMessage)
 
-        setTimeout(() => {
-            StartQuiz()
-        }, 5000)
-    })
+                if (subInfo.message) {
+                    subMessage.message.text = `Sub message from ${user}: ${subInfo.message}`
+                    subMessage.platform = "system"
 
-    chatClient.onResub((channel, user, subInfo) => {
-        let resubMessage: UnifiedChatMessage =
-            structuredClone(Wingbot953Message)
-        resubMessage.message.text = `wingma14Blush Thank you @${user} for resubscribing to the channel for a total of ${subInfo.months} months! wingma14Blush Let's celebrate with a Quiz!`
-        resubMessage.platform = "twitch"
+                    sendChatMessage(subMessage)
+                }
+            })
 
-        sleep(1000).then(() => {
-            sendChatMessage(resubMessage)
-        })
+            setTimeout(() => {
+                StartQuiz()
+            }, 5000)
+        }
+    )
 
-        setTimeout(() => {
-            StartQuiz()
-        }, 5000)
-    })
+    chatClient.onResub(
+        (
+            channel: string,
+            user: string,
+            subInfo: ChatSubInfo,
+            msg: UserNotice
+        ) => {
+            const monthsSubbed =
+                subInfo.months > 1
+                    ? `${subInfo.months} months`
+                    : `${subInfo.months} month`
 
-    chatClient.onSubGift((channel, user, subInfo) => {
-        let subGiftMessage: UnifiedChatMessage =
-            structuredClone(Wingbot953Message)
-        subGiftMessage.message.text = `wingma14Blush Thank you ${subInfo.gifter} for gifting a subscription to ${user}! wingma14Blush Let's celebrate with a Quiz!`
-        subGiftMessage.platform = "twitch"
+            let subMessage: UnifiedChatMessage =
+                structuredClone(Wingbot953Message)
+            subMessage.message.text = `wingma14Blush Thank you @${user} for subscribing to the channel for ${monthsSubbed}! wingma14Blush Let's celebrate with a Quiz!`
+            subMessage.platform = "twitch"
 
-        sleep(1000).then(() => {
-            sendChatMessage(subGiftMessage)
-        })
+            sleep(1000).then(() => {
+                sendChatMessage(subMessage)
 
-        setTimeout(() => {
-            StartQuiz()
-        }, 5000)
-    })
+                if (subInfo.message) {
+                    subMessage.message.text = `Sub message from ${user}: ${subInfo.message}`
+                    subMessage.platform = "system"
 
-    chatClient.onRaid((channel, user, raidInfo) => {
-        let raidMessage: UnifiedChatMessage = structuredClone(Wingbot953Message)
-        raidMessage.message.text = `wingma14Blush Thank you ${raidInfo.displayName} for the raid! wingma14Blush Let's celebrate with a Quiz!`
-        raidMessage.platform = "twitch"
+                    sendChatMessage(subMessage)
+                }
+            })
 
-        sleep(1000).then(() => {
-            sendChatMessage(raidMessage)
-        })
+            setTimeout(() => {
+                StartQuiz()
+            }, 5000)
+        }
+    )
 
-        setTimeout(() => {
-            StartQuiz()
-        }, 5000)
-    })
+    chatClient.onSubGift(
+        (
+            channel: string,
+            user: string,
+            subInfo: ChatSubGiftInfo,
+            msg: UserNotice
+        ) => {
+            let subGiftMessage: UnifiedChatMessage =
+                structuredClone(Wingbot953Message)
+            subGiftMessage.message.text = `wingma14Blush Thank you ${subInfo.gifter} for gifting a subscription to ${user}! wingma14Blush Let's celebrate with a Quiz!`
+            subGiftMessage.platform = "twitch"
+
+            sleep(1000).then(() => {
+                sendChatMessage(subGiftMessage)
+            })
+
+            setTimeout(() => {
+                StartQuiz()
+            }, 5000)
+        }
+    )
+
+    chatClient.onRaid(
+        (
+            channel: string,
+            user: string,
+            raidInfo: ChatRaidInfo,
+            msg: UserNotice
+        ) => {
+            let viewCount =
+                raidInfo.viewerCount > 1
+                    ? `${raidInfo.viewerCount} viewers`
+                    : `${raidInfo.viewerCount} viewer`
+
+            let raidMessage: UnifiedChatMessage =
+                structuredClone(Wingbot953Message)
+            raidMessage.message.text = `wingma14Blush Thank you ${raidInfo.displayName} for the raid with ${viewCount}! wingma14Blush Let's celebrate with a Quiz!`
+            raidMessage.platform = "twitch"
+
+            sleep(1000).then(() => {
+                sendChatMessage(raidMessage)
+            })
+
+            setTimeout(() => {
+                StartQuiz()
+            }, 5000)
+        }
+    )
 }
 
 async function TwitchApiPolling() {
