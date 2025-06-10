@@ -47,7 +47,7 @@ export const halo2Questions = [
         Answers: QuizNaming.Numbers.TwentyEight,
     },
     {
-        Question: "What does Tartarus brand the Arbiter with?",
+        Question: "What brand does Tartarus mark the Arbiter with?",
         Answers: ["the Mark of Shame", "Mark of Shame"],
     },
     {
