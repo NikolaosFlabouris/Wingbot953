@@ -127,9 +127,20 @@ export async function Is2013Song(msg: UnifiedChatMessage) {
     const currentTrack = await getCurrentlyPlaying()
     if (currentTrack) {
         if (currentTrack.releaseYear === 2013) {
-            releaseYearMessage.message.text = `${
+            releaseYearMessage.message.text = `wingma14Jam ${
                 currentTrack.name
             } by ${currentTrack.artists.join(", ")} is a 2013 song! wingma14Jam`
+        } else if (
+            currentTrack.releaseYear !== undefined &&
+            [2011, 2012, 2014].includes(currentTrack.releaseYear)
+        ) {
+            releaseYearMessage.message.text = `${
+                currentTrack.name
+            } by ${currentTrack.artists.join(
+                ", "
+            )} is a 2013-ish song! It is from ${
+                currentTrack.releaseYear
+            }.  wingma14Jam`
         } else {
             releaseYearMessage.message.text = `${
                 currentTrack.name
