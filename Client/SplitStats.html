@@ -132,6 +132,12 @@
         </table>
 
         <script>
+            const trophyMap = {
+                1: "./images/trophies/GoldTrophy.png",
+                2: "./images/trophies/SilverTrophy.png",
+                3: "./images/trophies/BronzeTrophy.png",
+            }
+
             class LiveSplitDisplay {
                 constructor() {
                     this.connectWebSocket()
@@ -151,50 +157,164 @@
                 }
 
                 updateTable(splitInfo) {
+                    // Helper function to add trophy to an element
+                    const addTrophy = (element, rank) => {
+                        if (rank >= 1 && rank <= 3) {
+                            const trophyImg = document.createElement("img")
+                            trophyImg.src = trophyMap[rank]
+                            trophyImg.style.height = "1em"
+                            trophyImg.style.marginLeft = "5px"
+                            trophyImg.style.verticalAlign = "middle"
+                            element.appendChild(trophyImg)
+                        } else if (rank >= 4) {
+                            const rankSpan = document.createElement("span")
+                            rankSpan.textContent = ` (${rank}${this.getOrdinalSuffix(
+                                rank
+                            )})`
+                            rankSpan.style.fontSize = "0.8em"
+                            rankSpan.style.color = "#aaa"
+                            element.appendChild(rankSpan)
+                        }
+                    }
+
                     // Update previous split data
                     document.getElementById(
                         "previous-name"
                     ).textContent = `${splitInfo.previousSplit.name}`
-                    document.getElementById(
+
+                    // World Record - add gold trophy if value exists
+                    const prevWorldRecordEl = document.getElementById(
                         "previous-worldRecord"
-                    ).textContent = splitInfo.previousSplit.worldRecord
-                    document.getElementById(
+                    )
+                    prevWorldRecordEl.textContent =
+                        splitInfo.previousSplit.worldRecord
+                    if (
+                        splitInfo.previousSplit.worldRecord &&
+                        splitInfo.previousSplit.worldRecord !== ""
+                    ) {
+                        const trophyImg = document.createElement("img")
+                        trophyImg.src = trophyMap[1] // Gold trophy
+                        trophyImg.style.height = "1em"
+                        trophyImg.style.marginLeft = "5px"
+                        trophyImg.style.verticalAlign = "middle"
+                        prevWorldRecordEl.appendChild(trophyImg)
+                    }
+
+                    // Personal Best - add rank information
+                    const prevPBEl = document.getElementById(
                         "previous-personalBest"
-                    ).textContent = splitInfo.previousSplit.personalBest
+                    )
+                    prevPBEl.textContent = splitInfo.previousSplit.personalBest
+                    if (
+                        splitInfo.previousSplit.personalBest &&
+                        splitInfo.previousSplit.personalBest !== ""
+                    ) {
+                        addTrophy(prevPBEl, splitInfo.previousSplit.pbRank || 0)
+                    }
+
                     document.getElementById("previous-bestSplit").textContent =
                         splitInfo.previousSplit.bestSplit
                     document.getElementById(
                         "previous-currentComparison"
                     ).textContent = splitInfo.previousSplit.currentComparison
-
                     // Update current split data
                     document.getElementById(
                         "current-name"
                     ).textContent = `${splitInfo.currentSplit.name}`
-                    document.getElementById("current-worldRecord").textContent =
+
+                    // World Record - add gold trophy if value exists
+                    const currentWorldRecordEl = document.getElementById(
+                        "current-worldRecord"
+                    )
+                    currentWorldRecordEl.textContent =
                         splitInfo.currentSplit.worldRecord
-                    document.getElementById(
+                    if (
+                        splitInfo.currentSplit.worldRecord &&
+                        splitInfo.currentSplit.worldRecord !== ""
+                    ) {
+                        const trophyImg = document.createElement("img")
+                        trophyImg.src = trophyMap[1] // Gold trophy
+                        trophyImg.style.height = "1em"
+                        trophyImg.style.marginLeft = "5px"
+                        trophyImg.style.verticalAlign = "middle"
+                        currentWorldRecordEl.appendChild(trophyImg)
+                    }
+
+                    // Personal Best - add rank information
+                    const currentPBEl = document.getElementById(
                         "current-personalBest"
-                    ).textContent = splitInfo.currentSplit.personalBest
+                    )
+                    currentPBEl.textContent =
+                        splitInfo.currentSplit.personalBest
+                    if (
+                        splitInfo.currentSplit.personalBest &&
+                        splitInfo.currentSplit.personalBest !== ""
+                    ) {
+                        addTrophy(
+                            currentPBEl,
+                            splitInfo.currentSplit.pbRank || 0
+                        )
+                    }
+
                     document.getElementById("current-bestSplit").textContent =
                         splitInfo.currentSplit.bestSplit
                     document.getElementById(
                         "current-currentComparison"
                     ).textContent = splitInfo.currentSplit.currentComparison
-
                     // Update next split data
                     document.getElementById(
                         "next-name"
                     ).textContent = `${splitInfo.nextSplit.name}`
-                    document.getElementById("next-worldRecord").textContent =
+
+                    // World Record - add gold trophy if value exists
+                    const nextWorldRecordEl =
+                        document.getElementById("next-worldRecord")
+                    nextWorldRecordEl.textContent =
                         splitInfo.nextSplit.worldRecord
-                    document.getElementById("next-personalBest").textContent =
-                        splitInfo.nextSplit.personalBest
+                    if (
+                        splitInfo.nextSplit.worldRecord &&
+                        splitInfo.nextSplit.worldRecord !== ""
+                    ) {
+                        const trophyImg = document.createElement("img")
+                        trophyImg.src = trophyMap[1] // Gold trophy
+                        trophyImg.style.height = "1em"
+                        trophyImg.style.marginLeft = "5px"
+                        trophyImg.style.verticalAlign = "middle"
+                        nextWorldRecordEl.appendChild(trophyImg)
+                    }
+
+                    // Personal Best - add rank information
+                    const nextPBEl =
+                        document.getElementById("next-personalBest")
+                    nextPBEl.textContent = splitInfo.nextSplit.personalBest
+                    if (
+                        splitInfo.nextSplit.personalBest &&
+                        splitInfo.nextSplit.personalBest !== ""
+                    ) {
+                        addTrophy(nextPBEl, splitInfo.nextSplit.pbRank || 0)
+                    }
+
                     document.getElementById("next-bestSplit").textContent =
                         splitInfo.nextSplit.bestSplit
                     document.getElementById(
                         "next-currentComparison"
                     ).textContent = splitInfo.nextSplit.currentComparison
+                }
+
+                // Helper function to get ordinal suffix
+                getOrdinalSuffix(num) {
+                    const j = num % 10,
+                        k = num % 100
+                    if (j == 1 && k != 11) {
+                        return "st"
+                    }
+                    if (j == 2 && k != 12) {
+                        return "nd"
+                    }
+                    if (j == 3 && k != 13) {
+                        return "rd"
+                    }
+                    return "th"
                 }
             }
 

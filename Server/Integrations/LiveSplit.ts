@@ -7,6 +7,7 @@ interface SplitData {
     name: string
     worldRecord: string
     personalBest: string
+    pbRank: number
     bestSplit: string
     currentComparison: string
 }
@@ -17,6 +18,47 @@ interface SplitInfo {
     nextSplit?: SplitData
 }
 
+const h1SplitNames: { [key: number]: string } = {
+    0: "The Pillar of Autumn",
+    1: "Halo",
+    2: "The Truth and Reconciliation",
+    3: "The Silent Cartographer",
+    4: "Assault on the Control Room",
+    5: "343 Guilty Spark",
+    6: "The Library",
+    7: "Two Betrayals",
+    8: "Keyes",
+    9: "The Maw",
+}
+
+const h2SplitNames: { [key: number]: string } = {
+    0: "Cairo Station",
+    1: "Outskirts",
+    3: "Metropolis",
+    4: "The Arbiter",
+    5: "The Oracle",
+    6: "Delta Halo",
+    7: "Regret",
+    8: "Sacred Icon",
+    9: "Quarantine Zone",
+    10: "Gravemind",
+    11: "Uprising",
+    12: "High Charity",
+    13: "The Great Journey",
+}
+
+const h3SplitNames: { [key: number]: string } = {
+    0: "Sierra 117",
+    1: "Crow's Nest",
+    2: "Tsavo Highway",
+    3: "The Storm",
+    4: "Floodgate",
+    5: "The Ark",
+    6: "The Covenant",
+    7: "Cortana",
+    8: "Halo",
+}
+
 const odstSplitNames: { [key: number]: string } = {
     0: "Prepare to Drop",
     1: "Tayari Plaza",
@@ -24,16 +66,59 @@ const odstSplitNames: { [key: number]: string } = {
     3: "Uplift Reserve",
     4: "Streets: Gauss Turret",
     5: "ONI Alpha Site",
-    6: "-",
+    6: "Mombasa Streets 3",
     7: "Kizingo Blvd.",
-    8: "-",
+    8: "Mombasa Streets 4",
     9: "NMPD HQ",
-    10: "-",
+    10: "Mombasa Streets 5",
     11: "Kikowani Station",
-    12: "-",
+    12: "Mombasa Streets 6",
     13: "Data Hive",
     14: "Coastal Highway",
 }
+
+const reachSplitNames: { [key: number]: string } = {
+    0: "Winter Contingency",
+    1: "ONI: Sword Base",
+    2: "Nightfall",
+    3: "Tip of the Spear",
+    4: "Long Night of Solace",
+    5: "Exodus",
+    6: "New Alexandria",
+    7: "The Package",
+    8: "The Pillar of Autumn",
+}
+
+const h4SplitNames: { [key: number]: string } = {
+    0: "Dawn",
+    1: "Requiem",
+    2: "Forerunner",
+    3: "Infinity",
+    4: "Reclaimer",
+    5: "Shutdown",
+    6: "Composer",
+    7: "Midnight",
+}
+
+const h5SplitNames: { [key: number]: string } = {
+    0: "Osiris",
+    1: "Blue Team",
+    2: "Glassed",
+    3: "Meridian Station",
+    4: "Unconfirmed",
+    5: "Evacuation",
+    6: "Reunion",
+    7: "Swords of Sanghelios",
+    8: "Alliance",
+    9: "Enemy Lines",
+    10: "Before the Storm",
+    11: "Battle of Sunaion",
+    12: "Genesis",
+    13: "The Breaking",
+    14: "Guardians",
+}
+
+const infiniteSplitNames: { [key: number]: string } = {}
 
 // Time formats: [-][[[d.]hh:]mm:]ss[.fffffff]
 export class LiveSplitClient {
@@ -52,6 +137,7 @@ export class LiveSplitClient {
     previousBestSplit: TimeSpan
     previousComparisonSplit: TimeSpan
     previousPreviousComparisonSplit: TimeSpan
+    activeSplitNames: { [key: number]: string } = {}
 
     constructor(host = "localhost", port = 16834) {
         this.host = host
@@ -67,6 +153,7 @@ export class LiveSplitClient {
             name: "",
             worldRecord: "",
             personalBest: "",
+            pbRank: 0,
             bestSplit: "",
             currentComparison: "",
         }
@@ -74,6 +161,7 @@ export class LiveSplitClient {
             name: "",
             worldRecord: "",
             personalBest: "",
+            pbRank: 0,
             bestSplit: "",
             currentComparison: "",
         }
@@ -81,12 +169,14 @@ export class LiveSplitClient {
             name: "",
             worldRecord: "",
             personalBest: "",
+            pbRank: 0,
             bestSplit: "",
             currentComparison: "",
         }
         this.previousBestSplit = TimeSpan.zero
         this.previousComparisonSplit = TimeSpan.zero
         this.previousPreviousComparisonSplit = TimeSpan.zero
+        this.activeSplitNames = odstSplitNames
     }
 
     public connect() {
@@ -164,10 +254,14 @@ export class LiveSplitClient {
     private async getCurrentSplitIndex(): Promise<number> {
         try {
             const response = await this.sendCommand("getsplitindex")
+            let index = parseInt(response)
+            if (Number.isNaN(index)) {
+                throw new Error("LiveSplit index is NaN")
+            }
             return parseInt(response)
         } catch (error) {
             console.error("Error getting current split index:", error)
-            return this.currentSplitIndex
+            return -1
         }
     }
 
@@ -200,7 +294,7 @@ export class LiveSplitClient {
             const previousComparisonSplit = previousSplitResponse.subtract(
                 this.previousPreviousComparisonSplit
             )
-            this.previousComparisonSplit = previousSplitResponse
+            this.previousPreviousComparisonSplit = previousSplitResponse
             return previousComparisonSplit
         } catch (error) {
             console.error(`Error getting comparison:`, error)
@@ -230,11 +324,11 @@ export class LiveSplitClient {
     }
 
     private getCurrentSplitName(): string {
-        return odstSplitNames[this.currentSplitIndex] || "-"
+        return this.activeSplitNames[this.currentSplitIndex] || "-"
     }
 
     private getNextSplitName(): string {
-        return odstSplitNames[this.currentSplitIndex + 1] || "-"
+        return this.activeSplitNames[this.currentSplitIndex + 1] || "-"
     }
 
     private async getWorldRecord(levelName: string): Promise<TimeSpan> {
@@ -247,18 +341,30 @@ export class LiveSplitClient {
         return hrWR.Time
     }
 
-    private getPersonalBest(levelName: string): TimeSpan {
+    private getPersonalBest(levelName: string): {
+        time: TimeSpan
+        pbRank: number
+    } {
         // This is still a placeholder as LiveSplit server doesn't have direct PB commands
         // You might need to implement custom logic to get PB data
-        return GetHaloRunsPb("Halo 3: ODST", "Solo", levelName, "Easy").Time
+        return {
+            time: GetHaloRunsPb("Halo 3: ODST", "Solo", levelName, "Easy").Time,
+            pbRank:
+                GetHaloRunsPb("Halo 3: ODST", "Solo", levelName, "Easy").Rank ||
+                0,
+        }
     }
 
     private async getCurrentSplitData(): Promise<SplitData> {
-        if (this.currentSplitIndex < 0) {
+        if (
+            this.currentSplitIndex < 0 ||
+            this.currentSplitIndex >= Object.keys(this.activeSplitNames).length
+        ) {
             return {
                 name: "",
                 worldRecord: "",
                 personalBest: "",
+                pbRank: 0,
                 bestSplit: "",
                 currentComparison: "",
             }
@@ -273,23 +379,29 @@ export class LiveSplitClient {
         const worldRecordTime =
             worldRecord.string === "00:00" ? "" : worldRecord.string
         const personalBestTime =
-            personalBest.string === "00:00" ? "" : personalBest.string
+            personalBest.time.string === "00:00" ? "" : personalBest.time.string
 
         return {
             name,
             worldRecord: worldRecordTime,
             personalBest: personalBestTime,
+            pbRank: personalBest.pbRank,
             bestSplit: bestSplit.string,
             currentComparison: currentComparison.string,
         }
     }
 
     private async getNextSplitData(): Promise<SplitData> {
-        if (this.currentSplitIndex < 0) {
+        if (
+            this.currentSplitIndex < 0 ||
+            this.currentSplitIndex + 1 >=
+                Object.keys(this.activeSplitNames).length
+        ) {
             return {
                 name: "",
                 worldRecord: "",
                 personalBest: "",
+                pbRank: 0,
                 bestSplit: "",
                 currentComparison: "",
             }
@@ -302,12 +414,13 @@ export class LiveSplitClient {
         const worldRecordTime =
             worldRecord.string === "00:00" ? "" : worldRecord.string
         const personalBestTime =
-            personalBest.string === "00:00" ? "" : personalBest.string
+            personalBest.time.string === "00:00" ? "" : personalBest.time.string
 
         return {
             name: nextSplitName,
             worldRecord: worldRecordTime,
             personalBest: personalBestTime,
+            pbRank: personalBest.pbRank,
             bestSplit: "",
             currentComparison: "",
         }
@@ -353,33 +466,41 @@ export class LiveSplitClient {
         })
     }
 
+    private async clearTable() {
+        this.currentSplitIndex = -1
+        this.previousSplitData = {
+            name: "",
+            worldRecord: "",
+            personalBest: "",
+            pbRank: 0,
+            bestSplit: "",
+            currentComparison: "",
+        }
+        this.currentSplitData = {
+            name: "",
+            worldRecord: "",
+            personalBest: "",
+            pbRank: 0,
+            bestSplit: "",
+            currentComparison: "",
+        }
+        this.nextSplitData = {
+            name: "",
+            worldRecord: "",
+            personalBest: "",
+            pbRank: 0,
+            bestSplit: "",
+            currentComparison: "",
+        }
+        this.previousBestSplit = TimeSpan.zero
+        this.previousComparisonSplit = TimeSpan.zero
+        this.previousPreviousComparisonSplit = TimeSpan.zero
+    }
+
     private async updateTableInfo() {
         try {
             if (this.currentSplitIndex < 0) {
-                this.previousSplitData = {
-                    name: "",
-                    worldRecord: "",
-                    personalBest: "",
-                    bestSplit: "",
-                    currentComparison: "",
-                }
-                this.currentSplitData = {
-                    name: "",
-                    worldRecord: "",
-                    personalBest: "",
-                    bestSplit: "",
-                    currentComparison: "",
-                }
-                this.nextSplitData = {
-                    name: "",
-                    worldRecord: "",
-                    personalBest: "",
-                    bestSplit: "",
-                    currentComparison: "",
-                }
-                this.previousBestSplit = TimeSpan.zero
-                this.previousComparisonSplit = TimeSpan.zero
-                this.previousPreviousComparisonSplit = TimeSpan.zero
+                this.clearTable()
             } else {
                 this.previousSplitData = this.currentSplitData
                 this.previousSplitData.currentComparison = (
