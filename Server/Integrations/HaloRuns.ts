@@ -1,20 +1,17 @@
-import { ChatMessage } from "@twurple/chat/lib/commands/ChatMessage"
 import https from "https"
 
 import { CommandNaming } from "../../Data/Naming/CommandNaming"
-import { SecsToHMS } from "../Commands/Utils"
 import { sendChatMessage, Wingbot953Message } from "../MessageHandling"
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage"
 import { TimeSpan } from "../TimeSpan"
+import { numberToOrdinal } from "../Commands/Utils"
 
-const hrApiHostName = "https://haloruns.z20.web.core.windows.net"
+const hrApiHostName = "https://api.haloruns.com/"
 
 const Wingman953HrId = "c6f4a6e2-b5b8-4012-acb5-53bbf9dc54f9"
 
 const hrGeneralUrl = "/content/metadata/global.json"
 const wingman953ProfileUrl = `/content/users/${Wingman953HrId}/career.json`
-
-const OdstGameId = "4a100d57-0000-3000-8000-000000000000"
 
 let hrGeneralJson: any
 let wingman953ProfileJson: any
@@ -27,6 +24,7 @@ export interface HaloRunsTime {
     Time: TimeSpan
     Usernames: string
     Video: string
+    Rank: number
 }
 
 export function HaloRunsSetup() {
@@ -158,6 +156,7 @@ export async function GetHaloRunsWr(
         Time: TimeSpan.zero,
         Usernames: "",
         Video: "",
+        Rank: 0,
     }
 
     console.log(hrGameName, hrCategory, hrRunnableSegment, hrDifficulty)
@@ -179,6 +178,7 @@ export async function GetHaloRunsWr(
 
     if (hrCategoryIndex < 0) {
         // hrMessage.message.text = "Failed to find category on HaloRuns"
+        console.log("Failed to find category on HaloRuns")
         return wrHaloRunsTime
     }
 
@@ -190,6 +190,19 @@ export async function GetHaloRunsWr(
 
     if (hrRunnableSegmentIndex < 0) {
         // hrMessage.message.text = "Failed to find runnable segment on HaloRuns"
+        console.log("Failed to find runnable segment on HaloRuns")
+        return wrHaloRunsTime
+    }
+
+    let hrDifficultyIndex = hrGeneralJson.Games[
+        hrGameIndex
+    ].Difficulties.findIndex((element: any) => {
+        return element.Name === hrDifficulty
+    })
+
+    if (hrDifficultyIndex < 0) {
+        // hrMessage.message.text = "Failed to find difficulty on HaloRuns"
+        console.log("Failed to find difficulty on HaloRuns")
         return wrHaloRunsTime
     }
 
@@ -203,10 +216,13 @@ export async function GetHaloRunsWr(
             hrRunnableSegmentIndex
         ].Id
 
+    let hrDifficultyId: string =
+        hrGeneralJson.Games[hrGameIndex].Difficulties[hrDifficultyIndex].Id
+
     // Perform HaloRuns API request
     let apiUrl =
         hrApiHostName +
-        `/content/boards/${hrGameId}/${hrCategoryId}/leaderboard/${hrRunnableSegmentId}/${hrDifficulty}.json`
+        `/content/boards/${hrGameId}/${hrCategoryId}/leaderboard/${hrRunnableSegmentId}/${hrDifficultyId}.json`
 
     let leaderboardJson: any
 
@@ -307,8 +323,8 @@ export function HandleWingman953Pb(msg: UnifiedChatMessage) {
         msgSplitArray.length === 1 &&
         msg.message.text.toLowerCase() === "!pb"
     ) {
-        let hrMessage = structuredClone(Wingbot953Message)
-        hrMessage.platform = msg.platform
+        let pbMessage = structuredClone(Wingbot953Message)
+        pbMessage.platform = msg.platform
 
         let haloRunsTime = GetHaloRunsPb(
             "Halo 3: ODST",
@@ -316,9 +332,14 @@ export function HandleWingman953Pb(msg: UnifiedChatMessage) {
             "Full Game",
             "Easy"
         )
-
-        hrMessage.message.text = `The HaloRuns Record for ${haloRunsTime.GameName}, ${haloRunsTime.Category}, ${haloRunsTime.RunnableSegment}, ${haloRunsTime.Difficulty} is ${haloRunsTime.Time.string} by ${haloRunsTime.Usernames} | ${haloRunsTime.Video}`
-        sendChatMessage(hrMessage)
+        pbMessage.message.text = `Wingman953's PB for ${
+            haloRunsTime.GameName
+        }, ${haloRunsTime.Category}, ${haloRunsTime.RunnableSegment}, ${
+            haloRunsTime.Difficulty
+        } is ${haloRunsTime.Time.string} [${numberToOrdinal(
+            haloRunsTime.Rank
+        )}] | ${haloRunsTime.Video}`
+        sendChatMessage(pbMessage)
 
         haloRunsTime = GetHaloRunsPb(
             "Halo 3: ODST",
@@ -326,8 +347,14 @@ export function HandleWingman953Pb(msg: UnifiedChatMessage) {
             "Full Game",
             "Legendary"
         )
-        hrMessage.message.text = `The HaloRuns Record for ${haloRunsTime.GameName}, ${haloRunsTime.Category}, ${haloRunsTime.RunnableSegment}, ${haloRunsTime.Difficulty} is ${haloRunsTime.Time.string} by ${haloRunsTime.Usernames} | ${haloRunsTime.Video}`
-        sendChatMessage(hrMessage)
+        pbMessage.message.text = `Wingman953's PB for ${
+            haloRunsTime.GameName
+        }, ${haloRunsTime.Category}, ${haloRunsTime.RunnableSegment}, ${
+            haloRunsTime.Difficulty
+        } is ${haloRunsTime.Time.string} [${numberToOrdinal(
+            haloRunsTime.Rank
+        )}] | ${haloRunsTime.Video}`
+        sendChatMessage(pbMessage)
         return
     } else if (msgSplitArray.length != 5) {
         let hrMessage = structuredClone(Wingbot953Message)
@@ -353,17 +380,23 @@ export function HandleWingman953Pb(msg: UnifiedChatMessage) {
             hrNames[3]
         )
 
-        let hrMessage = structuredClone(Wingbot953Message)
-        hrMessage.platform = msg.platform
+        let pbMessage = structuredClone(Wingbot953Message)
+        pbMessage.platform = msg.platform
 
         if (haloRunsTime.Time === TimeSpan.zero) {
-            hrMessage.message.text = `Failed to find HaloRuns Record. Please check the parameters and try again.`
+            pbMessage.message.text = `Failed to find Wingman953's PB. Please check the parameters and try again.`
         } else if (haloRunsTime.Time === TimeSpan.maxValue) {
-            hrMessage.message.text = `There is no HaloRuns Record for ${haloRunsTime.GameName} ${haloRunsTime.Category} ${haloRunsTime.RunnableSegment} ${haloRunsTime.Difficulty}`
+            pbMessage.message.text = `Wingman953 does not have a PB for ${haloRunsTime.GameName} ${haloRunsTime.Category} ${haloRunsTime.RunnableSegment} ${haloRunsTime.Difficulty}`
         } else {
-            hrMessage.message.text = `The HaloRuns Record for ${haloRunsTime.GameName}, ${haloRunsTime.Category}, ${haloRunsTime.RunnableSegment}, ${haloRunsTime.Difficulty} is ${haloRunsTime.Time.string} by ${haloRunsTime.Usernames} | ${haloRunsTime.Video}`
+            pbMessage.message.text = `Wingman953's PB for ${
+                haloRunsTime.GameName
+            }, ${haloRunsTime.Category}, ${haloRunsTime.RunnableSegment}, ${
+                haloRunsTime.Difficulty
+            } is ${haloRunsTime.Time.string} [${numberToOrdinal(
+                haloRunsTime.Rank
+            )}] | ${haloRunsTime.Video}`
         }
-        sendChatMessage(hrMessage)
+        sendChatMessage(pbMessage)
     }
 }
 
@@ -373,7 +406,7 @@ export function GetHaloRunsPb(
     hrRunnableSegment: string,
     hrDifficulty: string
 ): HaloRunsTime {
-    let wrHaloRunsTime: HaloRunsTime = {
+    let pbHaloRunsTime: HaloRunsTime = {
         GameName: hrGameName,
         Category: hrCategory,
         RunnableSegment: hrRunnableSegment,
@@ -381,6 +414,7 @@ export function GetHaloRunsPb(
         Time: TimeSpan.zero,
         Usernames: "",
         Video: "",
+        Rank: -1,
     }
 
     console.log(hrGameName, hrCategory, hrRunnableSegment, hrDifficulty)
@@ -393,7 +427,7 @@ export function GetHaloRunsPb(
     if (hrGameIndex < 0) {
         // hrMessage.message.text = "Failed to find game on HaloRuns"
         console.log("Failed to find game on HaloRuns")
-        return wrHaloRunsTime
+        return pbHaloRunsTime
     }
 
     let hrRunnableSegmentIndex = hrGeneralJson.Games[
@@ -405,7 +439,19 @@ export function GetHaloRunsPb(
     if (hrRunnableSegmentIndex < 0) {
         // hrMessage.message.text = "Failed to find runnable segment on HaloRuns"
         console.log("Failed to find runnable segment on HaloRuns")
-        return wrHaloRunsTime
+        return pbHaloRunsTime
+    }
+
+    let hrDifficultyIndex = hrGeneralJson.Games[
+        hrGameIndex
+    ].Difficulties.findIndex((element: any) => {
+        return element.Name === hrDifficulty
+    })
+
+    if (hrDifficultyIndex < 0) {
+        // hrMessage.message.text = "Failed to find difficulty on HaloRuns"
+        console.log("Failed to find difficulty on HaloRuns")
+        return pbHaloRunsTime
     }
 
     let hrGameId: string = hrGeneralJson.Games[hrGameIndex].Id
@@ -414,6 +460,9 @@ export function GetHaloRunsPb(
         hrGeneralJson.Games[hrGameIndex].RunnableSegments[
             hrRunnableSegmentIndex
         ].Id
+
+    let hrDifficultyId: string =
+        hrGeneralJson.Games[hrGameIndex].Difficulties[hrDifficultyIndex].Id
 
     let pbRuns = wingman953ProfileJson.RunsByCategory.Solo
 
@@ -424,19 +473,20 @@ export function GetHaloRunsPb(
             if (
                 pbRuns[runIndex].GameId === hrGameId &&
                 pbRuns[runIndex].RunnableSegmentId === hrRunnableSegmentId &&
-                pbRuns[runIndex].Difficulty === hrDifficulty
+                pbRuns[runIndex].DifficultyId === hrDifficultyId
             ) {
-                let pbVideo: string =
+                pbHaloRunsTime.Video =
                     pbRuns[runIndex].Participants[0].EvidenceLink
 
-                wrHaloRunsTime.Time = TimeSpan.fromSeconds(
+                pbHaloRunsTime.Time = TimeSpan.fromSeconds(
                     parseInt(pbRuns[runIndex].Duration, 10)
                 )
-                wrHaloRunsTime.Usernames =
+                pbHaloRunsTime.Usernames =
                     pbRuns[runIndex].Participants[0].Username
-                wrHaloRunsTime.Video = pbVideo
 
-                return wrHaloRunsTime
+                pbHaloRunsTime.Rank = pbRuns[runIndex].RankInfo.Rank
+
+                return pbHaloRunsTime
             }
         }
     }
@@ -445,21 +495,23 @@ export function GetHaloRunsPb(
         pbRuns = wingman953ProfileJson.RunsByCategory[hrCategory]
 
         let pbTimeSecs: number = 99999999
-        let pbTime: string = ""
+        let pbTime: number = -1
         let coopUsernames: string = ""
         let pbVideo: string = ""
+        let pbRank: number = -1
 
         for (let runIndex = 0; runIndex < pbRuns.length; runIndex++) {
             if (
                 pbRuns[runIndex].GameId === hrGameId &&
                 pbRuns[runIndex].RunnableSegmentId === hrRunnableSegmentId &&
-                pbRuns[runIndex].Difficulty === hrDifficulty
+                pbRuns[runIndex].DifficultyId === hrDifficultyId
             ) {
                 if (parseInt(pbRuns[runIndex].Duration, 10) < pbTimeSecs) {
                     pbTimeSecs = parseInt(pbRuns[runIndex].Duration, 10)
-                    pbTime = SecsToHMS(parseInt(pbRuns[runIndex].Duration, 10))
+                    pbTime = parseInt(pbRuns[runIndex].Duration, 10)
 
                     pbVideo = pbRuns[runIndex].Participants[0].EvidenceLink
+                    pbRank = pbRuns[runIndex].RankInfo.Rank
 
                     coopUsernames = " with "
 
@@ -486,14 +538,15 @@ export function GetHaloRunsPb(
             }
         }
 
-        if (pbTime !== "") {
+        if (pbTime > 0) {
             // hrMessage.message.text = `Wingman953's PB for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty} is ${pbTime}${coopUsernames} | ${pbVideo}`
 
-            wrHaloRunsTime.Time = TimeSpan.fromString(pbTime)
-            wrHaloRunsTime.Usernames = coopUsernames
-            wrHaloRunsTime.Video = pbVideo
+            pbHaloRunsTime.Time = TimeSpan.fromSeconds(pbTime)
+            pbHaloRunsTime.Usernames = coopUsernames
+            pbHaloRunsTime.Video = pbVideo
+            pbHaloRunsTime.Rank = pbRank
 
-            return wrHaloRunsTime
+            return pbHaloRunsTime
         }
     }
 
@@ -501,7 +554,7 @@ export function GetHaloRunsPb(
     console.log(
         `Wingman953 does not have a submitted time for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty}`
     )
-    return wrHaloRunsTime
+    return pbHaloRunsTime
 }
 
 function FindHaloRunsCompatibleNames(

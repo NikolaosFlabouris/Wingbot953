@@ -102,39 +102,25 @@ export function SelectFromList(list: Array<string>, msg: UnifiedChatMessage) {
     sendChatMessage(itemFromListMessage)
 }
 
-///
-/// Turns a number of seconds into HH:MM:SS format as a string
-///
-export function SecsToHMS(totalSeconds: number) {
-    const totalMinutes: number = Math.floor(totalSeconds / 60)
-
-    const seconds: number = totalSeconds % 60
-    const hours: number = Math.floor(totalMinutes / 60)
-    const minutes: number = totalMinutes % 60
-
-    let time: string = ""
-
-    if (hours) {
-        time += `${hours}:`
+export function numberToOrdinal(num: number): string {
+    // Handle special cases for 11th, 12th, 13th
+    const lastTwoDigits = num % 100
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 13) {
+        return `${num}th`
     }
 
-    if (minutes < 10 && hours) {
-        time += `0${minutes}:`
-    } else if (minutes) {
-        time += `${minutes}:`
-    } else {
-        time += `00:`
+    // Handle general cases based on last digit
+    const lastDigit = num % 10
+    switch (lastDigit) {
+        case 1:
+            return `${num}st`
+        case 2:
+            return `${num}nd`
+        case 3:
+            return `${num}rd`
+        default:
+            return `${num}th`
     }
-
-    if (seconds < 10) {
-        time += `0${seconds}`
-    } else if (seconds) {
-        time += `${seconds}`
-    } else {
-        time += `00`
-    }
-
-    return time
 }
 
 ///

@@ -306,8 +306,8 @@ export class TimeSpan {
             parts.push(`${this.hours}`) // No padStart for hours
         }
 
-        // Always include minutes (no padStart)
-        parts.push(`${this.minutes}`)
+        // Always include minutes
+        parts.push(`${this.minutes.toString().padStart(2, "0")}`)
 
         // Always include seconds
         parts.push(`${this.seconds.toString().padStart(2, "0")}`)
