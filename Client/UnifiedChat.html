@@ -78,7 +78,7 @@
                 color: #b4b4b4; /* Default light grey */
                 font-weight: bold;
                 margin-right: 5px;
-                font-size: 1.15em;
+                font-size: 1.2em;
                 flex-shrink: 0; /* Prevent username from shrinking */
                 /*white-space: nowrap; /* Keep author on one line */
             }
@@ -260,6 +260,56 @@
                 return alphabetColors[firstChar] || defaultColor
             }
 
+            // Function to determine if a color is dark
+            const isColorDark = (color) => {
+                // Handle hex colors
+                if (color.startsWith("#")) {
+                    let r, g, b
+
+                    if (color.length === 4) {
+                        // #RGB format
+                        r = parseInt(color[1] + color[1], 16)
+                        g = parseInt(color[2] + color[2], 16)
+                        b = parseInt(color[3] + color[3], 16)
+                    } else {
+                        // #RRGGBB format
+                        r = parseInt(color.slice(1, 3), 16)
+                        g = parseInt(color.slice(3, 5), 16)
+                        b = parseInt(color.slice(5, 7), 16)
+                    }
+
+                    // Calculate relative luminance using the formula for sRGB
+                    const luminance =
+                        (0.2126 * r) / 255 +
+                        (0.7152 * g) / 255 +
+                        (0.0722 * b) / 255
+
+                    // If luminance is low (dark color), return true
+                    return luminance < 0.25
+                }
+
+                // Handle rgb/rgba colors
+                if (color.startsWith("rgb")) {
+                    const rgbMatch = color.match(
+                        /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/
+                    )
+                    if (rgbMatch) {
+                        const r = parseInt(rgbMatch[1], 10)
+                        const g = parseInt(rgbMatch[2], 10)
+                        const b = parseInt(rgbMatch[3], 10)
+
+                        const luminance =
+                            (0.2126 * r) / 255 +
+                            (0.7152 * g) / 255 +
+                            (0.0722 * b) / 255
+                        return luminance < 0.25
+                    }
+                }
+
+                // Default to false if color format is not recognized
+                return false
+            }
+
             // Message Component
             const Message = ({ msg }) => {
                 // Sample additional icons - in a real app, these would come from your data
@@ -290,7 +340,15 @@
                                 />
                             ))}
                         </div>
-                        <div className="author" style={{ color: authorColor }}>
+                        <div
+                            className="author"
+                            style={{
+                                color: authorColor,
+                                "-webkit-text-stroke": isColorDark(authorColor)
+                                    ? "0.04em #aaa"
+                                    : "none",
+                            }}
+                        >
                             {msg.author.displayName}:
                         </div>
                         <div className="message-text">
@@ -313,6 +371,17 @@
                         </div>
                     </div>
                 )
+            }
+
+            function parseUrlParams() {
+                const urlParams = new URLSearchParams(window.location.search)
+                const params = {}
+
+                for (const [key, value] of urlParams) {
+                    params[key] = value
+                }
+
+                return params
             }
 
             // Chat Application
