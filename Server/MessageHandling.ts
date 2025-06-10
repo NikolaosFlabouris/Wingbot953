@@ -48,6 +48,12 @@ export function createWebSocket() {
                 clients.splice(index, 1)
             }
         })
+
+        ws.on("message", (rawData: WebSocket.RawData, isBinary: boolean) => {
+            handleChatMessage(
+                JSON.parse(rawData.toString()) as UnifiedChatMessage
+            )
+        })
     })
 }
 
@@ -66,6 +72,8 @@ export function handleChatMessage(msg: UnifiedChatMessage) {
     if (msg.author.displayName == "Wingbot953") {
         console.log("Message from Wingbot953, ignoring.")
         return
+    } else if (msg.author.displayName == "Admin" && msg.platform == "system") {
+        console.log("Message from Admin.")
     }
 
     // Process common logic for both platforms

@@ -39,12 +39,16 @@
             }
 
             .message-window {
-                overflow-y: hidden; /* Prevent vertical scrolling */
+                overflow-y: hidden; /* Default: Prevent vertical scrolling */
                 overflow-x: hidden; /* Prevent horizontal scrolling */
-                overflow: hidden; /* Prevent both horizontal and vertical scrolling */
                 display: flex;
                 flex-direction: column;
                 width: 100%;
+            }
+
+            /* Admin mode scrolling */
+            .message-window.admin-mode {
+                overflow-y: scroll; /* Enable vertical scrolling in admin mode */
             }
 
             .message {
@@ -101,6 +105,37 @@
                 display: inline-block;
                 background-color: transparent; /* Ensure transparency is preserved */
                 image-rendering: crisp-edges; /* For sharper pixel art emotes */
+            }
+
+            /* Admin input styles */
+            .admin-input-container {
+                margin-top: 10px;
+                display: flex;
+                width: 100%;
+            }
+
+            .admin-input {
+                flex: 1;
+                padding: 8px 12px;
+                border-radius: 4px 0 0 4px;
+                border: 1px solid #444;
+                background-color: #333;
+                color: white;
+                font-size: 1.1em;
+            }
+
+            .admin-send-button {
+                padding: 8px 16px;
+                background-color: #0066cc;
+                color: white;
+                border: none;
+                border-radius: 0 4px 4px 0;
+                cursor: pointer;
+                font-weight: bold;
+            }
+
+            .admin-send-button:hover {
+                background-color: #0055aa;
             }
         </style>
     </head>
@@ -279,13 +314,10 @@
                     }
 
                     // Calculate relative luminance using the formula for sRGB
-                    const luminance =
-                        (0.2126 * r) / 255 +
-                        (0.7152 * g) / 255 +
-                        (0.0722 * b) / 255
+                    const luminance = r / 255 + g / 255 + b / 255
 
                     // If luminance is low (dark color), return true
-                    return luminance < 0.25
+                    return luminance < 0.2
                 }
 
                 // Handle rgb/rgba colors
@@ -298,11 +330,8 @@
                         const g = parseInt(rgbMatch[2], 10)
                         const b = parseInt(rgbMatch[3], 10)
 
-                        const luminance =
-                            (0.2126 * r) / 255 +
-                            (0.7152 * g) / 255 +
-                            (0.0722 * b) / 255
-                        return luminance < 0.25
+                        const luminance = r / 255 + g / 255 + b / 255
+                        return luminance < 0.2
                     }
                 }
 
@@ -373,6 +402,7 @@
                 )
             }
 
+            // Parse URL parameters
             function parseUrlParams() {
                 const urlParams = new URLSearchParams(window.location.search)
                 const params = {}
@@ -384,11 +414,50 @@
                 return params
             }
 
+            // Admin Input Component
+            const AdminInput = ({ onSendMessage }) => {
+                const [inputText, setInputText] = useState("")
+
+                const handleSendMessage = () => {
+                    if (inputText.trim()) {
+                        onSendMessage(inputText)
+                        setInputText("")
+                    }
+                }
+
+                const handleKeyDown = (e) => {
+                    if (e.key === "Enter") {
+                        handleSendMessage()
+                    }
+                }
+
+                return (
+                    <div className="admin-input-container">
+                        <input
+                            type="text"
+                            className="admin-input"
+                            value={inputText}
+                            onChange={(e) => setInputText(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            placeholder="Type a message..."
+                        />
+                        <button
+                            className="admin-send-button"
+                            onClick={handleSendMessage}
+                        >
+                            Send
+                        </button>
+                    </div>
+                )
+            }
+
             // Chat Application
             const ChatApp = () => {
                 const [messages, setMessages] = useState([])
                 const [socket, setSocket] = useState(null)
                 const messageWindowRef = useRef(null)
+                const params = parseUrlParams()
+                const isAdminMode = params.admin === "true"
 
                 useEffect(() => {
                     // Initialize WebSocket connection
@@ -401,14 +470,39 @@
                     ws.onmessage = (event) => {
                         try {
                             const message = JSON.parse(event.data)
-                            setMessages((prevMessages) => {
-                                // Keep only the most recent 20 messages
-                                const updatedMessages = [
-                                    ...prevMessages,
-                                    message,
-                                ]
-                                return updatedMessages.slice(-20)
-                            })
+                            if (
+                                !isAdminMode &&
+                                message.channel.name === "Admin"
+                            ) {
+                                return
+                            } else {
+                                // Before adding new content or updating messages
+                                if (messageWindowRef.current) {
+                                    // Check if user is already at the bottom (or very close)
+                                    const element = messageWindowRef.current
+                                    const isAtBottom =
+                                        element.scrollHeight -
+                                            element.scrollTop -
+                                            element.clientHeight <
+                                        20 // 20px threshold
+
+                                    // Store this information for use after updating
+                                    messageWindowRef.current._wasAtBottom =
+                                        isAtBottom
+                                }
+
+                                setMessages((prevMessages) => {
+                                    // In admin mode, keep all messages
+                                    // In normal mode, keep only the most recent 20 messages
+                                    const updatedMessages = [
+                                        ...prevMessages,
+                                        message,
+                                    ]
+                                    return isAdminMode
+                                        ? updatedMessages
+                                        : updatedMessages.slice(-20)
+                                })
+                            }
                         } catch (error) {
                             console.error("Error parsing message:", error)
                         }
@@ -430,23 +524,62 @@
                             ws.close()
                         }
                     }
-                }, [])
+                }, [isAdminMode])
 
                 useEffect(() => {
-                    // Auto-scroll to the bottom when new messages arrive
                     if (messageWindowRef.current) {
-                        messageWindowRef.current.scrollTop =
-                            messageWindowRef.current.scrollHeight
+                        if (
+                            !isAdminMode ||
+                            messageWindowRef.current._wasAtBottom
+                        ) {
+                            // In regular mode, or at bottom, auto-scroll
+                            messageWindowRef.current.scrollTop =
+                                messageWindowRef.current.scrollHeight
+                        }
                     }
-                }, [messages])
+                }, [messages, isAdminMode])
+
+                const handleSendMessage = (text) => {
+                    if (socket && socket.readyState === WebSocket.OPEN) {
+                        // Create UnifiedChatMessage structure
+                        const adminMessage = {
+                            platform: "all",
+                            timestamp: new Date(),
+                            channel: {
+                                name: "Admin",
+                            },
+                            author: {
+                                name: "Admin",
+                                displayName: "Wingman953",
+                                isModerator: true,
+                                isOwner: true,
+                                isSubscriber: true,
+                            },
+                            message: {
+                                text: text,
+                            },
+                        }
+
+                        // Send the message over WebSocket
+                        socket.send(JSON.stringify(adminMessage))
+                    }
+                }
 
                 return (
                     <div className="chat-container">
-                        <div className="message-window" ref={messageWindowRef}>
+                        <div
+                            className={`message-window ${
+                                isAdminMode ? "admin-mode" : ""
+                            }`}
+                            ref={messageWindowRef}
+                        >
                             {messages.map((msg, index) => (
                                 <Message key={index} msg={msg} />
                             ))}
                         </div>
+                        {isAdminMode && (
+                            <AdminInput onSendMessage={handleSendMessage} />
+                        )}
                     </div>
                 )
             }

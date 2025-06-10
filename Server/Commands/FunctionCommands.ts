@@ -247,6 +247,7 @@ const functionMap = [
         Username: ["Wingman953"],
         Function: PublishNewLeaderboard,
     },
+    // Admin
     // {
     //     Command: ["!createreward"],
     //     Username: ["Wingman953"],
