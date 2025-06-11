@@ -12,29 +12,32 @@ import {
 const client = new Client({ intents: [GatewayIntentBits.Guilds] })
 const twitchStreamAlertChannelId = "1070944970338488321"
 const youtubeStreamAlertChannelId = "1365162765601214544"
-const allTimeLeaderboardChannelId = "1071212911231508500"
-const bimonthlyLeaderboardChannelId = "1071213119570972673"
+const twitchAllTimeLeaderboardChannelId = "1071212911231508500"
+const youtubeAllTimeLeaderboardChannelId = "1382159909067427960"
 let twitchStreamAlertChannel: TextChannel
 let youtubeStreamAlertChannel: TextChannel
-let allTimeLeaderboardChannel: TextChannel
-let bimonthlyLeaderboardChannel: TextChannel
+let twitchAllTimeLeaderboardChannel: TextChannel
+let youtubeAllTimeLeaderboardChannel: TextChannel
 
 export function DiscordSetup() {
     // When the client is ready, run this code
     client.once(Events.ClientReady, (c) => {
         console.log(`Discord Ready! Logged in as ${c.user.tag}`)
 
+        // Alert Channels
         twitchStreamAlertChannel = client.channels.cache.get(
             twitchStreamAlertChannelId
         ) as TextChannel
         youtubeStreamAlertChannel = client.channels.cache.get(
             youtubeStreamAlertChannelId
         ) as TextChannel
-        allTimeLeaderboardChannel = client.channels.cache.get(
-            allTimeLeaderboardChannelId
+
+        // Leaderboard Channels
+        twitchAllTimeLeaderboardChannel = client.channels.cache.get(
+            twitchAllTimeLeaderboardChannelId
         ) as TextChannel
-        bimonthlyLeaderboardChannel = client.channels.cache.get(
-            bimonthlyLeaderboardChannelId
+        youtubeAllTimeLeaderboardChannel = client.channels.cache.get(
+            youtubeAllTimeLeaderboardChannelId
         ) as TextChannel
     })
 
@@ -78,65 +81,72 @@ export function YoutubeLivestreamAlert(
     youtubeStreamAlertChannel.send({ embeds: [exampleEmbed] })
 }
 
-export function PublishAlltimeLeaderboard(leaderboard: any) {
-    allTimeLeaderboardChannel.messages?.fetch().then((messages) => {
+export function PublishTwitchAllTimeLeaderboard(leaderboard: any) {
+    twitchAllTimeLeaderboardChannel.messages?.fetch().then((messages) => {
         let leaderboardMessage = ""
 
-        leaderboard.sort(
-            (firstItem: { Score: number }, secondItem: { Score: number }) =>
-                secondItem.Score - firstItem.Score
-        )
+        // Filter for Twitch users only, then sort by score in descending order
+        const twitchUsers = leaderboard
+            .filter((user: any) => user.Platform === "twitch")
+            .sort(
+                (firstItem: any, secondItem: any) =>
+                    secondItem.Score - firstItem.Score
+            )
 
-        const userCount = leaderboard.length > 50 ? 50 : leaderboard.length
+        // Get the top 50 users (or fewer if there aren't 50 Twitch users)
+        const userCount = Math.min(twitchUsers.length, 50)
 
+        // Build the leaderboard message
         for (let i = 0; i < userCount; i++) {
-            leaderboardMessage += `${i + 1} - ${leaderboard[i].Username}: ${
-                leaderboard[i].Score
+            leaderboardMessage += `${i + 1} - ${twitchUsers[i].Username}: ${
+                twitchUsers[i].Score
             }pts\n`
         }
 
         leaderboardMessage =
-            bold("All-Time Quiz Leaderboards - Top 50!") +
+            bold("Twitch All-Time Quiz Leaderboards - Top 50!") +
             `\n\n` +
             leaderboardMessage.replace(/(\*|_|`|~|\\)/g, "\\$1")
 
         if (messages.size > 0) {
             messages.first()?.edit(leaderboardMessage)
         } else {
-            allTimeLeaderboardChannel.send(leaderboardMessage)
+            twitchAllTimeLeaderboardChannel.send(leaderboardMessage)
         }
     })
 }
 
-export function PublishBimonthlyLeaderboard(
-    leaderboard: any,
-    newMessage: boolean = false
-) {
-    bimonthlyLeaderboardChannel.messages?.fetch().then((messages) => {
+export function PublishYouTubeAllTimeLeaderboard(leaderboard: any) {
+    youtubeAllTimeLeaderboardChannel.messages?.fetch().then((messages) => {
         let leaderboardMessage = ""
 
-        leaderboard.sort(
-            (firstItem: { Score: number }, secondItem: { Score: number }) =>
-                secondItem.Score - firstItem.Score
-        )
+        // Filter for YouTube users only, then sort by score in descending order
+        const youtubeUsers = leaderboard
+            .filter((user: any) => user.Platform === "youtube")
+            .sort(
+                (firstItem: any, secondItem: any) =>
+                    secondItem.Score - firstItem.Score
+            )
 
-        const userCount = leaderboard.length > 50 ? 50 : leaderboard.length
+        // Get the top 50 users (or fewer if there aren't 50 YouTube users)
+        const userCount = Math.min(youtubeUsers.length, 50)
 
+        // Build the leaderboard message
         for (let i = 0; i < userCount; i++) {
-            leaderboardMessage += `${i + 1} - ${leaderboard[i].Username}: ${
-                leaderboard[i].Score
+            leaderboardMessage += `${i + 1} - ${youtubeUsers[i].Username}: ${
+                youtubeUsers[i].Score
             }pts\n`
         }
 
         leaderboardMessage =
-            bold("March - April 2024 Bi-Monthly Quiz Leaderboards - Top 50!") +
+            bold("YouTube All-Time Quiz Leaderboards - Top 50!") +
             `\n\n` +
             leaderboardMessage.replace(/(\*|_|`|~|\\)/g, "\\$1")
 
-        if (messages.size > 0 && !newMessage) {
+        if (messages.size > 0) {
             messages.first()?.edit(leaderboardMessage)
-        } else if (newMessage) {
-            bimonthlyLeaderboardChannel.send(leaderboardMessage)
+        } else {
+            youtubeAllTimeLeaderboardChannel.send(leaderboardMessage)
         }
     })
 }

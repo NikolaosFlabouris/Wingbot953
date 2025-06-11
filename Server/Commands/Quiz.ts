@@ -1,8 +1,8 @@
 import { sleep, Between } from "./Utils"
 import fs from "fs"
 import {
-    PublishAlltimeLeaderboard,
-    PublishBimonthlyLeaderboard,
+    PublishTwitchAllTimeLeaderboard as PublishTwitchAllTimeLeaderboard,
+    PublishYouTubeAllTimeLeaderboard,
 } from "../Integrations/Discord"
 
 import { quizCategories } from "../../Data/QuizQuestions/QuizCategories"
@@ -13,6 +13,7 @@ import {
     TwitchDisableSlowMode,
     TwitchEnableSlowMode,
 } from "../Integrations/Twitch"
+import { setChatPollingInterval } from "../Integrations/YouTube"
 
 export let quizActive = false
 let blockQuiz = false
@@ -24,18 +25,18 @@ let categoryName: string
 let question: string
 let answer: string
 let QuizAnswerHandler: Function
-type quizUser = {
+interface QuizUser {
     Username: string
+    UserId?: string
     Platform: string
+    Score?: number
 }
-let correctUsers: quizUser[] = []
+let correctUsers: QuizUser[] = []
 const usedQuestions: number[] = []
 
 let leaderboardsAllTime: any
-let leaderboardsCurrentTime: any
 const leaderboardsFilePath = "./Data/QuizLeaderboards/"
 const leaderboardsAllTimeFileName = "QuizLeaderboards.json"
-const leaderboardsCurrentTimeFileName = "2024MarApr-QuizLeaderboards.json"
 
 export async function QuizSetup() {
     totalQuestionCount = 0
@@ -137,9 +138,6 @@ export async function StartBasicQuiz() {
 
         await sleep(17000)
 
-        // quizMessage.message.text = `/slow 3`
-        // sendChatMessage(quizMessage)
-
         ReadLeaderboardsFromFile()
 
         TwitchEnableSlowMode(3)
@@ -151,6 +149,9 @@ export async function StartBasicQuiz() {
 
         quizTwitchMessage.message.text = `wingma14Think ${question}`
         sendChatMessage(quizTwitchMessage)
+
+        // Set YouTube chat polling interval to be faster for the quiz
+        setChatPollingInterval(1000)
 
         quizYouTubeMessage.message.text = `${question}`
         sendChatMessage(quizYouTubeMessage, false)
@@ -169,9 +170,6 @@ export async function StartBasicQuiz() {
 
             TwitchDisableSlowMode()
 
-            // quizMessage.message.text = `/slowoff`
-            // sendChatMessage(quizMessage)
-
             blockQuiz = false
         }
     }
@@ -186,12 +184,16 @@ async function BasicQuizAnswer(msg: UnifiedChatMessage) {
         }) >= 0
     ) {
         const username = msg.author.displayName
+        const userId = msg.author.id
 
         let quizMessage = structuredClone(Wingbot953Message)
         quizMessage.platform = `all`
 
         quizActive = false
-        UpdateQuizScore([{ Username: username, Platform: msg.platform }], 1)
+        UpdateQuizScore(
+            [{ Username: username, UserId: userId, Platform: msg.platform }],
+            1
+        )
 
         let platform = ""
         if (msg.platform === "twitch") {
@@ -204,12 +206,12 @@ async function BasicQuizAnswer(msg: UnifiedChatMessage) {
         quizMessage.message.text = `Congratulations ${username}${platform}! You answered the question correctly! The answer was: ${answer}.`
         sendChatMessage(quizMessage)
 
+        // Set YouTube chat polling interval to be normal post quiz
+        setChatPollingInterval()
+
         await sleep(1000)
 
         TwitchDisableSlowMode()
-
-        // quizMessage.message.text = `/slowoff`
-        // sendChatMessage(quizMessage)
 
         blockQuiz = false
 
@@ -269,9 +271,6 @@ export async function StartMultiUserQuiz() {
 
         await sleep(17000)
 
-        // quizMessage.message.text = `/slow 3`
-        // sendChatMessage(quizMessage)
-
         ReadLeaderboardsFromFile()
 
         TwitchEnableSlowMode(3)
@@ -284,6 +283,9 @@ export async function StartMultiUserQuiz() {
 
         quizTwitchMessage.message.text = `wingma14Think ${question}`
         sendChatMessage(quizTwitchMessage)
+
+        // Set YouTube chat polling interval to be faster for the quiz
+        setChatPollingInterval(1000)
 
         quizYouTubeMessage.message.text = `${question}`
         sendChatMessage(quizYouTubeMessage, false)
@@ -338,6 +340,9 @@ export async function StartMultiUserQuiz() {
 
         sendChatMessage(quizYouTubeMessage)
 
+        // Set YouTube chat polling interval to be normal post quiz
+        setChatPollingInterval()
+
         if (correctUsers.length > 0) {
             UpdateQuizScore(correctUsers, 1)
         }
@@ -345,9 +350,6 @@ export async function StartMultiUserQuiz() {
         await sleep(1000)
 
         TwitchDisableSlowMode()
-
-        // quizMessage.message.text = `/slowoff`
-        // sendChatMessage(quizMessage)
 
         correctUsers = []
 
@@ -362,6 +364,7 @@ export async function StartMultiUserQuiz() {
 
 async function MultiUserQuizAnswer(msg: UnifiedChatMessage) {
     const username = msg.author.displayName
+    const userId = msg.author.id
 
     if (
         quizCategories[categoryIndex].CategoryQuestions[
@@ -374,6 +377,7 @@ async function MultiUserQuizAnswer(msg: UnifiedChatMessage) {
         correctUsers.forEach((element) => {
             if (
                 element.Username === username &&
+                element.UserId === userId &&
                 element.Platform === msg.platform
             ) {
                 found = true
@@ -381,7 +385,11 @@ async function MultiUserQuizAnswer(msg: UnifiedChatMessage) {
         })
 
         if (!found) {
-            correctUsers.push({ Username: username, Platform: msg.platform })
+            correctUsers.push({
+                Username: username,
+                UserId: userId,
+                Platform: msg.platform,
+            })
         }
     }
 }
@@ -392,29 +400,26 @@ export async function onQuizHandler(msg: UnifiedChatMessage) {
     }
 }
 
-export function DisplayQuizLeaderboards(msg: UnifiedChatMessage) {
+export function GetQuizLeaderboards(msg: UnifiedChatMessage) {
     ReadLeaderboardsFromFile()
 
-    leaderboardsAllTime.sort(
-        (firstItem: { Score: number }, secondItem: { Score: number }) =>
-            secondItem.Score - firstItem.Score
-    )
+    const platformLeaderboardsAllTime = leaderboardsAllTime
+        .filter((user: any) => user.Platform === msg.platform)
+        .sort(
+            (firstItem: { Score: number }, secondItem: { Score: number }) =>
+                secondItem.Score - firstItem.Score
+        )
 
-    leaderboardsCurrentTime.sort(
-        (firstItem: { Score: number }, secondItem: { Score: number }) =>
-            secondItem.Score - firstItem.Score
-    )
+    let message = `${msg.platform.toUpperCase()} ALL-TIME QUIZ TOP 5: `
 
-    let message = "ALL-TIME QUIZ TOP 5: "
+    // Get the top 5 users (or fewer if there aren't 5 YouTube users)
+    const userCount = Math.min(platformLeaderboardsAllTime.length, 5)
 
-    let learboardSize =
-        5 > leaderboardsAllTime.length ? leaderboardsAllTime.length : 5
-
-    for (let i = 0; i < learboardSize; i++) {
+    for (let i = 0; i < userCount; i++) {
         message +=
-            leaderboardsAllTime[i].Username +
+            platformLeaderboardsAllTime[i].Username +
             " - " +
-            leaderboardsAllTime[i].Score +
+            platformLeaderboardsAllTime[i].Score +
             "pts | "
     }
 
@@ -422,62 +427,72 @@ export function DisplayQuizLeaderboards(msg: UnifiedChatMessage) {
     quizMessage.platform = msg.platform
     quizMessage.message.text = message
     sendChatMessage(quizMessage)
-
-    // TODO: Bi-monthly Quiz
-    // message = "BI-MONTHLY QUIZ TOP 5: "
-
-    // learboardSize =
-    //     5 > leaderboardsCurrentTime.length ? leaderboardsCurrentTime.length : 5
-
-    // for (let i = 0; i < learboardSize; i++) {
-    //     message +=
-    //         leaderboardsCurrentTime[i].Username +
-    //         " - " +
-    //         leaderboardsCurrentTime[i].Score +
-    //         "pts | "
-    // }
-
-    // SendMessage("!quizleaderboard", message)
 }
 
-export function GetMyQuizScore(msg: UnifiedChatMessage) {
+export function GetQuizScore(msg: UnifiedChatMessage) {
     ReadLeaderboardsFromFile()
-
-    const originalMessage = msg.message.text
-    let user = msg.author.displayName
 
     let quizMessage = structuredClone(Wingbot953Message)
     quizMessage.platform = msg.platform
 
+    const originalMessage = msg.message.text
+    const platform = msg.platform
+    const userId = msg.author.id
+    let user = msg.author.displayName
     let scoreFound = false
 
+    // Check if a specific username was provided as the second word
     if (originalMessage.split(" ").length >= 2) {
         user = originalMessage.split(" ")[1].trim()
-    }
 
-    for (let i = 0; i < leaderboardsAllTime.length; i++) {
-        if (
-            leaderboardsAllTime[i].Username.toLowerCase() == user.toLowerCase()
-        ) {
-            quizMessage.message.text =
-                `${leaderboardsAllTime[i].Username}'s All-time Quiz Score is: ` +
-                leaderboardsAllTime[i].Score
-            scoreFound = true
+        // First search: Match by provided username and platform
+        for (let i = 0; i < leaderboardsAllTime.length; i++) {
+            if (
+                leaderboardsAllTime[i].Username.toLowerCase() ===
+                    user.toLowerCase() &&
+                leaderboardsAllTime[i].Platform === platform
+            ) {
+                quizMessage.message.text =
+                    `${leaderboardsAllTime[i].Username}'s All-time Quiz Score is: ` +
+                    leaderboardsAllTime[i].Score
+                scoreFound = true
+                break
+            }
+        }
+    } else {
+        // No specific username provided, search by userId and platform
+        for (let i = 0; i < leaderboardsAllTime.length; i++) {
+            if (
+                leaderboardsAllTime[i].UserId === userId &&
+                leaderboardsAllTime[i].Platform === platform
+            ) {
+                quizMessage.message.text =
+                    `${leaderboardsAllTime[i].Username}'s All-time Quiz Score is: ` +
+                    leaderboardsAllTime[i].Score
+                scoreFound = true
+                break
+            }
         }
     }
 
-    // TODO: Bi-monthly Quiz
-    // for (let i = 0; i < leaderboardsCurrentTime.length; i++) {
-    //     if (
-    //         leaderboardsCurrentTime[i].Username.toLowerCase() ==
-    //         user.toLowerCase()
-    //     ) {
-    //         scoreMessage +=
-    //             ` | Bi-Monthly Quiz Score is: ` +
-    //             leaderboardsCurrentTime[i].Score
-    //     }
-    // }
+    // If still not found, try searching by author's display name and platform
+    if (!scoreFound) {
+        for (let i = 0; i < leaderboardsAllTime.length; i++) {
+            if (
+                leaderboardsAllTime[i].Username.toLowerCase() ===
+                    msg.author.displayName.toLowerCase() &&
+                leaderboardsAllTime[i].Platform === platform
+            ) {
+                quizMessage.message.text =
+                    `${leaderboardsAllTime[i].Username}'s All-time Quiz Score is: ` +
+                    leaderboardsAllTime[i].Score
+                scoreFound = true
+                break
+            }
+        }
+    }
 
+    // If no score is found after all searches
     if (!scoreFound) {
         quizMessage.message.text = `No score found for user: ${user}`
     }
@@ -501,39 +516,20 @@ export function AddQuizScore(msg: UnifiedChatMessage) {
     }
 }
 
-function UpdateQuizScore(users: quizUser[], pointsChange: number) {
+function UpdateQuizScore(users: QuizUser[], pointsChange: number) {
     users.forEach((user) => {
-        let currentTimeFound = false
         let allTimeFound = false
-
-        for (let i = 0; i < leaderboardsCurrentTime.length; i++) {
-            if (
-                leaderboardsCurrentTime[i].Username == user.Username &&
-                leaderboardsCurrentTime[i].Platform == user.Platform
-            ) {
-                leaderboardsCurrentTime[i].Score += pointsChange
-                currentTimeFound = true
-                break
-            }
-        }
 
         for (let i = 0; i < leaderboardsAllTime.length; i++) {
             if (
                 leaderboardsAllTime[i].Username == user.Username &&
+                leaderboardsAllTime[i].UserId == user.UserId &&
                 leaderboardsAllTime[i].Platform == user.Platform
             ) {
                 leaderboardsAllTime[i].Score += pointsChange
                 allTimeFound = true
                 break
             }
-        }
-
-        if (!currentTimeFound) {
-            leaderboardsCurrentTime.push({
-                Username: user.Username,
-                Platform: user.Platform,
-                Score: pointsChange,
-            })
         }
 
         if (!allTimeFound) {
@@ -546,6 +542,7 @@ function UpdateQuizScore(users: quizUser[], pointsChange: number) {
     })
 
     WriteLeaderboardsToFile()
+    PublishLeaderboards()
 }
 
 function ReadLeaderboardsFromFile() {
@@ -554,17 +551,7 @@ function ReadLeaderboardsFromFile() {
             leaderboardsFilePath + leaderboardsAllTimeFileName,
             "utf8"
         )
-        leaderboardsAllTime = JSON.parse(data)
-    } catch (err) {
-        console.error(err)
-    }
-
-    try {
-        const data = fs.readFileSync(
-            leaderboardsFilePath + leaderboardsCurrentTimeFileName,
-            "utf8"
-        )
-        leaderboardsCurrentTime = JSON.parse(data)
+        leaderboardsAllTime = JSON.parse(data) as QuizUser[]
     } catch (err) {
         console.error(err)
     }
@@ -580,19 +567,6 @@ function WriteLeaderboardsToFile() {
             leaderboardsFilePath + leaderboardsAllTimeFileName,
             JSON.stringify(leaderboardsAllTime)
         )
-
-        PublishAlltimeLeaderboard(leaderboardsAllTime)
-    } catch (err) {
-        console.error(err)
-    }
-
-    try {
-        const data = fs.writeFileSync(
-            leaderboardsFilePath + leaderboardsCurrentTimeFileName,
-            JSON.stringify(leaderboardsCurrentTime)
-        )
-
-        PublishBimonthlyLeaderboard(leaderboardsCurrentTime)
     } catch (err) {
         console.error(err)
     }
@@ -600,13 +574,8 @@ function WriteLeaderboardsToFile() {
 
 export function PublishLeaderboards() {
     ReadLeaderboardsFromFile()
-    PublishAlltimeLeaderboard(leaderboardsAllTime)
-    PublishBimonthlyLeaderboard(leaderboardsCurrentTime)
-}
-
-export function PublishNewLeaderboard() {
-    ReadLeaderboardsFromFile()
-    PublishBimonthlyLeaderboard(leaderboardsCurrentTime, true)
+    PublishTwitchAllTimeLeaderboard(leaderboardsAllTime)
+    PublishYouTubeAllTimeLeaderboard(leaderboardsAllTime)
 }
 
 async function UpdateLeaderboardsWithIds() {
@@ -625,4 +594,5 @@ async function UpdateLeaderboardsWithIds() {
         }
     }
     WriteLeaderboardsToFile()
+    PublishLeaderboards()
 }

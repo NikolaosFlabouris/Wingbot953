@@ -17,7 +17,7 @@ let activeLivestream: string | undefined
 let liveChatId: string | undefined
 let nextPageToken: string | undefined
 let isMonitoring: boolean = false
-let pollingInterval: number = 30000 // 30 seconds
+let pollingInterval_ms: number = 30000 // 30 seconds
 let youTubeChatPollingInterval: NodeJS.Timeout | undefined
 let server: http.Server | undefined
 let youTubeApiPollingInterval: NodeJS.Timeout
@@ -37,7 +37,7 @@ export async function YoutubeSetup(): Promise<void> {
             "TESTING: Skipping YouTube integration setup, starting test messages..."
         )
 
-        let testInterval = setInterval(generateTestYouTubeMessage, 10000) // 10secs
+        let testInterval = setInterval(generateTestYouTubeMessage, 3000) // 3secs
 
         return
     }
@@ -480,17 +480,21 @@ async function startMonitoring(): Promise<void> {
     // Initial poll to get the first page token
     await pollLiveChatMessages()
 
-    // Set up interval to poll for new messages
-    youTubeChatPollingInterval = setInterval(
-        () => pollLiveChatMessages(),
-        pollingInterval
-    )
+    setChatPollingInterval()
 
     periodicMessagesInterval = setInterval(PeriodicYouTubeMessages, 3300000) // 55mins
 
     console.log(
-        `Started monitoring YouTube chat with ${pollingInterval}ms polling interval`
+        `Started monitoring YouTube chat with ${pollingInterval_ms}ms polling interval`
     )
+}
+
+export function setChatPollingInterval(
+    interval_ms: number = pollingInterval_ms
+) {
+    // Set up interval to poll for new messages
+    clearInterval(youTubeChatPollingInterval)
+    youTubeChatPollingInterval = setInterval(pollLiveChatMessages, interval_ms)
 }
 
 /**
@@ -581,11 +585,11 @@ function processYouTubeMessage(item: youtube_v3.Schema$LiveChatMessage): void {
         unifiedMessage.youtubeSpecific = {
             isSuperChat: true,
             superChatDetails: {
-            amount:
-                parseFloat(snippet.superChatDetails.amountMicros || "0") /
-                1000000,
-            currency: snippet.superChatDetails.currency || "USD",
-            color: snippet.superChatDetails.tier?.toString() || "", // YouTube uses tiers instead of color directly
+                amount:
+                    parseFloat(snippet.superChatDetails.amountMicros || "0") /
+                    1000000,
+                currency: snippet.superChatDetails.currency || "USD",
+                color: snippet.superChatDetails.tier?.toString() || "", // YouTube uses tiers instead of color directly
             },
         }
     }

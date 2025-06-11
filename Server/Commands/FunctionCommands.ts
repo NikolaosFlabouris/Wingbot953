@@ -11,10 +11,9 @@ import {
 } from "../Commands/Quotes"
 import {
     StartQuiz,
-    GetMyQuizScore,
-    DisplayQuizLeaderboards,
+    GetQuizScore,
+    GetQuizLeaderboards,
     AddQuizScore,
-    PublishNewLeaderboard,
     PublishLeaderboards,
 } from "../Commands/Quiz"
 import { HandleFastFact } from "../Commands/FastFacts"
@@ -221,7 +220,7 @@ const functionMap = [
     },
     {
         Command: ["!quizscore", "!score", "!points"],
-        Function: GetMyQuizScore,
+        Function: GetQuizScore,
     },
     {
         Command: ["!addscore"],
@@ -235,19 +234,19 @@ const functionMap = [
             "!leaderboards",
             "!leaderboard",
         ],
-        Function: DisplayQuizLeaderboards,
+        Function: GetQuizLeaderboards,
     },
     {
         Command: ["!publishleaderboards"],
         Username: ["Wingman953"],
         Function: PublishLeaderboards,
     },
-    {
-        Command: ["!publishnewleaderboard"],
-        Username: ["Wingman953"],
-        Function: PublishNewLeaderboard,
-    },
     // Admin
+    // {
+    //     Command: ["!publishnewleaderboard"],
+    //     Username: ["Wingman953"],
+    //     Function: PublishNewLeaderboard,
+    // },
     // {
     //     Command: ["!createreward"],
     //     Username: ["Wingman953"],
