@@ -9,6 +9,18 @@ export interface EmoteInfo {
     url: string
 }
 
+export interface BadgeIcon {
+    name: string
+    version: string
+    image_url_1x: string
+    image_url_2x: string
+    image_url_4x: string
+    title: string
+    description: string
+    clickAction: string | null
+    clickUrl: string | null
+}
+
 export interface UnifiedChatMessage {
     // Common fields for both platforms
     id?: string
@@ -32,6 +44,16 @@ export interface UnifiedChatMessage {
         text: string
         emoteMap?: EmoteInfo[]
         isHighlighted?: boolean
+    }
+    replyingTo?: UnifiedChatMessage
+    // Platform-specific data can be stored here
+    twitchSpecific?: {
+        bits?: number
+        firstMessage?: boolean
+        returningChatter: boolean
+        badges?: BadgeIcon[]
+    }
+    youtubeSpecific?: {
         isSuperChat?: boolean
         superChatDetails?: {
             amount: number
@@ -39,7 +61,4 @@ export interface UnifiedChatMessage {
             color: string
         }
     }
-    replyingTo?: UnifiedChatMessage
-    // Platform-specific data can be stored here
-    platformSpecific?: any
 }

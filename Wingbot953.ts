@@ -9,6 +9,7 @@ import express = require("express")
 import { YoutubeSetup } from "./Server/Integrations/YouTube"
 import { createWebSocket } from "./Server/MessageHandling"
 import { LiveSplitClient } from "./Server/Integrations/LiveSplit"
+import { BadgeCache } from "./Server/Integrations/TwitchBadgeCache"
 
 const server = express()
 const port = 3000
@@ -37,7 +38,8 @@ async function main() {
     // Graceful shutdown
     process.on("SIGINT", () => {
         console.log("\nShutting down...")
-        liveSplit.disconnect()
+        liveSplit.disconnect() // Cleanup when needed
+        BadgeCache.destroy()
         process.exit(0)
     })
 

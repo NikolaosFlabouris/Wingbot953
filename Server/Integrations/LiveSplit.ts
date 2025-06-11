@@ -121,6 +121,8 @@ const h5SplitNames: { [key: number]: string } = {
 const infiniteSplitNames: { [key: number]: string } = {}
 
 // Time formats: [-][[[d.]hh:]mm:]ss[.fffffff]
+// https://github.com/livesplit/livesplit?tab=readme-ov-file#the-livesplit-server
+// https://github.com/LiveSplit/LiveSplit/blob/master/src/LiveSplit.Core/Server/CommandServer.cs#L167
 export class LiveSplitClient {
     host: string
     port: number
@@ -138,6 +140,9 @@ export class LiveSplitClient {
     previousComparisonSplit: TimeSpan
     previousPreviousComparisonSplit: TimeSpan
     activeSplitNames: { [key: number]: string } = {}
+    game: string
+    difficulty: string
+    category: string
 
     constructor(host = "localhost", port = 16834) {
         this.host = host
@@ -177,6 +182,9 @@ export class LiveSplitClient {
         this.previousComparisonSplit = TimeSpan.zero
         this.previousPreviousComparisonSplit = TimeSpan.zero
         this.activeSplitNames = odstSplitNames
+        this.game = "Halo 3: ODST"
+        this.difficulty = "Easy"
+        this.category = "Solo"
     }
 
     public connect() {
@@ -333,10 +341,10 @@ export class LiveSplitClient {
 
     private async getWorldRecord(levelName: string): Promise<TimeSpan> {
         const hrWR = await GetHaloRunsWr(
-            "Halo 3: ODST",
-            "Solo",
+            this.game,
+            this.category,
             levelName,
-            "Easy"
+            this.difficulty
         )
         return hrWR.Time
     }
@@ -345,13 +353,15 @@ export class LiveSplitClient {
         time: TimeSpan
         pbRank: number
     } {
-        // This is still a placeholder as LiveSplit server doesn't have direct PB commands
-        // You might need to implement custom logic to get PB data
+        const pb = GetHaloRunsPb(
+            this.game,
+            this.category,
+            levelName,
+            this.difficulty
+        )
         return {
-            time: GetHaloRunsPb("Halo 3: ODST", "Solo", levelName, "Easy").Time,
-            pbRank:
-                GetHaloRunsPb("Halo 3: ODST", "Solo", levelName, "Easy").Rank ||
-                0,
+            time: pb.Time,
+            pbRank: pb.Rank,
         }
     }
 
@@ -441,9 +451,15 @@ export class LiveSplitClient {
             const delta = await this.getDelta()
             if (delta.totalMilliseconds < 0) {
                 return "Happy"
+            } else if (
+                this.previousBestSplit.totalMilliseconds >
+                this.previousComparisonSplit.totalMilliseconds
+            ) {
+                return "Happy"
             } else if (delta.totalMilliseconds > 0) {
                 return "Disappointed"
             }
+
             return "Neutral"
         } catch (error) {
             console.error("Error determining Virgil's mood:", error)

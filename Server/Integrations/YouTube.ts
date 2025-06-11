@@ -578,13 +578,15 @@ function processYouTubeMessage(item: youtube_v3.Schema$LiveChatMessage): void {
             snippet.textMessageDetails.messageText || ""
     } else if (snippet.type === "superChatEvent" && snippet.superChatDetails) {
         unifiedMessage.message.text = snippet.superChatDetails.userComment || ""
-        unifiedMessage.message.isSuperChat = true
-        unifiedMessage.message.superChatDetails = {
+        unifiedMessage.youtubeSpecific = {
+            isSuperChat: true,
+            superChatDetails: {
             amount:
                 parseFloat(snippet.superChatDetails.amountMicros || "0") /
                 1000000,
             currency: snippet.superChatDetails.currency || "USD",
             color: snippet.superChatDetails.tier?.toString() || "", // YouTube uses tiers instead of color directly
+            },
         }
     }
 

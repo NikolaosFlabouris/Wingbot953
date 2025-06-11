@@ -69,6 +69,16 @@
                 image-rendering: crisp-edges; /* For sharper pixel art icons */
             }
 
+            /* New style for badges */
+            .badge-icon {
+                width: 20px;
+                height: 20px;
+                margin-right: 4px;
+                flex-shrink: 0;
+                background-color: transparent;
+                image-rendering: crisp-edges;
+            }
+
             .icons-container {
                 display: flex;
                 align-items: center;
@@ -137,6 +147,54 @@
             .admin-send-button:hover {
                 background-color: #0055aa;
             }
+
+            .message.special-message {
+                position: relative;
+                padding: 10px;
+                border-radius: 6px;
+                margin-bottom: 16px;
+                z-index: 1;
+            }
+
+            .message.special-message::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                border-radius: 6px;
+                z-index: -1;
+                opacity: 0.85;
+            }
+
+            /* Subscription message style */
+            .message.sub-message::before {
+                background: linear-gradient(135deg, #6441a5 0%, #4b367c 100%);
+                border: 2px solid #9146ff;
+                box-shadow: 0 0 10px rgba(145, 70, 255, 0.5);
+            }
+
+            /* Bits message style */
+            .message.bits-message::before {
+                background: linear-gradient(135deg, #9146ff 0%, #00ffff 100%);
+                border: 2px solid #00ffff;
+                box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            }
+
+            /* YouTube superchat message style */
+            .message.superchat-message::before {
+                background: linear-gradient(135deg, #ff0000 0%, #ff8800 100%);
+                border: 2px solid #ff0000;
+                box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            }
+
+            /* For any other special message */
+            .message.other-special-message::before {
+                background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+                border: 2px solid #00c6ff;
+                box-shadow: 0 0 10px rgba(0, 198, 255, 0.5);
+            }
         </style>
     </head>
     <body>
@@ -186,6 +244,32 @@
                     default:
                         return "./images/icons/wrench-icon.png" // https://iconduck.com/icons/255547/setting-wrench
                 }
+            }
+
+            // Function to render badges
+            const renderBadges = (msg) => {
+                const badges = []
+
+                // Check for Twitch badges
+                if (
+                    msg.twitchSpecific &&
+                    msg.twitchSpecific.badges &&
+                    Array.isArray(msg.twitchSpecific.badges)
+                ) {
+                    msg.twitchSpecific.badges.forEach((badge, index) => {
+                        badges.push(
+                            <img
+                                key={`twitch-badge-${index}`}
+                                className="badge-icon"
+                                src={badge.image_url_4x}
+                                alt={badge.id || "Badge"}
+                                title={badge.id || "Badge"}
+                            />
+                        )
+                    })
+                }
+
+                return badges
             }
 
             // Function to parse message text and replace emotes
@@ -341,33 +425,64 @@
 
             // Message Component
             const Message = ({ msg }) => {
-                // Sample additional icons - in a real app, these would come from your data
-                // This is just for demonstration, could be empty array or multiple icons
-                const additionalIcons = msg.additionalIcons || []
-
                 // Get color for this author
                 let authorColor = getAuthorColor(msg.author.displayName)
                 if (msg.author.colour) {
                     authorColor = msg.author.colour
                 }
 
+                // Determine if this is a special message
+                const isSpecialMessage = () => {
+                    // Check for Twitch bits
+                    if (
+                        msg.twitchSpecific &&
+                        msg.twitchSpecific.bits &&
+                        msg.twitchSpecific.bits > 0
+                    ) {
+                        return "bits-message"
+                    }
+
+                    // Check for Twitch subscription
+                    if (
+                        msg.twitchSpecific &&
+                        (msg.twitchSpecific.messageType === "sub" ||
+                            msg.twitchSpecific.messageType === "resub" ||
+                            msg.twitchSpecific.messageType === "subgift")
+                    ) {
+                        return "sub-message"
+                    }
+
+                    // Check for YouTube Superchat
+                    if (msg.youtubeSpecific && msg.youtubeSpecific.superChat) {
+                        return "superchat-message"
+                    }
+
+                    // Check for a generic special message flag
+                    if (msg.isSpecialMessage) {
+                        return "other-special-message"
+                    }
+
+                    return ""
+                }
+
+                const specialMessageClass = isSpecialMessage()
+
                 return (
-                    <div className="message">
+                    <div
+                        className={`message ${
+                            specialMessageClass
+                                ? "special-message " + specialMessageClass
+                                : ""
+                        }`}
+                    >
                         <div className="icons-container">
                             <img
                                 className="platform-icon"
                                 src={getPlatformIcon(msg.platform)}
                                 alt={msg.platform}
                             />
-                            {/* Render any additional icons */}
-                            {additionalIcons.map((icon, index) => (
-                                <img
-                                    key={index}
-                                    className="platform-icon"
-                                    src={icon.src}
-                                    alt={icon.alt || "icon"}
-                                />
-                            ))}
+                            {/* Render badges from Twitch or other platforms */}
+                            {renderBadges(msg)}
                         </div>
                         <div
                             className="author"

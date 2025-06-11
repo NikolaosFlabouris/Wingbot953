@@ -35,6 +35,8 @@ import {
 import { ResetUsedQuestions, StartQuiz } from "../Commands/Quiz"
 import { AddTracksFromPlaylistToQueue } from "./Spotify"
 import { EmoteInfo, UnifiedChatMessage } from "../../Common/UnifiedChatMessage"
+import { BadgeCache } from "./TwitchBadgeCache"
+import util from "util"
 
 let Wingman953: HelixUser
 
@@ -262,6 +264,8 @@ async function ContinueTwitchSetup() {
         }
     }
 
+    BadgeCache.initialize(apiClient)
+
     await chatClient.connect()
 
     twitchApiPollingInterval = setInterval(TwitchApiPolling, 5000) // 5secs
@@ -273,8 +277,6 @@ async function ContinueTwitchSetup() {
             message: string,
             msg: ChatMessage
         ) => {
-            const badges = msg.userInfo.badges
-
             const unifiedMessage: UnifiedChatMessage = {
                 id: msg.id,
                 platform: "twitch",
@@ -297,12 +299,24 @@ async function ContinueTwitchSetup() {
                     isHighlighted: msg.isHighlight || false,
                     emoteMap: parseEmotesFromMessage(message, msg),
                 },
-                platformSpecific: {
+                twitchSpecific: {
                     bits: msg.bits,
                     firstMessage: msg.isFirst,
                     returningChatter: msg.isReturningChatter,
+                    badges: await BadgeCache.getBadgeIcons(
+                        Wingman953.id,
+                        msg.userInfo.badges
+                    ),
                 },
             }
+
+            console.log(
+                util.inspect(unifiedMessage, {
+                    showHidden: false,
+                    depth: null,
+                    colors: true,
+                })
+            )
 
             handleChatMessage(unifiedMessage)
         }
