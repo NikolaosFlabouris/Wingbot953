@@ -294,51 +294,50 @@ export async function StartMultiUserQuiz() {
 
         quizActive = false
 
-        let platformUserCount: number = 0
-        let userList: string = ""
+        let twitchUserCount: number = 0
+        let twitchUserList: string = ""
         for (let i = 0; i < correctUsers.length; i++) {
             if (correctUsers[i].Platform === "twitch") {
-                platformUserCount++
-                if (userList != "") {
-                    userList += ", " + correctUsers[i].Username
+                twitchUserCount++
+                if (twitchUserList != "") {
+                    twitchUserList += ", " + correctUsers[i].Username
                 } else {
-                    userList += correctUsers[i].Username
+                    twitchUserList += correctUsers[i].Username
                 }
             }
         }
 
-        let plural = platformUserCount > 1 ? "users" : "user"
+        let twitchUserPlural: string = twitchUserCount > 1 ? "users" : "user"
 
-        if (userList != "") {
-            quizTwitchMessage.message.text = `${correctUsers.length} Twitch ${plural} (${userList}) successfully answered the question. The answer was: ${answer}`
-        } else {
-            quizTwitchMessage.message.text = `No Twitch user successfully answered the question. The answer was: ${answer}`
-        }
-
-        sendChatMessage(quizTwitchMessage)
-
-        platformUserCount = 0
-        userList = ""
+        let youtubeUserCount: number = 0
+        let youtubeUserList: string = ""
         for (let i = 0; i < correctUsers.length; i++) {
             if (correctUsers[i].Platform === "youtube") {
-                platformUserCount++
-                if (userList != "") {
-                    userList += ", " + correctUsers[i].Username
+                youtubeUserCount++
+                if (youtubeUserList != "") {
+                    youtubeUserList += ", " + correctUsers[i].Username
                 } else {
-                    userList += correctUsers[i].Username
+                    youtubeUserList += correctUsers[i].Username
                 }
             }
         }
 
-        plural = platformUserCount > 1 ? "users" : "user"
+        let youtubeUserPlural: string = youtubeUserCount > 1 ? "users" : "user"
 
-        if (userList != "") {
-            quizYouTubeMessage.message.text = `${correctUsers.length} YouTube ${plural} (${userList}) successfully answered the question. The answer was: ${answer}`
+        let quizMessage = structuredClone(Wingbot953Message)
+        quizMessage.platform = "all"
+
+        if (twitchUserList != "" && youtubeUserList != "") {
+            quizMessage.message.text = `${twitchUserCount} Twitch ${twitchUserPlural} (${twitchUserList}) & ${youtubeUserCount} YouTube ${youtubeUserPlural} (${youtubeUserList}) successfully answered the question. The answer was: ${answer}`
+        } else if (twitchUserList != "") {
+            quizMessage.message.text = `${twitchUserCount} Twitch ${twitchUserPlural} (${twitchUserList}) successfully answered the question. The answer was: ${answer}`
+        } else if (youtubeUserList != "") {
+            quizMessage.message.text = `${youtubeUserCount} YouTube ${youtubeUserPlural} (${youtubeUserList}) successfully answered the question. The answer was: ${answer}`
         } else {
-            quizYouTubeMessage.message.text = `No YouTube user successfully answered the question. The answer was: ${answer}`
+            quizMessage.message.text = `No user successfully answered the question. The answer was: ${answer}`
         }
 
-        sendChatMessage(quizYouTubeMessage)
+        sendChatMessage(quizMessage)
 
         // Set YouTube chat polling interval to be normal post quiz
         setChatPollingInterval()
@@ -529,12 +528,20 @@ function UpdateQuizScore(users: QuizUser[], pointsChange: number) {
                 leaderboardsAllTime[i].Score += pointsChange
                 allTimeFound = true
                 break
+            } else if (
+                leaderboardsAllTime[i].Username == user.Username &&
+                leaderboardsAllTime[i].Platform == user.Platform
+            ) {
+                leaderboardsAllTime[i].Score += pointsChange
+                allTimeFound = true
+                break
             }
         }
 
         if (!allTimeFound) {
             leaderboardsAllTime.push({
                 Username: user.Username,
+                UserId: user.UserId,
                 Platform: user.Platform,
                 Score: pointsChange,
             })

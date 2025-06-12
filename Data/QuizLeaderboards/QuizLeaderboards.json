@@ -12,7 +12,7 @@
     {
         "Username": "thiccElite",
         "Platform": "twitch",
-        "Score": 442,
+        "Score": 447,
         "UserId": "242037394"
     },
     {
@@ -88,7 +88,7 @@
     {
         "Username": "jon_and_pon",
         "Platform": "twitch",
-        "Score": 207,
+        "Score": 210,
         "UserId": "119213376"
     },
     {
@@ -362,7 +362,7 @@
     {
         "Username": "PHLHimself",
         "Platform": "twitch",
-        "Score": 13,
+        "Score": 14,
         "UserId": "613771648"
     },
     {
@@ -484,7 +484,7 @@
     {
         "Username": "fromthegraveHR",
         "Platform": "twitch",
-        "Score": 97,
+        "Score": 100,
         "UserId": "803562781"
     },
     {
@@ -590,7 +590,7 @@
     {
         "Username": "LGBeEatin",
         "Platform": "twitch",
-        "Score": 22,
+        "Score": 24,
         "UserId": "212899463"
     },
     {
@@ -620,7 +620,7 @@
     {
         "Username": "de_llusive",
         "Platform": "twitch",
-        "Score": 55,
+        "Score": 56,
         "UserId": "135768090"
     },
     {
@@ -1437,13 +1437,13 @@
     {
         "Username": "BIoop_",
         "Platform": "twitch",
-        "Score": 22,
+        "Score": 25,
         "UserId": "159256593"
     },
     {
         "Username": "Cylles",
         "Platform": "twitch",
-        "Score": 35,
+        "Score": 36,
         "UserId": "590301204"
     },
     {
@@ -1461,7 +1461,7 @@
     {
         "Username": "T0Y_CHEST",
         "Platform": "twitch",
-        "Score": 30,
+        "Score": 31,
         "UserId": "1207938575"
     },
     {
@@ -1475,12 +1475,6 @@
         "Platform": "twitch",
         "Score": 1,
         "UserId": "580311469"
-    },
-    {
-        "Username": "Wingman953",
-        "Platform": "youtube",
-        "Score": -1,
-        "UserId": "25331776"
     },
     {
         "Username": "manlycake7",
@@ -1531,5 +1525,30 @@
         "Username": "Commode_Odraggin",
         "Platform": "twitch",
         "Score": 5
+    },
+    {
+        "Username": "OneEyedFlog",
+        "Platform": "twitch",
+        "Score": 1
+    },
+    {
+        "Username": "HandBanana69420",
+        "Platform": "twitch",
+        "Score": 1
+    },
+    {
+        "Username": "fromthegrave",
+        "Platform": "youtube",
+        "Score": 1
+    },
+    {
+        "Username": "LBeEatin",
+        "Platform": "twitch",
+        "Score": 1
+    },
+    {
+        "Username": "enragedpepper",
+        "Platform": "twitch",
+        "Score": 1
     }
 ]
