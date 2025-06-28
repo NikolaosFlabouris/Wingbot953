@@ -43,15 +43,16 @@ export interface UnifiedChatMessage {
     message: {
         text: string
         emoteMap?: EmoteInfo[]
-        isHighlighted?: boolean
     }
     replyingTo?: UnifiedChatMessage
     // Platform-specific data can be stored here
     twitchSpecific?: {
         bits?: number
         firstMessage?: boolean
-        returningChatter: boolean
+        returningChatter?: boolean
         badges?: BadgeIcon[]
+        isHighlighted?: boolean
+        messageType?: "sub" | "resub" | "subgift"
     }
     youtubeSpecific?: {
         isSuperChat?: boolean

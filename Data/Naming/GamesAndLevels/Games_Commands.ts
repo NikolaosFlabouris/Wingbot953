@@ -12,6 +12,22 @@ export const Games_Commands: { [key: string]: string[] } = {
         "1",
     ],
 
+    HaloCEClassic: [
+        "Halo CE Classic",
+        "Halo:CEClassic",
+        "Halo:CEC",
+        "HaloCEClassic",
+        "HaloCEC",
+        "H:CEC",
+        "HCEC",
+        "CEC",
+        "Halo1Classic",
+        "Halo1C",
+        "H1Classic",
+        "1Classic",
+        "1C",
+    ],
+
     Halo2: ["Halo 2", "Halo2", "H2", "2"],
 
     Halo2Mcc: [

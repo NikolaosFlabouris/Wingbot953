@@ -13,6 +13,7 @@ export const Levels_Commands: {
     [key: string]: { [key: string]: string[] }
 } = {
     HCELevels: HCELevels_Commands,
+    HCECLevels: HCELevels_Commands,
     H2Levels: H2Levels_Commands,
     H2MCCLevels: H2MCCLevels_Commands,
     H3Levels: H3Levels_Commands,

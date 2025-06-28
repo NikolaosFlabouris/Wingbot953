@@ -1,5 +1,5 @@
 export const HCELevels_Commands: { [key: string]: string[] } = {
-    Game: ["Halo CE"],
+    Game: ["Halo CE", "Halo CE Classic"],
     FullGame: ["Full Game", "Fullgame", "FG"],
     PillarOfAutumn: [
         "The Pillar of Autumn",

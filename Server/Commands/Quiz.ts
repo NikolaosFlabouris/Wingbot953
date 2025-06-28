@@ -15,8 +15,10 @@ import {
 } from "../Integrations/Twitch"
 import { setChatPollingInterval } from "../Integrations/YouTube"
 
-export let quizActive = false
-let blockQuiz = false
+export let quizActive: boolean = false
+let blockQuiz: boolean = false
+let quizQueue: number = 0
+
 let totalQuestionCount: number
 
 let questionIndex: number
@@ -51,15 +53,26 @@ export async function QuizSetup() {
         )
     }
 
+    setInterval(CheckQuizQueue, 2000)
+
     console.log("Total question count: " + totalQuestionCount)
 }
 
-export async function StartQuiz() {
-    if (Between(0, 99) > 80) {
-        StartBasicQuiz()
-    } else {
-        StartMultiUserQuiz()
+async function CheckQuizQueue() {
+    if (quizQueue < 0) {
+        quizQueue = 0
+    } else if (quizQueue > 0 && !blockQuiz) {
+        quizQueue--
+        if (Between(0, 99) > 80) {
+            StartBasicQuiz()
+        } else {
+            StartMultiUserQuiz()
+        }
     }
+}
+
+export function StartQuiz() {
+    quizQueue++
 }
 
 export function ResetUsedQuestions() {
@@ -71,7 +84,11 @@ export function ResetUsedQuestions() {
 export async function RollBonusQuiz() {
     await sleep(2000)
 
-    if (Between(0, 99) < 7) {
+    const roll = Between(0, 99)
+
+    if (roll < 7) {
+        console.log(`Successful Bonus Quiz Roll: ${roll}`)
+
         let bonusQuizMessage = `BONUS QUIZ! LET'S GO!`
 
         let bonusQuizTwitchMessage = structuredClone(Wingbot953Message)
@@ -89,6 +106,8 @@ export async function RollBonusQuiz() {
         await sleep(2000)
 
         StartQuiz()
+    } else {
+        console.log(`Unsuccessful Bonus Quiz Roll: ${roll}`)
     }
 }
 

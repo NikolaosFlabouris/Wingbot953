@@ -572,7 +572,6 @@ function processYouTubeMessage(item: youtube_v3.Schema$LiveChatMessage): void {
         },
         message: {
             text: "",
-            isHighlighted: false,
         },
     }
 
@@ -613,7 +612,7 @@ export async function sendYouTubeMessage(message: string) {
             },
         })
 
-        console.log("Message sent successfully:", response.data)
+        //console.log("Message sent successfully:", response.data)
         return true
     } catch (error: any) {
         console.error("Error sending chat message:", error)
@@ -676,7 +675,6 @@ function generateTestYouTubeMessage(): void {
         },
         message: {
             text: messageText,
-            isHighlighted: false,
         },
     }
 

@@ -190,7 +190,7 @@
             }
 
             /* For any other special message */
-            .message.other-special-message::before {
+            .message.highlighted-message::before {
                 background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
                 border: 2px solid #00c6ff;
                 box-shadow: 0 0 10px rgba(0, 198, 255, 0.5);
@@ -433,6 +433,14 @@
 
                 // Determine if this is a special message
                 const isSpecialMessage = () => {
+                    // Check for a highlighted message
+                    if (
+                        msg.twitchSpecific &&
+                        msg.twitchSpecific.isHighlighted
+                    ) {
+                        return "highlighted-message"
+                    }
+
                     // Check for Twitch bits
                     if (
                         msg.twitchSpecific &&
@@ -455,11 +463,6 @@
                     // Check for YouTube Superchat
                     if (msg.youtubeSpecific && msg.youtubeSpecific.superChat) {
                         return "superchat-message"
-                    }
-
-                    // Check for a generic special message flag
-                    if (msg.isSpecialMessage) {
-                        return "other-special-message"
                     }
 
                     return ""

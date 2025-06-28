@@ -296,7 +296,6 @@ async function ContinueTwitchSetup() {
                 },
                 message: {
                     text: message,
-                    isHighlighted: msg.isHighlight || false,
                     emoteMap: parseEmotesFromMessage(message, msg),
                 },
                 twitchSpecific: {
@@ -307,6 +306,7 @@ async function ContinueTwitchSetup() {
                         Wingman953.id,
                         msg.userInfo.badges
                     ),
+                    isHighlighted: msg.isHighlight || false,
                 },
             }
 
@@ -336,15 +336,19 @@ async function ContinueTwitchSetup() {
 
             let subMessage: UnifiedChatMessage =
                 structuredClone(Wingbot953Message)
-            subMessage.message.text = `wingma14Blush Thank you @${user} for subscribing to the channel for ${monthsSubbed}! wingma14Blush Let's celebrate with a Quiz!`
+            subMessage.message.text = `wingma14Blush Thank you @${msg.userInfo.displayName} for subscribing to the channel for ${monthsSubbed}! wingma14Blush Let's celebrate with a Quiz!`
             subMessage.platform = "twitch"
+            subMessage.twitchSpecific = {
+                messageType: "sub",
+            }
 
             sleep(1000).then(() => {
                 sendChatMessage(subMessage)
 
                 if (subInfo.message) {
                     subMessage.message.text = `Sub message from ${user}: ${subInfo.message}`
-                    subMessage.platform = "system"
+                    subMessage.platform = "twitch"
+                    subMessage.author.displayName = msg.userInfo.displayName
 
                     sendChatMessage(subMessage)
                 }
@@ -372,13 +376,17 @@ async function ContinueTwitchSetup() {
                 structuredClone(Wingbot953Message)
             subMessage.message.text = `wingma14Blush Thank you @${user} for subscribing to the channel for ${monthsSubbed}! wingma14Blush Let's celebrate with a Quiz!`
             subMessage.platform = "twitch"
+            subMessage.twitchSpecific = {
+                messageType: "resub",
+            }
 
             sleep(1000).then(() => {
                 sendChatMessage(subMessage)
 
                 if (subInfo.message) {
-                    subMessage.message.text = `Sub message from ${user}: ${subInfo.message}`
-                    subMessage.platform = "system"
+                    subMessage.message.text = `${subInfo.message}`
+                    subMessage.platform = "twitch"
+                    subMessage.author.displayName = msg.userInfo.displayName
 
                     sendChatMessage(subMessage)
                 }
@@ -401,6 +409,9 @@ async function ContinueTwitchSetup() {
                 structuredClone(Wingbot953Message)
             subGiftMessage.message.text = `wingma14Blush Thank you ${subInfo.gifter} for gifting a subscription to ${user}! wingma14Blush Let's celebrate with a Quiz!`
             subGiftMessage.platform = "twitch"
+            subGiftMessage.twitchSpecific = {
+                messageType: "subgift",
+            }
 
             sleep(1000).then(() => {
                 sendChatMessage(subGiftMessage)
@@ -428,6 +439,9 @@ async function ContinueTwitchSetup() {
                 structuredClone(Wingbot953Message)
             raidMessage.message.text = `wingma14Blush Thank you ${raidInfo.displayName} for the raid with ${viewCount}! wingma14Blush Let's celebrate with a Quiz!`
             raidMessage.platform = "twitch"
+            raidMessage.twitchSpecific = {
+                isHighlighted: true,
+            }
 
             sleep(1000).then(() => {
                 sendChatMessage(raidMessage)
@@ -567,23 +581,31 @@ function HandleQuizStartRedemption(reward: HelixCustomRewardRedemption) {
 }
 
 async function HandleGDayRedemption(reward: HelixCustomRewardRedemption) {
-    let userDisplayName = (await reward.getUser()).displayName
-    console.log(`${userDisplayName} redeemed G'Day Streamer!`)
+    console.log(`${reward.userDisplayName} redeemed G'Day Streamer!`)
 
     let gDayMessage: UnifiedChatMessage = structuredClone(Wingbot953Message)
-    gDayMessage.platform = "system"
-    gDayMessage.message.text = `${userDisplayName} says: wingma14Arrive G'Day ${Wingman953.displayName}!`
+    gDayMessage.platform = "twitch"
+    gDayMessage.author.displayName = reward.userDisplayName
+    gDayMessage.author.id = reward.userId
+    gDayMessage.twitchSpecific = {
+        isHighlighted: true,
+    }
+    gDayMessage.message.text = `wingma14Arrive G'Day ${Wingman953.displayName}!`
 
     sendChatMessage(gDayMessage)
 }
 
 async function HandleGNightRedemption(reward: HelixCustomRewardRedemption) {
-    let userDisplayName = (await reward.getUser()).displayName
-    console.log(`${userDisplayName} redeemed G'Night Streamer!`)
+    console.log(`${reward.userDisplayName} redeemed G'Night Streamer!`)
 
     let gNightMessage: UnifiedChatMessage = structuredClone(Wingbot953Message)
-    gNightMessage.platform = "system"
-    gNightMessage.message.text = `${userDisplayName} says: wingma14Good Good night, ${Wingman953.displayName}!`
+    gNightMessage.platform = "twitch"
+    gNightMessage.author.displayName = reward.userDisplayName
+    gNightMessage.author.id = reward.userId
+    gNightMessage.twitchSpecific = {
+        isHighlighted: true,
+    }
+    gNightMessage.message.text = `wingma14Good Good night, ${Wingman953.displayName}!`
 
     sendChatMessage(gNightMessage)
 }
