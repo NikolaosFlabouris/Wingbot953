@@ -558,9 +558,6 @@ async function PollStreamNameAndGame() {
 }
 
 export async function SubscriberFirstMessageQuiz(msg: UnifiedChatMessage) {
-  console.log(
-    `SubscriberFirstMessageQuiz called for ${msg.author.displayName}`
-  );
   if (
     msg.platform === "twitch" &&
     msg.author.isSubscriber &&
@@ -568,7 +565,7 @@ export async function SubscriberFirstMessageQuiz(msg: UnifiedChatMessage) {
     !subscriberFirstMessageReceived.includes(msg.author.id) &&
     msg.author.id !== Wingman953.id
   ) {
-    subscriberFirstMessageReceived.push(msg.author.displayName);
+    subscriberFirstMessageReceived.push(msg.author.id);
 
     let subTier: string = "1000"; // Default to Tier 1
     try {
