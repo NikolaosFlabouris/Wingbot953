@@ -21,7 +21,7 @@ async function main() {
 
   await DiscordSetup();
 
-  // await SpotifySetup(server);
+  await SpotifySetup(server);
 
   await TwitchSetup(server);
 
