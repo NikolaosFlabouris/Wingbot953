@@ -117,6 +117,28 @@
                 image-rendering: crisp-edges; /* For sharper pixel art emotes */
             }
 
+            /* Admin style inputs */
+            .admin-panel-container {
+                margin-top: 10px;
+                display: flex;
+                width: 100%;
+            }
+
+            .admin-ad-button {
+                margin: 0px 4px;
+                padding: 8px 16px;
+                background-color: #8a0500;
+                color: white;
+                border: none;
+                border-radius: 4px 4px 4px 4px;
+                cursor: pointer;
+                font-weight: bold;
+            }
+
+            .admin-ad-button:hover {
+                background-color: #630300;
+            }
+
             /* Admin input styles */
             .admin-input-container {
                 margin-top: 10px;
@@ -532,6 +554,38 @@
                 return params
             }
 
+             // Admin Panel Component
+            const AdminPanel = ({ onSendMessage }) => {
+                return (
+                    <div className="admin-panel-container">
+                        <button
+                            className="admin-ad-button"
+                            onClick={() => onSendMessage("!runad 30")}
+                        >
+                            30sec Ad
+                        </button>
+                        <button
+                            className="admin-ad-button"
+                            onClick={() => onSendMessage("!runad 60")}
+                        >
+                            60sec Ad
+                        </button>
+                        <button
+                            className="admin-ad-button"
+                            onClick={() => onSendMessage("!runad 90")}
+                        >
+                            90sec Ad
+                        </button>
+                        <button
+                            className="admin-ad-button"
+                            onClick={() => onSendMessage("!runad 120")}
+                        >
+                            120sec Ad
+                        </button>
+                    </div>
+                )
+            }
+
             // Admin Input Component
             const AdminInput = ({ onSendMessage }) => {
                 const [inputText, setInputText] = useState("")
@@ -685,6 +739,9 @@
 
                 return (
                     <div className="chat-container">
+                        {isAdminMode && (
+                        <AdminPanel onSendMessage={handleSendMessage} />
+                    )}
                         <div
                             className={`message-window ${
                                 isAdminMode ? "admin-mode" : ""
