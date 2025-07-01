@@ -58,7 +58,7 @@ export function createWebSocket() {
 
 export function handleChatMessage(msg: UnifiedChatMessage) {
   // Example handling function that processes the message
-  console.log(`Received message from ${msg.author.name}: ${msg.message.text}`);
+  // console.log(`Received message from ${msg.author.name}: ${msg.message.text}`);
 
   // console.log(
   //     util.inspect(msg, {

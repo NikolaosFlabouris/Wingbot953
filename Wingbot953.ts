@@ -29,9 +29,12 @@ async function main() {
 
   QuizSetup();
 
-  HaloRunsSetup();
+  await HaloRunsSetup();
 
   LiveSplitClient.getInstance().connect();
+
+  GenerateCommandsList();
+
   // Graceful shutdown
   process.on("SIGINT", () => {
     console.log("\nShutting down...");
@@ -39,8 +42,6 @@ async function main() {
     BadgeCache.destroy();
     process.exit(0);
   });
-
-  GenerateCommandsList();
 }
 
 main();

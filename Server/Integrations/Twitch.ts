@@ -600,19 +600,11 @@ export async function SubscriberFirstMessageQuiz(msg: UnifiedChatMessage) {
 
       await sleep(1000);
 
-      let subscriberQuizMessage = `SUBSCRIBER QUIZ! LET'S GO!`;
-
       let subQuizTwitchMessage = structuredClone(Wingbot953Message);
       subQuizTwitchMessage.platform = "twitch";
-      subQuizTwitchMessage.message.text = `wingma14Think ${subscriberQuizMessage} wingma14Think`;
-
-      let subQuizYouTubeMessage = structuredClone(Wingbot953Message);
-      subQuizYouTubeMessage.platform = "youtube";
-      subQuizYouTubeMessage.message.text = `${subscriberQuizMessage}`;
+      subQuizTwitchMessage.message.text = `wingma14Think TWITCH SUBSCRIBER QUIZ! LET'S GO! wingma14Think`;
 
       sendChatMessage(subQuizTwitchMessage);
-
-      sendChatMessage(subQuizYouTubeMessage);
 
       await sleep(2000);
 

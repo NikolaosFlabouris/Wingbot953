@@ -8,7 +8,6 @@ import {
 } from "./HaloRuns";
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage";
 import { sendChatMessage, Wingbot953Message } from "../MessageHandling";
-import { Games_Commands } from "../../Data/Naming/GamesAndLevels/Games_Commands";
 
 interface SplitData {
   name: string;
@@ -146,32 +145,36 @@ const gameToSplitMapping: { [key: string]: { [key: number]: string } } = {
 export class LiveSplitClient {
   private static instance: LiveSplitClient = this.getInstance();
 
-  host: string;
-  port: number;
-  client: net.Socket | null = null;
-  liveSplitPollInterval: NodeJS.Timeout | null = null;
-  pendingCommands: Map<number, (response: string) => void> = new Map();
-  commandId: number = 0;
-  wssVirgil: WebSocket.Server;
-  wssSplitData: WebSocket.Server;
-  currentSplitIndex: number;
-  previousSplitData: SplitData;
-  currentSplitData: SplitData;
-  nextSplitData: SplitData;
-  previousBestSplit: TimeSpan;
-  previousComparisonSplit: TimeSpan;
-  previousPreviousComparisonSplit: TimeSpan;
-  activeSplitNames: { [key: number]: string } = {};
-  game: string;
-  category: string;
-  difficulty: string;
-  runnableSegment: string;
+  private host: string;
+  private port: number;
+  private client: net.Socket | null = null;
+  private reconnectTimer: NodeJS.Timeout | null = null;
+  private liveSplitPollInterval: NodeJS.Timeout | null = null;
+  private splitTableInterval: NodeJS.Timeout | null = null;
+  private pendingCommands: Map<number, (response: string) => void> = new Map();
+  private commandId: number = 0;
+  private wssVirgil: WebSocket.Server;
+  private wssSplitData: WebSocket.Server;
+  private currentSplitIndex: number;
+  private previousSplitData: SplitData;
+  private currentSplitData: SplitData;
+  private nextSplitData: SplitData;
+  private previousBestSplit: TimeSpan;
+  private previousComparisonSplit: TimeSpan;
+  private previousPreviousComparisonSplit: TimeSpan;
+  private activeSplitNames: { [key: number]: string } = {};
+  private game: string;
+  private category: string;
+  private difficulty: string;
+  private runnableSegment: string;
 
   private constructor() {
     this.host = "localhost";
     this.port = 16834;
     this.client = null;
+    this.reconnectTimer = null;
     this.liveSplitPollInterval = null;
+    this.splitTableInterval = null;
     this.pendingCommands = new Map();
     this.commandId = 0;
     this.wssVirgil = new WebSocket.Server({ port: 8081 });
@@ -248,11 +251,37 @@ export class LiveSplitClient {
   }
 
   public connect() {
-    this.client = new net.Socket();
+    if (this.client && !this.client.destroyed) {
+      console.log("LiveSplitClient - Already connected");
+      return;
+    }
+
+    this.client?.destroy();
+    this.client = null;
+
+    // Clear any existing reconnect timer
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+
+    this.connectToLiveSplitServer();
+  }
+
+  private connectToLiveSplitServer() {
+    if (!this.client || this.client.destroyed) {
+      this.client = new net.Socket();
+    }
 
     this.client.connect(this.port, this.host, () => {
       console.log(`Connected to LiveSplit server at ${this.host}:${this.port}`);
       this.startPolling();
+
+      // Clear reconnect timer on successful connection
+      if (this.reconnectTimer) {
+        clearTimeout(this.reconnectTimer);
+        this.reconnectTimer = null;
+      }
     });
 
     this.client.on("data", (data) => {
@@ -268,14 +297,22 @@ export class LiveSplitClient {
     });
 
     this.client.on("error", (error) => {
-      console.error(`Connection error: ${error.message}`);
-      this.cleanup();
+      if (error.message) {
+        console.error(`LiveSplitClient - Connection error: ${error.message}`);
+      }
+      this.scheduleReconnect();
     });
 
     this.client.on("close", () => {
-      console.log("Connection closed");
-      this.cleanup();
+      this.stopPolling();
+      this.scheduleReconnect();
     });
+  }
+
+  private scheduleReconnect() {
+    if (!this.reconnectTimer) {
+      this.reconnectTimer = setTimeout(() => this.connect(), 5000);
+    }
   }
 
   public async sendCommand(command: string): Promise<string> {
@@ -640,6 +677,34 @@ export class LiveSplitClient {
       }
     }, 2000);
 
-    setInterval(() => this.sendTableInfo(), 10000);
+    this.splitTableInterval = setInterval(() => this.sendTableInfo(), 10000);
+  }
+
+  private stopPolling() {
+    if (!this.liveSplitPollInterval && !this.splitTableInterval) {
+      return;
+    }
+
+    console.log("Stopping LiveSplit polling and clearing data...");
+
+    if (this.liveSplitPollInterval) {
+      clearInterval(this.liveSplitPollInterval);
+      this.liveSplitPollInterval = null;
+    }
+
+    if (this.splitTableInterval) {
+      clearInterval(this.splitTableInterval);
+      this.splitTableInterval = null;
+    }
+
+    this.clearTable();
+    this.sendTableInfo();
+
+    const virgilMessage = JSON.stringify("Neutral");
+    this.wssVirgil.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(virgilMessage);
+      }
+    });
   }
 }
