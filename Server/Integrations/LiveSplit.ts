@@ -16,124 +16,131 @@ interface SplitData {
   pbRank: number;
   bestSplit: string;
   currentComparison: string;
+  character: string;
 }
 
 interface SplitInfo {
+  game?: string;
   previousSplit?: SplitData;
   currentSplit: SplitData;
   nextSplit?: SplitData;
 }
 
-const h1SplitNames: { [key: number]: string } = {
-  0: "The Pillar of Autumn",
-  1: "Halo",
-  2: "The Truth and Reconciliation",
-  3: "The Silent Cartographer",
-  4: "Assault on the Control Room",
-  5: "343 Guilty Spark",
-  6: "The Library",
-  7: "Two Betrayals",
-  8: "Keyes",
-  9: "The Maw",
+interface SplitDetails {
+  name: string;
+  character: string;
+}
+
+const h1SplitNames: { [key: number]: SplitDetails } = {
+  0: { name: "The Pillar of Autumn", character: "Master Chief" },
+  1: { name: "Halo", character: "Master Chief" },
+  2: { name: "The Truth and Reconciliation", character: "Master Chief" },
+  3: { name: "The Silent Cartographer", character: "Master Chief" },
+  4: { name: "Assault on the Control Room", character: "Master Chief" },
+  5: { name: "343 Guilty Spark", character: "Master Chief" },
+  6: { name: "The Library", character: "Master Chief" },
+  7: { name: "Two Betrayals", character: "Master Chief" },
+  8: { name: "Keyes", character: "Master Chief" },
+  9: { name: "The Maw", character: "Master Chief" },
 };
 
-const h2SplitNames: { [key: number]: string } = {
-  0: "Cairo Station",
-  1: "Outskirts",
-  3: "Metropolis",
-  4: "The Arbiter",
-  5: "The Oracle",
-  6: "Delta Halo",
-  7: "Regret",
-  8: "Sacred Icon",
-  9: "Quarantine Zone",
-  10: "Gravemind",
-  11: "Uprising",
-  12: "High Charity",
-  13: "The Great Journey",
+const h2SplitNames: { [key: number]: SplitDetails } = {
+  0: { name: "Cairo Station", character: "Master Chief" },
+  1: { name: "Outskirts", character: "Master Chief" },
+  3: { name: "Metropolis", character: "Master Chief" },
+  4: { name: "The Arbiter", character: "Arbiter" },
+  5: { name: "The Oracle", character: "Arbiter" },
+  6: { name: "Delta Halo", character: "Master Chief" },
+  7: { name: "Regret", character: "Master Chief" },
+  8: { name: "Sacred Icon", character: "Arbiter" },
+  9: { name: "Quarantine Zone", character: "Arbiter" },
+  10: { name: "Gravemind", character: "Master Chief" },
+  11: { name: "Uprising", character: "Arbiter" },
+  12: { name: "High Charity", character: "Master Chief" },
+  13: { name: "The Great Journey", character: "Arbiter" },
 };
 
-const h3SplitNames: { [key: number]: string } = {
-  0: "Sierra 117",
-  1: "Crow's Nest",
-  2: "Tsavo Highway",
-  3: "The Storm",
-  4: "Floodgate",
-  5: "The Ark",
-  6: "The Covenant",
-  7: "Cortana",
-  8: "Halo",
+const h3SplitNames: { [key: number]: SplitDetails } = {
+  0: { name: "Sierra 117", character: "Master Chief" },
+  1: { name: "Crow's Nest", character: "Master Chief" },
+  2: { name: "Tsavo Highway", character: "Master Chief" },
+  3: { name: "The Storm", character: "Master Chief" },
+  4: { name: "Floodgate", character: "Master Chief" },
+  5: { name: "The Ark", character: "Master Chief" },
+  6: { name: "The Covenant", character: "Master Chief" },
+  7: { name: "Cortana", character: "Master Chief" },
+  8: { name: "Halo", character: "Master Chief" },
 };
 
-const odstSplitNames: { [key: number]: string } = {
-  0: "Prepare to Drop",
-  1: "Tayari Plaza",
-  2: "Streets: Drone Optic",
-  3: "Uplift Reserve",
-  4: "Streets: Gauss Turret",
-  5: "ONI Alpha Site",
-  6: "Mombasa Streets 3",
-  7: "Kizingo Blvd.",
-  8: "Mombasa Streets 4",
-  9: "NMPD HQ",
-  10: "Mombasa Streets 5",
-  11: "Kikowani Station",
-  12: "Mombasa Streets 6",
-  13: "Data Hive",
-  14: "Coastal Highway",
+const odstSplitNames: { [key: number]: SplitDetails } = {
+  0: { name: "Prepare to Drop", character: "Rookie" },
+  1: { name: "Tayari Plaza", character: "Buck" },
+  2: { name: "Streets: Drone Optic", character: "Rookie" },
+  3: { name: "Uplift Reserve", character: "Dutch" },
+  4: { name: "Streets: Gauss Turret", character: "Rookie" },
+  5: { name: "ONI Alpha Site", character: "Dutch" },
+  6: { name: "Mombasa Streets 3", character: "Rookie" },
+  7: { name: "Kizingo Blvd.", character: "Mickey" },
+  8: { name: "Mombasa Streets 4", character: "Rookie" },
+  9: { name: "NMPD HQ", character: "Romeo" },
+  10: { name: "Mombasa Streets 5", character: "Rookie" },
+  11: { name: "Kikowani Station", character: "Buck" },
+  12: { name: "Mombasa Streets 6", character: "Rookie" },
+  13: { name: "Data Hive", character: "Rookie" },
+  14: { name: "Coastal Highway", character: "Rookie" },
 };
 
-const reachSplitNames: { [key: number]: string } = {
-  0: "Winter Contingency",
-  1: "ONI: Sword Base",
-  2: "Nightfall",
-  3: "Tip of the Spear",
-  4: "Long Night of Solace",
-  5: "Exodus",
-  6: "New Alexandria",
-  7: "The Package",
-  8: "The Pillar of Autumn",
+const reachSplitNames: { [key: number]: SplitDetails } = {
+  0: { name: "Winter Contingency", character: "Nobel 6" },
+  1: { name: "ONI: Sword Base", character: "Nobel 6" },
+  2: { name: "Nightfall", character: "Nobel 6" },
+  3: { name: "Tip of the Spear", character: "Nobel 6" },
+  4: { name: "Long Night of Solace", character: "Nobel 6" },
+  5: { name: "Exodus", character: "Nobel 6" },
+  6: { name: "New Alexandria", character: "Nobel 6" },
+  7: { name: "The Package", character: "Nobel 6" },
+  8: { name: "The Pillar of Autumn", character: "Nobel 6" },
 };
 
-const h4SplitNames: { [key: number]: string } = {
-  0: "Dawn",
-  1: "Requiem",
-  2: "Forerunner",
-  3: "Infinity",
-  4: "Reclaimer",
-  5: "Shutdown",
-  6: "Composer",
-  7: "Midnight",
+const h4SplitNames: { [key: number]: SplitDetails } = {
+  0: { name: "Dawn", character: "Master Chief" },
+  1: { name: "Requiem", character: "Master Chief" },
+  2: { name: "Forerunner", character: "Master Chief" },
+  3: { name: "Infinity", character: "Master Chief" },
+  4: { name: "Reclaimer", character: "Master Chief" },
+  5: { name: "Shutdown", character: "Master Chief" },
+  6: { name: "Composer", character: "Master Chief" },
+  7: { name: "Midnight", character: "Master Chief" },
 };
 
-const h5SplitNames: { [key: number]: string } = {
-  0: "Osiris",
-  1: "Blue Team",
-  2: "Glassed",
-  3: "Meridian Station",
-  4: "Unconfirmed",
-  5: "Evacuation",
-  6: "Reunion",
-  7: "Swords of Sanghelios",
-  8: "Alliance",
-  9: "Enemy Lines",
-  10: "Before the Storm",
-  11: "Battle of Sunaion",
-  12: "Genesis",
-  13: "The Breaking",
-  14: "Guardians",
+const h5SplitNames: { [key: number]: SplitDetails } = {
+  0: { name: "Osiris", character: "Locke" },
+  1: { name: "Blue Team", character: "Master Chief" },
+  2: { name: "Glassed", character: "Locke" },
+  3: { name: "Meridian Station", character: "Locke" },
+  4: { name: "Unconfirmed", character: "Locke" },
+  5: { name: "Evacuation", character: "Locke" },
+  6: { name: "Reunion", character: "Master Chief" },
+  7: { name: "Swords of Sanghelios", character: "Locke" },
+  8: { name: "Alliance", character: "Locke" },
+  9: { name: "Enemy Lines", character: "Locke" },
+  10: { name: "Before the Storm", character: "Locke" },
+  11: { name: "Battle of Sunaion", character: "Locke" },
+  12: { name: "Genesis", character: "Locke" },
+  13: { name: "The Breaking", character: "Master Chief" },
+  14: { name: "Guardians", character: "Locke" },
 };
 
-const infiniteSplitNames: { [key: number]: string } = {};
+const infiniteSplitNames: { [key: number]: SplitDetails } = {};
 
-const gameToSplitMapping: { [key: string]: { [key: number]: string } } = {
+const gameToSplitMapping: { [key: string]: { [key: number]: SplitDetails } } = {
   "Halo CE": h1SplitNames,
   "Halo CE Classic": h1SplitNames,
   "Halo 2": h2SplitNames,
   "Halo 2 MCC": h2SplitNames,
   "Halo 3": h3SplitNames,
   "Halo 3: ODST": odstSplitNames,
-  "Halo Reach": reachSplitNames,
+  "Halo: Reach": reachSplitNames,
   "Halo 4": h4SplitNames,
   "Halo 5": h5SplitNames,
   "Halo Infinite": infiniteSplitNames,
@@ -162,7 +169,7 @@ export class LiveSplitClient {
   private previousBestSplit: TimeSpan;
   private previousComparisonSplit: TimeSpan;
   private previousPreviousComparisonSplit: TimeSpan;
-  private activeSplitNames: { [key: number]: string } = {};
+  private activeSplitNames: { [key: number]: SplitDetails } = {};
   private game: string;
   private category: string;
   private difficulty: string;
@@ -187,6 +194,7 @@ export class LiveSplitClient {
       pbRank: 0,
       bestSplit: "",
       currentComparison: "",
+      character: "",
     };
     this.currentSplitData = {
       name: "",
@@ -195,6 +203,7 @@ export class LiveSplitClient {
       pbRank: 0,
       bestSplit: "",
       currentComparison: "",
+      character: "",
     };
     this.nextSplitData = {
       name: "",
@@ -203,6 +212,7 @@ export class LiveSplitClient {
       pbRank: 0,
       bestSplit: "",
       currentComparison: "",
+      character: "",
     };
     this.previousBestSplit = TimeSpan.zero;
     this.previousComparisonSplit = TimeSpan.zero;
@@ -426,11 +436,11 @@ export class LiveSplitClient {
   }
 
   private getCurrentSplitName(): string {
-    return this.activeSplitNames[this.currentSplitIndex] || "-";
+    return this.activeSplitNames[this.currentSplitIndex].name || "-";
   }
 
   private getNextSplitName(): string {
-    return this.activeSplitNames[this.currentSplitIndex + 1] || "-";
+    return this.activeSplitNames[this.currentSplitIndex + 1].name || "-";
   }
 
   private async getWorldRecord(levelName: string): Promise<TimeSpan> {
@@ -471,6 +481,7 @@ export class LiveSplitClient {
         pbRank: 0,
         bestSplit: "",
         currentComparison: "",
+        character: "",
       };
     }
 
@@ -497,6 +508,7 @@ export class LiveSplitClient {
       pbRank: personalBest.pbRank,
       bestSplit: bestSplit.string,
       currentComparison: currentComparison.string,
+      character: this.activeSplitNames[this.currentSplitIndex].character,
     };
   }
 
@@ -512,6 +524,7 @@ export class LiveSplitClient {
         pbRank: 0,
         bestSplit: "",
         currentComparison: "",
+        character: "",
       };
     }
 
@@ -531,6 +544,7 @@ export class LiveSplitClient {
       pbRank: personalBest.pbRank,
       bestSplit: "",
       currentComparison: "",
+      character: this.activeSplitNames[this.currentSplitIndex].character,
     };
   }
 
@@ -575,6 +589,7 @@ export class LiveSplitClient {
 
   private sentSingleLevelTableInfo() {
     const splitInfo: SplitInfo = {
+      game: this.game,
       currentSplit: this.currentSplitData,
     };
     const splitMessage = JSON.stringify(splitInfo);
@@ -588,6 +603,7 @@ export class LiveSplitClient {
 
   private sentMultiLevelTableInfo() {
     const splitInfo: SplitInfo = {
+      game: this.game,
       previousSplit: this.previousSplitData,
       currentSplit: this.currentSplitData,
       nextSplit: this.nextSplitData,
@@ -610,6 +626,7 @@ export class LiveSplitClient {
       pbRank: 0,
       bestSplit: "",
       currentComparison: "",
+      character: "",
     };
     this.currentSplitData = {
       name: "",
@@ -618,6 +635,7 @@ export class LiveSplitClient {
       pbRank: 0,
       bestSplit: "",
       currentComparison: "",
+      character: "",
     };
     this.nextSplitData = {
       name: "",
@@ -626,6 +644,7 @@ export class LiveSplitClient {
       pbRank: 0,
       bestSplit: "",
       currentComparison: "",
+      character: "",
     };
     this.previousBestSplit = TimeSpan.zero;
     this.previousComparisonSplit = TimeSpan.zero;
@@ -677,7 +696,9 @@ export class LiveSplitClient {
       }
     }, 2000);
 
-    this.splitTableInterval = setInterval(() => this.sendTableInfo(), 10000);
+    this.splitTableInterval = setInterval(() => {
+      this.sendTableInfo();
+    }, 10000);
   }
 
   private stopPolling() {

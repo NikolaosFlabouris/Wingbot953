@@ -317,14 +317,6 @@ async function ContinueTwitchSetup() {
         },
       };
 
-      console.log(
-        util.inspect(unifiedMessage, {
-          showHidden: false,
-          depth: null,
-          colors: true,
-        })
-      );
-
       handleChatMessage(unifiedMessage);
     }
   );
@@ -581,11 +573,11 @@ export async function SubscriberFirstMessageQuiz(msg: UnifiedChatMessage) {
       );
     }
 
-    let rollThreshold = 7; // Tier 1
+    let rollThreshold = 14; // Tier 1
 
     if (subTier === "2000") {
       // Tier 2
-      rollThreshold = 35;
+      rollThreshold = 50;
     } else if (subTier === "3000") {
       // Tier 3
       rollThreshold = 100;
@@ -640,7 +632,7 @@ async function HandleGDayRedemption(reward: HelixCustomRewardRedemption) {
   };
   gDayMessage.message.text = `wingma14Arrive G'Day ${Wingman953.displayName}!`;
 
-  sendChatMessage(gDayMessage);
+  sendChatMessage(gDayMessage, true, false);
 }
 
 async function HandleGNightRedemption(reward: HelixCustomRewardRedemption) {
@@ -655,7 +647,7 @@ async function HandleGNightRedemption(reward: HelixCustomRewardRedemption) {
   };
   gNightMessage.message.text = `wingma14Good Good night, ${Wingman953.displayName}!`;
 
-  sendChatMessage(gNightMessage);
+  sendChatMessage(gNightMessage, true, false);
 }
 
 async function HandleAddCustomGreetingRedemption(

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBS Background</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: black;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        .gradient-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            /* background: linear-gradient(to top, rgba(139, 161, 126, 0.5), transparent); /* #8ba17e = 139, 161, 126 */
+            background: linear-gradient(to top, #a9d8ff80, transparent);
+            transition: background 5s ease-in-out;
+        }
+
+        /* Rainbow rapid effect */
+        .rainbow-rapid {
+            animation: rapidColorChange 2s infinite linear;
+        }
+
+        @keyframes rapidColorChange {
+            0% { background: linear-gradient(to top, rgba(255, 0, 0, 0.5), transparent); }
+            14% { background: linear-gradient(to top, rgba(255, 165, 0, 0.5), transparent); }
+            28% { background: linear-gradient(to top, rgba(255, 255, 0, 0.5), transparent); }
+            42% { background: linear-gradient(to top, rgba(0, 255, 0, 0.5), transparent); }
+            57% { background: linear-gradient(to top, rgba(0, 0, 255, 0.5), transparent); }
+            71% { background: linear-gradient(to top, rgba(75, 0, 130, 0.5), transparent); }
+            85% { background: linear-gradient(to top, rgba(238, 130, 238, 0.5), transparent); }
+            100% { background: linear-gradient(to top, rgba(255, 0, 0, 0.5), transparent); }
+        }
+    </style>
+</head>
+<body>
+    <div class="gradient-overlay" id="gradientOverlay"></div>
+
+    <script>
+        let socket;
+        let currentColor = '#ffffff';
+        let currentRainbowEffect = null;
+        
+        const gradientOverlay = document.getElementById('gradientOverlay');
+        const connectionStatus = document.getElementById('connectionStatus');
+
+        const gameToColourMapping = {
+            "Halo CE": "#59ff59",
+            "Halo CE Classic": "#59ff59",
+            "Halo 2": "#59ff59",
+            "Halo 2 MCC": "#59ff59",
+            "Halo 3": "#019b0e",
+            "Halo 3: ODST": "#8ba17e",
+            "Halo: Reach": "#58c6f8",
+            "Halo 4": "#2172ec",
+            "Halo 5": "#a9d8ff",
+            "Halo Infinite": "#59ff59",
+        };
+
+        // WebSocket connection
+        function connectWebSocket() {
+
+            changeGradientColor(gameToColourMapping["Halo 3: ODST"]);
+
+            try {
+                // Replace with your WebSocket server URL
+                socket = new WebSocket('ws://localhost:8082');
+                
+                socket.onopen = function(event) {
+                    console.log('OBS Background WebSocket connected');
+                };
+                
+                socket.onmessage = function(event) {
+                    try {
+                        const message = JSON.parse(event.data);
+                        handleWebSocketMessage(message);
+                    } catch (e) {
+                        console.error('Error parsing WebSocket message:', e);
+                    }
+                };
+                
+                socket.onclose = function(event) {
+                    console.log('WebSocket disconnected');
+                    
+                    // Attempt to reconnect after 3 seconds
+                    setTimeout(connectWebSocket, 3000);
+                };
+                
+                socket.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                };
+                
+            } catch (error) {
+                console.error('Failed to connect to WebSocket:', error);
+                
+                // Attempt to reconnect after 3 seconds
+                setTimeout(connectWebSocket, 3000);
+            }
+        }
+
+        // Handle WebSocket messages
+        function handleWebSocketMessage(message) {
+            console.log('Received message:', message);
+            
+            if (message.game) {
+                changeGradientColor(gameToColourMapping[message.game]);
+            } else if (message.type === 'rainbow' && message.effect) {
+                setRainbowEffect(message.effect);
+            }
+            else {
+                changeGradientColor(gameToColourMapping["Halo 3: ODST"]);
+            }
+        }
+
+        // Change gradient color with smooth transition
+        function changeGradientColor(color) {
+            if (currentRainbowEffect) {
+                clearRainbowEffect();
+            }
+            
+            currentColor = color;
+            const rgba = hexToRgba(color, 0.5);
+            gradientOverlay.style.background = `linear-gradient(to top, ${rgba}, transparent)`;
+        }
+
+        // Set rainbow effect
+        function setRainbowEffect(effect) {
+            clearRainbowEffect();
+            
+            if (effect === 'off') {
+                return;
+            }
+            
+            currentRainbowEffect = effect;
+            gradientOverlay.classList.add(`rainbow-${effect}`);
+        }
+
+        // Clear current rainbow effect
+        function clearRainbowEffect() {
+            if (currentRainbowEffect) {
+                gradientOverlay.classList.remove(`rainbow-${currentRainbowEffect}`);
+                currentRainbowEffect = null;
+            }
+        }
+
+        // Convert hex to rgba
+        function hexToRgba(hex, opacity) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            if (result) {
+                const r = parseInt(result[1], 16);
+                const g = parseInt(result[2], 16);
+                const b = parseInt(result[3], 16);
+                return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+            }
+            return `rgba(255, 255, 255, ${opacity})`;
+        }
+
+        // Demo functions (simulate WebSocket messages)
+        function simulateColorChange(color) {
+            handleWebSocketMessage({
+                type: 'color',
+                value: color
+            });
+        }
+
+        function simulateRainbowEffect(effect) {
+            handleWebSocketMessage({
+                type: 'rainbow',
+                effect: effect
+            });
+        }
+
+        // Initialize
+        connectWebSocket();
+    </script>
+</body>
+</html>

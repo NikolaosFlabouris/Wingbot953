@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Profile</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: black;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .character-container {
+            text-align: center;
+        }
+
+        .character-image {
+            max-width: 200px;
+            min-width: 200px;
+            height: auto;
+            transition: display 0.3s ease-in-out;
+            display: block;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="character-container">
+        <img class="character-image" id="characterImage">
+    </div>
+
+    <script>
+        let socket;
+        
+        const characterImage = document.getElementById('characterImage');
+        characterImage.src = "./images/profilepics/Thinking_Face-The_Rookie.png"; // Default image
+
+        // Character to image path mapping
+        const characterToImageMapping = {
+            "Master Chief": "./images/profilepics/Thinking_Face-Master_Chief.png",
+            "Arbiter": "./images/profilepics/Thinking_Face-The_Rookie.png",
+            "Cortana": "./images/profilepics/Thinking_Face-The_Rookie.png",
+            "Rookie": "./images/profilepics/Thinking_Face-The_Rookie.png",
+            "Buck": "./images/profilepics/Thinking_Face-The_Rookie.png",
+            "Dare": "./images/profilepics/Thinking_Face-The_Rookie.png",
+            "Mickey": "./images/profilepics/Thinking_Face-The_Rookie.png",
+            "Romeo": "./images/profilepics/Thinking_Face-The_Rookie.png",
+            "Dutch": "./images/profilepics/Thinking_Face-The_Rookie.png",
+            "Noble 6": "./images/profilepics/Thinking_Face-The_Rookie.png",
+            "Emile": "./images/profilepics/Thinking_Face-The_Rookie.png",
+            "Jorge": "./images/profilepics/Thinking_Face-The_Rookie.png",
+            "Kat": "./images/profilepics/Thinking_Face-The_Rookie.png",
+            "Carter": "./images/profilepics/Thinking_Face-The_Rookie.png",
+            "Jun": "./images/profilepics/Thinking_Face-The_Rookie.png",
+            "Locke": "./images/profilepics/Thinking_Face-The_Rookie.png",
+            "Vale": "./images/profilepics/Thinking_Face-The_Rookie.png",
+            "Tanaka": "./images/profilepics/Thinking_Face-The_Rookie.png",
+            "Kelly": "./images/profilepics/Thinking_Face-The_Rookie.png",
+            "Linda": "./images/profilepics/Thinking_Face-The_Rookie.png",
+            "Frederic": "./images/profilepics/Thinking_Face-The_Rookie.png",
+        };
+
+        // Game to character mapping
+        const gameToCharacterMapping = {
+            "Halo CE": "Master Chief",
+            "Halo CE Classic": "Master Chief",
+            "Halo 2": "Master Chief",
+            "Halo 2 MCC": "Master Chief",
+            "Halo 3": "Master Chief",
+            "Halo 3: ODST": "Rookie",
+            "Halo: Reach": "Rookie",
+            "Halo 4": "Master Chief",
+            "Halo 5": "Master Chief",
+            "Halo Infinite": "Master Chief",
+        };
+
+        // WebSocket connection
+        function connectWebSocket() {
+            try {
+                // Replace with your WebSocket server URL
+                socket = new WebSocket('ws://localhost:8082');
+                
+                socket.onopen = function(event) {
+                    console.log('Character Display WebSocket connected');
+                };
+                
+                socket.onmessage = function(event) {
+                    try {
+                        const message = JSON.parse(event.data);
+                        handleWebSocketMessage(message);
+                    } catch (e) {
+                        console.error('Error parsing WebSocket message:', e);
+                    }
+                };
+                
+                socket.onclose = function(event) {
+                    console.log('WebSocket disconnected');
+                    
+                    // Attempt to reconnect after 3 seconds
+                    setTimeout(connectWebSocket, 3000);
+                };
+                
+                socket.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                };
+                
+            } catch (error) {
+                console.error('Failed to connect to WebSocket:', error);
+                
+                // Attempt to reconnect after 3 seconds
+                setTimeout(connectWebSocket, 3000);
+            }
+        }
+
+        // Handle WebSocket messages
+        function handleWebSocketMessage(message) {
+            console.log('Received message:', message);
+            if (message.currentSplit.character && message.currentSplit.character !== "") {
+                const imagePath = characterToImageMapping[message.currentSplit.character];
+                characterImage.src = imagePath;
+            } else if (message.game && message.game !== "") {
+                let characterName = gameToCharacterMapping[message.game];
+                console.log("Character for game:", characterName);
+                const imagePath = characterToImageMapping[characterName];
+                characterImage.src = imagePath;
+            } else {
+                const imagePath = characterToImageMapping["Rookie"];
+                characterImage.src = imagePath;
+            }
+        }
+
+        // Initialize
+        connectWebSocket();
+    </script>
+</body>
+</html>

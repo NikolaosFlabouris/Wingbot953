@@ -116,7 +116,8 @@ export function handleChatMessage(msg: UnifiedChatMessage) {
 
 export function sendChatMessage(
   msg: UnifiedChatMessage,
-  sendToWebSocket: boolean = true
+  sendToWebSocket: boolean = true,
+  sendToPlatform: boolean = true
 ) {
   // console.log(
   //     `Sending response to ${msg.replyingTo?.author.name || ""}: ${
@@ -132,11 +133,14 @@ export function sendChatMessage(
   //     })
   // )
 
-  if (msg.platform === "youtube" || msg.platform === "all") {
+  if (
+    (msg.platform === "youtube" || msg.platform === "all") &&
+    sendToPlatform
+  ) {
     // Handle YouTube-specific response logic
     sendYouTubeMessage(msg.message.text);
   }
-  if (msg.platform === "twitch" || msg.platform === "all") {
+  if ((msg.platform === "twitch" || msg.platform === "all") && sendToPlatform) {
     // Handle Twitch-specific response logic
     sendTwitchMessage(msg.message.text);
   }
