@@ -1,131 +1,139 @@
 export class People_Quiz {
-    public static Adef = ["Adef"]
+  public static Adef = ["Adef"];
 
-    public static Adversary = ["Adversary", "Sean"]
+  public static Adversary = ["Adversary", "Sean"];
 
-    public static BlazeJp = ["TheBlazeJp", "BlazeJp"]
+  public static BlazeJp = ["TheBlazeJp", "BlazeJp"];
 
-    public static Bryonato = ["Bryonato"]
+  public static Bryonato = ["Bryonato"];
 
-    public static Burnt = [
-        "Burnt",
-        "Burnt-o",
-        "Burnt_o",
-        "BurntKurisu",
-        "Burnt Kurisu",
-    ]
+  public static Burnt = [
+    "Burnt",
+    "Burnt-o",
+    "Burnt_o",
+    "BurntKurisu",
+    "Burnt Kurisu",
+  ];
 
-    public static byNailz = ["byNailz", "Nailz"]
+  public static byNailz = ["byNailz", "Nailz"];
 
-    public static Chappified = ["Chappified", "Chappy", "Chapp"]
+  public static Chappified = ["Chappified", "Chappy", "Chapp"];
 
-    public static Chronos = ["Chronos", "ChronosReturns"]
+  public static Chronos = ["Chronos", "ChronosReturns"];
 
-    public static c0ry123 = ["c0ry123", "cory123", "cory", "c0ry"]
+  public static c0ry123 = ["c0ry123", "cory123", "cory", "c0ry"];
 
-    public static Cryphon = ["Cryphon"]
+  public static Cryphon = ["Cryphon"];
 
-    public static DarkDevastation = [
-        "Dark Devastation",
-        "DarkDevastation",
-        "Dark",
-        "Bark Bevastation",
-        "BarkBevastation",
-        "Bark",
-    ]
+  public static DarkDevastation = [
+    "Dark Devastation",
+    "DarkDevastation",
+    "Dark_Devastation",
+    "Dark",
+    "Bark Bevastation",
+    "BarkBevastation",
+    "Bark",
+    "Bark_Bevastation",
+  ];
 
-    public static Distro = ["Distro", "DistroTV"]
+  public static Distro = ["Distro", "DistroTV"];
 
-    public static GarishGoblin = ["GarishGoblin", "Garish"]
+  public static Dyse = ["Dyse"];
 
-    public static G3lk_Jr = [
-        "G3lk_Jr",
-        "G3lk",
-        "Gelk_Jr",
-        "Gelk",
-        "G3lkJr",
-        "GelkJr",
-        "G3lk Jr",
-        "Gelk Jr",
-    ]
+  public static GarishGoblin = ["GarishGoblin", "Garish"];
 
-    public static Goatrope = ["Goatrope", "Goat"]
+  public static G3lk_Jr = [
+    "G3lk_Jr",
+    "G3lk",
+    "Gelk_Jr",
+    "Gelk",
+    "G3lkJr",
+    "GelkJr",
+    "G3lk Jr",
+    "Gelk Jr",
+  ];
 
-    public static HaoleCake = ["HaoleCake"]
+  public static Goatrope = ["Goatrope", "Goat"];
 
-    public static Harc = ["Harc", "HarcTehShark", "Harcacola"]
+  public static HaoleCake = ["HaoleCake"];
 
-    public static HeroicRobb = [
-        "Heroic Robb",
-        "Heroic_Robb",
-        "Robb",
-        "Legendary Robb",
-        "Legendary_Robb",
-    ]
+  public static Harc = ["Harc", "HarcTehShark", "Harcacola"];
 
-    public static HLGNagato = ["HLGNagato", "Nagato"]
+  public static HeroicRobb = [
+    "Heroic Robb",
+    "Heroic_Robb",
+    "Robb",
+    "Legendary Robb",
+    "Legendary_Robb",
+  ];
 
-    public static History100 = [
-        "History100",
-        "History 100",
-        "History",
-        "ひすとりー",
-    ]
+  public static HLGNagato = ["HLGNagato", "Nagato"];
 
-    public static Hoshka = ["Hoshka"]
+  public static History100 = [
+    "History100",
+    "History 100",
+    "History",
+    "ひすとりー",
+  ];
 
-    public static JosephStaten = ["Joseph Staten", "Joe Staten", "Staten"]
+  public static Hoshka = ["Hoshka"];
 
-    public static Monopoli = [
-        "Monopoli",
-        "Mister Monopoli",
-        "MisterMonopoli",
-        "MrMonopoli",
-        "Mr Monopoli",
-        "Monopoly",
-        "Mono",
-    ]
+  public static JosephStaten = ["Joseph Staten", "Joe Staten", "Staten"];
 
-    public static MythicTyrant = ["Mythic Tyrant"]
+  public static Koma = ["Koma"];
 
-    public static NakedEli = ["Naked Eli", "Eli", "Nak3d Eli"]
+  public static Mankey = ["Mankey", "Mankey_OW"];
 
-    public static NervyDestroyer = ["NervyDestroyer", "Nervy"]
+  public static Monopoli = [
+    "Monopoli",
+    "Mister Monopoli",
+    "MisterMonopoli",
+    "MrMonopoli",
+    "Mr Monopoli",
+    "Monopoly",
+    "Mono",
+  ];
 
-    public static Pedrogas = ["Pedrogas", "Pedro"]
+  public static MythicTyrant = ["Mythic Tyrant"];
 
-    public static ProAceJoker = ["ProAceJoker", "Joker", "ProAcedJoker"]
+  public static NakedEli = ["Naked Eli", "Eli", "Nak3d Eli"];
 
-    public static Ruudyt = ["Ruudyt", "Rudy", "Ruudy"]
+  public static NervyDestroyer = ["NervyDestroyer", "Nervy"];
 
-    public static Sasquatch = ["SasquatchSensei", "Sasquatch", "Sas"]
+  public static Pedrogas = ["Pedrogas", "Pedro"];
 
-    public static Scurty = ["Scurty", "Scurty_"]
+  public static ProAceJoker = ["ProAceJoker", "Joker", "ProAcedJoker"];
 
-    public static Seclusive = ["Seclusive", "Reculsive"]
+  public static Ruudyt = ["Ruudyt", "Rudy", "Ruudy"];
 
-    public static SHIFTY = ["SHIFTY", "SHIFTY time", "SHIFTY_time"]
+  public static Sasquatch = ["SasquatchSensei", "Sasquatch", "Sas"];
 
-    public static Sorix = ["Sorix", "TehSorix"]
+  public static Scurty = ["Scurty", "Scurty_"];
 
-    public static Stylo = ["Stylo", "Reed Tiburon", "Tiburon"]
+  public static Seclusive = ["Seclusive", "Reculsive"];
 
-    public static sub_WHISTLE = ["sub_WHISTLE", "WHISTLE", "sub", "sub WHISTLE"]
+  public static SHIFTY = ["SHIFTY", "SHIFTY time", "SHIFTY_time"];
 
-    public static Synyster = ["Synyster"]
+  public static Sorix = ["Sorix", "TehSorix"];
 
-    public static Vetroxity = ["Vetroxity", "Vetro"]
+  public static Stylo = ["Stylo", "Reed Tiburon", "Tiburon"];
 
-    public static Willzorss = ["Willzorss", "Willzors"]
+  public static sub_WHISTLE = ["sub_WHISTLE", "WHISTLE", "sub", "sub WHISTLE"];
 
-    public static Wingman953 = [
-        "Wingman953",
-        "Wingman",
-        "953",
-        "Nine Five Three",
-    ]
+  public static Synyster = ["Synyster"];
 
-    public static WoLfy = ["WoLfy"]
+  public static Vetroxity = ["Vetroxity", "Vetro"];
 
-    public static Zoo = ["Zoo", "III_Zoo_III"]
+  public static Willzorss = ["Willzorss", "Willzors"];
+
+  public static Wingman953 = [
+    "Wingman953",
+    "Wingman",
+    "953",
+    "Nine Five Three",
+  ];
+
+  public static WoLfy = ["WoLfy"];
+
+  public static Zoo = ["Zoo", "III_Zoo_III"];
 }

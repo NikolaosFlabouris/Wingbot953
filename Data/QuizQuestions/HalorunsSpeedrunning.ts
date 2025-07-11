@@ -1,504 +1,513 @@
-import { QuizNaming } from "../Naming/QuizNaming"
+import { QuizNaming } from "../Naming/QuizNaming";
 
 export const halorunsQuestions = [
-    {
-        Question: "What year was HaloRuns founded?",
-        Answers: ["2014"],
-    },
-    {
-        Question: "Did someone say...?",
-        Answers: ["Haloruns.com", "Haloruns dot com"],
-    },
-    {
-        Question:
-            "Who has the longest unbroken streak as a Full Game World Record holder?",
-        Answers: QuizNaming.People.GarishGoblin,
-    },
-    {
-        Question:
-            "Who held the single longest unbroken Full Game World Record time?",
-        Answers: QuizNaming.People.c0ry123,
-    },
-    {
-        Question:
-            "In Halo CE Speedrunning, Keyes and which other IL has more Legendary submissions than Easy?",
-        Answers: QuizNaming.Levels.HCE.AssaultOnTheControlRoom,
-    },
-    {
-        Question:
-            "In Halo 3: ODST Speedrunning, which IL has the most submissions on the Easy difficulty?",
-        Answers: QuizNaming.Levels.ODST.TayariPlaza,
-    },
-    {
-        Question:
-            "In Halo 3: ODST Speedrunning, which IL has the most submissions on the Legendary difficulty?",
-        Answers: QuizNaming.Levels.ODST.UpliftReserve,
-    },
-    {
-        Question: "Who holds the slowest IL WR?",
-        Answers: QuizNaming.People.Wingman953,
-    },
-    {
-        Question:
-            "The NMPD HQ Easy IL WR stood for 4.5yrs until Adversary beat it by 1 sec on 19th Jan 2020. Who previously held the WR?",
-        Answers: QuizNaming.People.HLGNagato,
-    },
-    {
-        Question:
-            "The first sub-1hr Halo 3: ODST Easy solo time was achieved by who?",
-        Answers: QuizNaming.People.Harc,
-    },
-    {
-        Question:
-            "The first sub-1hr Halo: Reach solo time was achieved by who?",
-        Answers: QuizNaming.People.Seclusive,
-    },
-    {
-        Question: "The first sub-1hr Halo 3 solo time was achieved by who?",
-        Answers: QuizNaming.People.byNailz,
-    },
-    {
-        Question:
-            "Wingman953 set his first IL WR on ONI Alpha Site. What was the next level that he set a WR on?",
-        Answers: QuizNaming.Levels.ODST.CoastalHighway,
-    },
-    {
-        Question:
-            "Who was the first person to achieve a sub-9min run on H2A Regret Legendary?",
-        Answers: QuizNaming.People.Synyster,
-    },
-    {
-        Question:
-            "Who was the first person to achieve a sub-11min run on Halo CE Two Betrayals Legendary?",
-        Answers: QuizNaming.People.Burnt,
-    },
-    {
-        Question:
-            "Who was the first person to achieve a sub-11min run on Halo CE Assault on the Control Room Easy?",
-        Answers: QuizNaming.People.sub_WHISTLE,
-    },
-    {
-        Question:
-            "Who was the first person to complete the Silent Cartographer in under 2mins?",
-        Answers: QuizNaming.People.Burnt,
-    },
-    {
-        Question:
-            "In 2024 Halo 3 Co-op was run at SGDQ. Name of the runners from this co-op team?",
-        Answers: ["WoLfy & Pedrogas"].concat(
-            QuizNaming.People.Chronos,
-            QuizNaming.People.NervyDestroyer,
-            QuizNaming.People.Bryonato,
-            QuizNaming.People.Adef
-        ),
-    },
-    {
-        Question: "In 2024 Halo 2 was run at SGDQ by which speedrunner?",
-        Answers: QuizNaming.People.Zoo,
-    },
-    {
-        Question: "In 2023 Halo 3 was run at SGDQ by which speedrunner?",
-        Answers: QuizNaming.People.G3lk_Jr,
-    },
-    {
-        Question: "In 2022 Halo CE was run at AGDQ by which speedrunner?",
-        Answers: QuizNaming.People.Chronos,
-    },
-    {
-        Question: "In 2022 Halo 5 was run at AGDQ by which speedrunner?",
-        Answers: QuizNaming.People.Distro,
-    },
-    {
-        Question: "In 2021 Halo 2 was run at SGDQ by which speedrunner?",
-        Answers: QuizNaming.People.Monopoli,
-    },
-    {
-        Question: "In 2021 Halo 3 was run at AGDQ by which speedrunner?",
-        Answers: QuizNaming.People.Sasquatch,
-    },
-    {
-        Question: "In 2021 Halo 3: ODST was run at AGDQ by which speedrunner?",
-        Answers: QuizNaming.People.HeroicRobb,
-    },
-    {
-        Question:
-            "In 2019 Halo: Reach was run at AGDQ by 2 speedrunners, name one of them.",
-        Answers: ["WoLfy & Pedrogas"].concat(
-            QuizNaming.People.WoLfy,
-            QuizNaming.People.Pedrogas
-        ),
-    },
-    {
-        Question: "In 2018 Halo 5 was run at AGDQ by which speedrunner?",
-        Answers: QuizNaming.People.Distro,
-    },
-    {
-        Question: "In 2017 Halo CE was run at SGDQ by which speedrunner?",
-        Answers: QuizNaming.People.GarishGoblin,
-    },
-    {
-        Question: "In 2017 Halo 2 was run at AGDQ by which speedrunner?",
-        Answers: QuizNaming.People.Cryphon,
-    },
-    {
-        Question: "In 2016 Halo 4 was run at AGDQ by which speedrunner?",
-        Answers: QuizNaming.People.ProAceJoker,
-    },
-    {
-        Question: "In 2015 Halo 3 was run at SGDQ by which speedrunner?",
-        Answers: QuizNaming.People.BlazeJp,
-    },
-    {
-        Question:
-            "In 2015 Halo 2 was run at AGDQ by 2 speedrunners, name one of them.",
-        Answers: ["Monopoli & Ruudyt"].concat(
-            QuizNaming.People.Monopoli,
-            QuizNaming.People.Ruudyt
-        ),
-    },
-    {
-        Question: "In 2014 Halo CE was run at SGDQ by which speedrunner?",
-        Answers: QuizNaming.People.Goatrope,
-    },
-    {
-        Question: "In 2014 Halo 2 was run at AGDQ by which speedrunner?",
-        Answers: QuizNaming.People.Monopoli,
-    },
-    {
-        Question: "Which team won the HaloRuns Legendary Relay Race in 2024?",
-        Answers: ["Green Team", "Green"],
-    },
-    {
-        Question: "Which team won the HaloRuns Legendary Relay Race in 2023?",
-        Answers: ["Red Team", "Red"],
-    },
-    {
-        Question: "Which team won the HaloRuns Legendary Relay Race in 2022?",
-        Answers: ["Red Team", "Red"],
-    },
-    {
-        Question:
-            "Which team won the HaloRuns Legendary Relay Race at the end of 2021?",
-        Answers: ["Green Team", "Green"],
-    },
-    {
-        Question:
-            "Which team won the HaloRuns Legendary Relay Race at the start of 2021?",
-        Answers: ["Green Team", "Green"],
-    },
-    {
-        Question:
-            "Which team won the HaloRuns Legendary Relay Race at the start of 2020?",
-        Answers: ["Red Team", "Red"],
-    },
-    {
-        Question: "Which team won the HaloRuns Easy Relay Race in 2024?",
-        Answers: ["Red Team", "Red"],
-    },
-    {
-        Question: "Which team won the HaloRuns Easy Relay Race in 2023?",
-        Answers: ["Blue Team", "Blue"],
-    },
-    {
-        Question: "Which team won the HaloRuns Easy Relay Race in 2022?",
-        Answers: ["Green Team", "Green"],
-    },
-    {
-        Question: "Which team won the HaloRuns Easy Relay Race in 2021?",
-        Answers: ["Red Team", "Red"],
-    },
-    {
-        Question: "Which team won the HaloRuns Easy Relay Race in 2020?",
-        Answers: ["Gold Team", "Gold", "Yellow Team", "Yellow"],
-    },
-    {
-        Question: "Which team won the HaloRuns Easy Relay Race in 2019?",
-        Answers: ["Green Team", "Green"],
-    },
-    {
-        Question: "Which team won the HaloRuns Easy Relay Race in 2018?",
-        Answers: ["Red Team", "Red"],
-    },
-    {
-        Question: "Which team won the HaloRuns Easy Relay Race in 2017?",
-        Answers: ["Red Team", "Red"],
-    },
-    {
-        Question: "Which team won the HaloRuns Easy Relay Race in 2016?",
-        Answers: ["Green Team", "Green"],
-    },
-    {
-        Question: "Which team won the HaloRuns Easy Relay Race in 2015?",
-        Answers: ["Blue Team", "Blue"],
-    },
-    {
-        Question:
-            "In March 2016 SkilledGames_ set the Legendary IL WR for which level?",
-        Answers: QuizNaming.Levels.ODST.NMPDHQ,
-    },
-    {
-        Question: '2019 was named the "Year of ODST" by which speedrunner?',
-        Answers: QuizNaming.People.Adversary,
-    },
-    {
-        Question:
-            "Adversary achieved his first Legendary IL WR ever on which level?",
-        Answers: QuizNaming.Levels.ODST.KikowaniStation,
-    },
-    {
-        Question:
-            "In 2020 SkilledGames_ set a new Uplift Easy WR with a time of 2:12, which runner previously held the WR?",
-        Answers: QuizNaming.People.Sorix,
-    },
-    {
-        Question:
-            "In July 2020 Two_EEzy set their first Halo Speedrunning WR on which level?",
-        Answers: QuizNaming.Levels.Reach.LongNightOfSolace,
-    },
-    {
-        Question:
-            "In Feb 2021 yeVcM set their first Halo Speedrunning WR on which level?",
-        Answers: QuizNaming.Levels.ODST.OniAlphaSite,
-    },
-    {
-        Question:
-            "In what year did Sorix set their first Halo Speedrunning WR?",
-        Answers: ["2017"],
-    },
-    {
-        Question:
-            "In Aug 2020 Cambid set their first Halo Speedrunning WR on which level?",
-        Answers: QuizNaming.Levels.HCE.TwoBetrayals,
-    },
-    {
-        Question:
-            "In Dec 2016 Harc set their first Halo Speedrunning WR on which level?",
-        Answers: QuizNaming.Levels.H3.Floodgate,
-    },
-    {
-        Question:
-            "In Feb 2017 Sasquatch set their first Halo Speedrunning WR on which level?",
-        Answers: QuizNaming.Levels.H3.Sierra,
-    },
-    {
-        Question:
-            "In June 2019 Jon and Pon set their first Halo Speedrunning WR on which level?",
-        Answers: QuizNaming.Levels.H4.Shutdown,
-    },
-    {
-        Question:
-            "In October 2018 Burnt set their first Halo Speedrunning WR on which level?",
-        Answers: QuizNaming.Levels.HCE.AssaultOnTheControlRoom,
-    },
-    {
-        Question:
-            "In March 2021 III_Zoo_III set their first Halo Speedrunning WR on which level?",
-        Answers: QuizNaming.Levels.H3.Halo,
-    },
-    {
-        Question:
-            "Who was the first person to get the Two Betrayals IL WR with the Banshee out of Level strategy?",
-        Answers: QuizNaming.People.Sorix,
-    },
-    {
-        Question:
-            "The Prepare to Drop Legendary WR of 1:48 remained unbeaten for 4 years, 11 months and 9 days. Who held this WR?",
-        Answers: QuizNaming.People.HLGNagato,
-    },
-    {
-        Question:
-            "In 2016 a_royal_hobo battled out with which other runner for Kikowani Station WR?",
-        Answers: QuizNaming.People.Hoshka,
-    },
-    {
-        Question: "Welshevo79 is known to be a fan of which level?",
-        Answers: QuizNaming.Levels.ODST.CoastalHighway,
-    },
-    {
-        Question: "Harc is known to be a fan of which Halo 3: ODST level?",
-        Answers: QuizNaming.Levels.ODST.NMPDHQ,
-    },
-    {
-        Question: "Wingman953 is known to be a fan of which level?",
-        Answers: QuizNaming.Levels.ODST.OniAlphaSite,
-    },
-    {
-        Question: "Forerunner ILs",
-        Answers: QuizNaming.Levels.Reach.Exodus,
-    },
-    {
-        Question: "For Halo 2, what does AUP stand for?",
-        Answers: ["Arbitrary Unit Possession"],
-    },
-    {
-        Question:
-            'The trick known as "The Charpet" is named after which speedrunner?',
-        Answers: QuizNaming.People.Chappified,
-    },
-    {
-        Question: "In Halo 3: ODST Speedrunning, what does BPL stand for?",
-        Answers: ["Brute Pressure Launch"],
-    },
-    {
-        Question: "In Halo 3: ODST Speedrunning, what does HCB stand for?",
-        Answers: ["Hunter Car Boost", "Hunter-Car Boost"],
-    },
-    {
-        Question: "In Halo 3: ODST Speedrunning, what does RCB stand for?",
-        Answers: ["Rocket Car Boost", "Rocket-Car Boost"],
-    },
-    {
-        Question:
-            "In Halo 3: ODST Speedrunning, if I was performing the Robb Special I would be on which level?",
-        Answers: QuizNaming.Levels.ODST.MombasaStreets.concat([
-            "Mombasa Streets 3",
-            "Streets 3",
-            "MS3",
-        ]),
-    },
-    {
-        Question:
-            "In Halo 3: ODST Speedrunning, if I was performing the Catwalk Launch I would be on which level?",
-        Answers: QuizNaming.Levels.ODST.DataHive,
-    },
-    {
-        Question: "In Halo: Reach Speedrunning, what does DVODUBS stand for?",
-        Answers: [
-            "Dyse's Variant of Dayton's Unnamed Bridge Skip",
-            "Dyses Variant of Daytons Unnamed Bridge Skip",
-            "Dyse's Variant of Daytons Unnamed Bridge Skip",
-            "Dyses Variant of Dayton's Unnamed Bridge Skip",
-        ],
-    },
-    {
-        Question: "In Halo: Reach Speedrunning, what does TEIDFSEF stand for?",
-        Answers: ["Two EEzy's Improved Dyse's Faster Slow Early Falcon"],
-    },
-    {
-        Question: "In Halo 4 Speedrunning, what does ASS POD stand for?",
-        Answers: [
-            "Alley Specific Standing Point Of Despawn",
-            "Ally Specific Standing Point Of Despawn",
-            "Area Specific Standing Point Of Despawn",
-        ],
-    },
-    {
-        Question:
-            "In Halo 4 Speedrunning, if I was performing the Button Jump I would be on which level?",
-        Answers: QuizNaming.Levels.H4.Forerunner,
-    },
-    {
-        Question:
-            "The achievement 'Goat Roped' is named after which speedrunner?",
-        Answers: QuizNaming.People.Goatrope,
-    },
-    {
-        Question:
-            "The achievement 'Monopolized' is named after which speedrunner?",
-        Answers: QuizNaming.People.Monopoli,
-    },
-    {
-        Question:
-            "The achievement 'Devastating' is named after which speedrunner?",
-        Answers: QuizNaming.People.DarkDevastation,
-    },
-    {
-        Question:
-            "The achievement 'You're Joking' is named after which speedrunner?",
-        Answers: QuizNaming.People.ProAceJoker,
-    },
-    {
-        Question:
-            "The achievement 'Keep You're Foot on the Pedrogas' is named after which speedrunner?",
-        Answers: QuizNaming.People.Pedrogas,
-    },
-    {
-        Question:
-            "The achievement 'Nagato Makes Moving Easy' is named after which speedrunner?",
-        Answers: QuizNaming.People.HLGNagato,
-    },
-    {
-        Question:
-            "The achievement 'Easy as One Two Three' is named after which speedrunner?",
-        Answers: QuizNaming.People.c0ry123,
-    },
-    {
-        Question:
-            "The achievement 'Piece of Cake' is named after which speedrunner?",
-        Answers: QuizNaming.People.HaoleCake,
-    },
-    {
-        Question:
-            'The "Vetro Strike" achievement for beating the Assault on the Control Room Par Score is named after which speedrunner?',
-        Answers: QuizNaming.People.Vetroxity,
-    },
-    {
-        Question:
-            'The "Whistle Stop Tour" achievement for beating the Two Betrayals Par Time is named after which speedrunner?',
-        Answers: QuizNaming.People.sub_WHISTLE,
-    },
-    {
-        Question:
-            'The "Scurty Bump" achievement for beating the Keyes Par Time is named after which speedrunner?',
-        Answers: QuizNaming.People.Scurty,
-    },
-    {
-        Question:
-            'The "Force of Will" achievement for beating the Gravemind Par Time is named after which speedrunner?',
-        Answers: QuizNaming.People.Willzorss,
-    },
-    {
-        Question:
-            'The "Reed the Strategy" achievement for beating The Oracle Par Time is named after which speedrunner?',
-        Answers: QuizNaming.People.Stylo,
-    },
-    {
-        Question:
-            'The "Making History" achievement for beating the Cortana Par Time is named after which speedrunner?',
-        Answers: QuizNaming.People.History100,
-    },
-    {
-        Question:
-            'The "Time Shift" achievement for beating the Crow\'s Nest Par Time is named after which speedrunner?',
-        Answers: QuizNaming.People.SHIFTY,
-    },
-    {
-        Question:
-            'The "Naked Tyrant" achievement for beating the Halo 4 LASO Campaign Playlist is named after two speedrunners, name one of them.',
-        Answers: ["Naked Eli & Mythic Tyrant"].concat(
-            QuizNaming.People.NakedEli,
-            QuizNaming.People.MythicTyrant
-        ),
-    },
-    {
-        Question:
-            "What is the name of the achievement for beating the par times on all Halo: CE levels?",
-        Answers: [
-            "Did Somebody Say...",
-            "Did Somebody Say",
-            "Did Someone Say...",
-            "Did Someone Say",
-        ],
-    },
-    {
-        Question:
-            "What is the name of the achievement for beating the par times on all Halo 2:Anniversary levels?",
-        Answers: ["Going Nowhere Fast"],
-    },
-    {
-        Question: "Which game in MCC has the longest sum of par times?",
-        Answers: QuizNaming.Games.Halo2,
-    },
-    {
-        Question: "Which game in MCC has the shortest sum of par times?",
-        Answers: QuizNaming.Games.Halo3ODST,
-    },
-    {
-        Question: "Which mission in Halo 2 has the longest par time?",
-        Answers: QuizNaming.Levels.H2.Oracle,
-    },
-    {
-        Question: "Which mission in Halo CE has the longest par time?",
-        Answers: QuizNaming.Levels.HCE.Library,
-    },
-]
+  {
+    Question: "What year was HaloRuns founded?",
+    Answers: ["2014"],
+  },
+  {
+    Question: "Did someone say...?",
+    Answers: ["Haloruns.com", "Haloruns dot com"],
+  },
+  {
+    Question:
+      "Who has the longest unbroken streak as a Full Game World Record holder?",
+    Answers: QuizNaming.People.GarishGoblin,
+  },
+  {
+    Question:
+      "Who held the single longest unbroken Full Game World Record time?",
+    Answers: QuizNaming.People.c0ry123,
+  },
+  {
+    Question:
+      "In Halo CE Speedrunning, Keyes and which other IL has more Legendary submissions than Easy?",
+    Answers: QuizNaming.Levels.HCE.AssaultOnTheControlRoom,
+  },
+  {
+    Question:
+      "In Halo 3: ODST Speedrunning, which IL has the most submissions on the Easy difficulty?",
+    Answers: QuizNaming.Levels.ODST.TayariPlaza,
+  },
+  {
+    Question:
+      "In Halo 3: ODST Speedrunning, which IL has the most submissions on the Legendary difficulty?",
+    Answers: QuizNaming.Levels.ODST.UpliftReserve,
+  },
+  {
+    Question: "Who holds the slowest IL WR?",
+    Answers: QuizNaming.People.Wingman953,
+  },
+  {
+    Question:
+      "The NMPD HQ Easy IL WR stood for 4.5yrs until Adversary beat it by 1 sec on 19th Jan 2020. Who previously held the WR?",
+    Answers: QuizNaming.People.HLGNagato,
+  },
+  {
+    Question:
+      "The first sub-1hr Halo 3: ODST Easy solo time was achieved by who?",
+    Answers: QuizNaming.People.Harc,
+  },
+  {
+    Question: "The first sub-1hr Halo: Reach solo time was achieved by who?",
+    Answers: QuizNaming.People.Seclusive,
+  },
+  {
+    Question: "The first sub-1hr Halo 3 solo time was achieved by who?",
+    Answers: QuizNaming.People.byNailz,
+  },
+  {
+    Question:
+      "Wingman953 set his first IL WR on ONI Alpha Site. What was the next level that he set a WR on?",
+    Answers: QuizNaming.Levels.ODST.CoastalHighway,
+  },
+  {
+    Question:
+      "Who was the first person to achieve a sub-9min run on H2A Regret Legendary?",
+    Answers: QuizNaming.People.Synyster,
+  },
+  {
+    Question:
+      "Who was the first person to achieve a sub-11min run on Halo CE Two Betrayals Legendary?",
+    Answers: QuizNaming.People.Burnt,
+  },
+  {
+    Question:
+      "Who was the first person to achieve a sub-11min run on Halo CE Assault on the Control Room Easy?",
+    Answers: QuizNaming.People.sub_WHISTLE,
+  },
+  {
+    Question:
+      "Who was the first person to complete the Silent Cartographer in under 2mins?",
+    Answers: QuizNaming.People.Burnt,
+  },
+  {
+    Question:
+      "In 2025 Halo: Reach Co-op was run at SGDQ. Name one of the runners from this co-op team?",
+    Answers: ["Chronos, NervyDestroyer, Mankey, Dyse"].concat(
+      QuizNaming.People.Mankey,
+      QuizNaming.People.Chronos,
+      QuizNaming.People.NervyDestroyer,
+      QuizNaming.People.Dyse
+    ),
+  },
+  {
+    Question: "In 2025 Halo 4 was run at SGDQ by which speedrunner?",
+    Answers: QuizNaming.People.Koma,
+  },
+  {
+    Question:
+      "In 2024 Halo 3 Co-op was run at SGDQ. Name one of the runners from this co-op team?",
+    Answers: ["Chronos, NervyDestroyer, Bryonato, Adef"].concat(
+      QuizNaming.People.Chronos,
+      QuizNaming.People.NervyDestroyer,
+      QuizNaming.People.Bryonato,
+      QuizNaming.People.Adef
+    ),
+  },
+  {
+    Question: "In 2024 Halo 2 was run at SGDQ by which speedrunner?",
+    Answers: QuizNaming.People.Zoo,
+  },
+  {
+    Question: "In 2023 Halo 3 was run at SGDQ by which speedrunner?",
+    Answers: QuizNaming.People.G3lk_Jr,
+  },
+  {
+    Question: "In 2022 Halo CE was run at AGDQ by which speedrunner?",
+    Answers: QuizNaming.People.Chronos,
+  },
+  {
+    Question: "In 2022 Halo 5 was run at AGDQ by which speedrunner?",
+    Answers: QuizNaming.People.Distro,
+  },
+  {
+    Question: "In 2021 Halo 2 was run at SGDQ by which speedrunner?",
+    Answers: QuizNaming.People.Monopoli,
+  },
+  {
+    Question: "In 2021 Halo 3 was run at AGDQ by which speedrunner?",
+    Answers: QuizNaming.People.Sasquatch,
+  },
+  {
+    Question: "In 2021 Halo 3: ODST was run at AGDQ by which speedrunner?",
+    Answers: QuizNaming.People.HeroicRobb,
+  },
+  {
+    Question:
+      "In 2019 Halo: Reach was run at AGDQ by 2 speedrunners, name one of them.",
+    Answers: ["WoLfy & Pedrogas"].concat(
+      QuizNaming.People.WoLfy,
+      QuizNaming.People.Pedrogas
+    ),
+  },
+  {
+    Question: "In 2018 Halo 5 was run at AGDQ by which speedrunner?",
+    Answers: QuizNaming.People.Distro,
+  },
+  {
+    Question: "In 2017 Halo CE was run at SGDQ by which speedrunner?",
+    Answers: QuizNaming.People.GarishGoblin,
+  },
+  {
+    Question: "In 2017 Halo 2 was run at AGDQ by which speedrunner?",
+    Answers: QuizNaming.People.Cryphon,
+  },
+  {
+    Question: "In 2016 Halo 4 was run at AGDQ by which speedrunner?",
+    Answers: QuizNaming.People.ProAceJoker,
+  },
+  {
+    Question: "In 2015 Halo 3 was run at SGDQ by which speedrunner?",
+    Answers: QuizNaming.People.BlazeJp,
+  },
+  {
+    Question:
+      "In 2015 Halo 2 was run at AGDQ by 2 speedrunners, name one of them.",
+    Answers: ["Monopoli & Ruudyt"].concat(
+      QuizNaming.People.Monopoli,
+      QuizNaming.People.Ruudyt
+    ),
+  },
+  {
+    Question: "In 2014 Halo CE was run at SGDQ by which speedrunner?",
+    Answers: QuizNaming.People.Goatrope,
+  },
+  {
+    Question: "In 2014 Halo 2 was run at AGDQ by which speedrunner?",
+    Answers: QuizNaming.People.Monopoli,
+  },
+  {
+    Question: "Which team won the HaloRuns Legendary Relay Race in 2024?",
+    Answers: ["Green Team", "Green"],
+  },
+  {
+    Question: "Which team won the HaloRuns Legendary Relay Race in 2023?",
+    Answers: ["Red Team", "Red"],
+  },
+  {
+    Question: "Which team won the HaloRuns Legendary Relay Race in 2022?",
+    Answers: ["Red Team", "Red"],
+  },
+  {
+    Question:
+      "Which team won the HaloRuns Legendary Relay Race at the end of 2021?",
+    Answers: ["Green Team", "Green"],
+  },
+  {
+    Question:
+      "Which team won the HaloRuns Legendary Relay Race at the start of 2021?",
+    Answers: ["Green Team", "Green"],
+  },
+  {
+    Question:
+      "Which team won the HaloRuns Legendary Relay Race at the start of 2020?",
+    Answers: ["Red Team", "Red"],
+  },
+  {
+    Question: "Which team won the HaloRuns Easy Relay Race in 2024?",
+    Answers: ["Red Team", "Red"],
+  },
+  {
+    Question: "Which team won the HaloRuns Easy Relay Race in 2023?",
+    Answers: ["Blue Team", "Blue"],
+  },
+  {
+    Question: "Which team won the HaloRuns Easy Relay Race in 2022?",
+    Answers: ["Green Team", "Green"],
+  },
+  {
+    Question: "Which team won the HaloRuns Easy Relay Race in 2021?",
+    Answers: ["Red Team", "Red"],
+  },
+  {
+    Question: "Which team won the HaloRuns Easy Relay Race in 2020?",
+    Answers: ["Gold Team", "Gold", "Yellow Team", "Yellow"],
+  },
+  {
+    Question: "Which team won the HaloRuns Easy Relay Race in 2019?",
+    Answers: ["Green Team", "Green"],
+  },
+  {
+    Question: "Which team won the HaloRuns Easy Relay Race in 2018?",
+    Answers: ["Red Team", "Red"],
+  },
+  {
+    Question: "Which team won the HaloRuns Easy Relay Race in 2017?",
+    Answers: ["Red Team", "Red"],
+  },
+  {
+    Question: "Which team won the HaloRuns Easy Relay Race in 2016?",
+    Answers: ["Green Team", "Green"],
+  },
+  {
+    Question: "Which team won the HaloRuns Easy Relay Race in 2015?",
+    Answers: ["Blue Team", "Blue"],
+  },
+  {
+    Question:
+      "In March 2016 SkilledGames_ set the Legendary IL WR for which level?",
+    Answers: QuizNaming.Levels.ODST.NMPDHQ,
+  },
+  {
+    Question: '2019 was named the "Year of ODST" by which speedrunner?',
+    Answers: QuizNaming.People.Adversary,
+  },
+  {
+    Question:
+      "Adversary achieved his first Legendary IL WR ever on which level?",
+    Answers: QuizNaming.Levels.ODST.KikowaniStation,
+  },
+  {
+    Question:
+      "In 2020 SkilledGames_ set a new Uplift Easy WR with a time of 2:12, which runner previously held the WR?",
+    Answers: QuizNaming.People.Sorix,
+  },
+  {
+    Question:
+      "In July 2020 Two_EEzy set their first Halo speedrunning WR on which level?",
+    Answers: QuizNaming.Levels.Reach.LongNightOfSolace,
+  },
+  {
+    Question:
+      "In Feb 2021 yeVcM set their first Halo speedrunning WR on which level?",
+    Answers: QuizNaming.Levels.ODST.OniAlphaSite,
+  },
+  {
+    Question: "In what year did Sorix set their first Halo speedrunning WR?",
+    Answers: ["2017"],
+  },
+  {
+    Question:
+      "In Aug 2020 Cambid set their first Halo speedrunning WR on which level?",
+    Answers: QuizNaming.Levels.HCE.TwoBetrayals,
+  },
+  {
+    Question:
+      "In Dec 2016 Harc set their first Halo speedrunning WR on which level?",
+    Answers: QuizNaming.Levels.H3.Floodgate,
+  },
+  {
+    Question:
+      "In Feb 2017 Sasquatch set their first Halo speedrunning WR on which level?",
+    Answers: QuizNaming.Levels.H3.Sierra,
+  },
+  {
+    Question:
+      "In June 2019 Jon and Pon set their first Halo speedrunning WR on which level?",
+    Answers: QuizNaming.Levels.H4.Shutdown,
+  },
+  {
+    Question:
+      "In October 2018 Burnt set their first Halo speedrunning WR on which level?",
+    Answers: QuizNaming.Levels.HCE.AssaultOnTheControlRoom,
+  },
+  {
+    Question:
+      "In March 2021 III_Zoo_III set their first Halo speedrunning WR on which level?",
+    Answers: QuizNaming.Levels.H3.Halo,
+  },
+  {
+    Question:
+      "Who was the first person to get the Two Betrayals IL WR with the Banshee out of Level strategy?",
+    Answers: QuizNaming.People.Sorix,
+  },
+  {
+    Question:
+      "The Prepare to Drop Legendary WR of 1:48 remained unbeaten for 4 years, 11 months and 9 days. Who held this WR?",
+    Answers: QuizNaming.People.HLGNagato,
+  },
+  {
+    Question:
+      "In 2016 a_royal_hobo battled out with which other runner for Kikowani Station WR?",
+    Answers: QuizNaming.People.Hoshka,
+  },
+  {
+    Question: "Welshevo79 is known to be a fan of which level?",
+    Answers: QuizNaming.Levels.ODST.CoastalHighway,
+  },
+  {
+    Question: "Harc is known to be a fan of which Halo 3: ODST level?",
+    Answers: QuizNaming.Levels.ODST.NMPDHQ,
+  },
+  {
+    Question: "Wingman953 is known to be a fan of which level?",
+    Answers: QuizNaming.Levels.ODST.OniAlphaSite,
+  },
+  {
+    Question: "Forerunner ILs",
+    Answers: QuizNaming.Levels.Reach.Exodus,
+  },
+  {
+    Question: "For Halo 2, what does AUP stand for?",
+    Answers: ["Arbitrary Unit Possession"],
+  },
+  {
+    Question:
+      'The trick known as "The Charpet" is named after which speedrunner?',
+    Answers: QuizNaming.People.Chappified,
+  },
+  {
+    Question: "In Halo 3: ODST Speedrunning, what does BPL stand for?",
+    Answers: ["Brute Pressure Launch"],
+  },
+  {
+    Question: "In Halo 3: ODST Speedrunning, what does HCB stand for?",
+    Answers: ["Hunter Car Boost", "Hunter-Car Boost"],
+  },
+  {
+    Question: "In Halo 3: ODST Speedrunning, what does RCB stand for?",
+    Answers: ["Rocket Car Boost", "Rocket-Car Boost"],
+  },
+  {
+    Question:
+      "In Halo 3: ODST Speedrunning, if I was performing the Robb Special I would be on which level?",
+    Answers: QuizNaming.Levels.ODST.MombasaStreets.concat([
+      "Mombasa Streets 3",
+      "Streets 3",
+      "MS3",
+    ]),
+  },
+  {
+    Question:
+      "In Halo 3: ODST Speedrunning, if I was performing the Catwalk Launch I would be on which level?",
+    Answers: QuizNaming.Levels.ODST.DataHive,
+  },
+  {
+    Question: "In Halo: Reach Speedrunning, what does DVODUBS stand for?",
+    Answers: [
+      "Dyse's Variant of Dayton's Unnamed Bridge Skip",
+      "Dyses Variant of Daytons Unnamed Bridge Skip",
+      "Dyse's Variant of Daytons Unnamed Bridge Skip",
+      "Dyses Variant of Dayton's Unnamed Bridge Skip",
+    ],
+  },
+  {
+    Question: "In Halo: Reach Speedrunning, what does TEIDFSEF stand for?",
+    Answers: ["Two EEzy's Improved Dyse's Faster Slow Early Falcon"],
+  },
+  {
+    Question: "In Halo 4 Speedrunning, what does ASS POD stand for?",
+    Answers: [
+      "Alley Specific Standing Point Of Despawn",
+      "Ally Specific Standing Point Of Despawn",
+      "Area Specific Standing Point Of Despawn",
+    ],
+  },
+  {
+    Question:
+      "In Halo 4 Speedrunning, if I was performing the Button Jump I would be on which level?",
+    Answers: QuizNaming.Levels.H4.Forerunner,
+  },
+  {
+    Question: "The achievement 'Goat Roped' is named after which speedrunner?",
+    Answers: QuizNaming.People.Goatrope,
+  },
+  {
+    Question: "The achievement 'Monopolized' is named after which speedrunner?",
+    Answers: QuizNaming.People.Monopoli,
+  },
+  {
+    Question: "The achievement 'Devastating' is named after which speedrunner?",
+    Answers: QuizNaming.People.DarkDevastation,
+  },
+  {
+    Question:
+      "The achievement 'You're Joking' is named after which speedrunner?",
+    Answers: QuizNaming.People.ProAceJoker,
+  },
+  {
+    Question:
+      "The achievement 'Keep Your Foot on the Pedrogas' is named after which speedrunner?",
+    Answers: QuizNaming.People.Pedrogas,
+  },
+  {
+    Question:
+      "The achievement 'Nagato Makes Moving Easy' is named after which speedrunner?",
+    Answers: QuizNaming.People.HLGNagato,
+  },
+  {
+    Question:
+      "The achievement 'Easy as One Two Three' is named after which speedrunner?",
+    Answers: QuizNaming.People.c0ry123,
+  },
+  {
+    Question:
+      "The achievement 'Piece of Cake' is named after which speedrunner?",
+    Answers: QuizNaming.People.HaoleCake,
+  },
+  {
+    Question:
+      'The "Vetro Strike" achievement for beating the Assault on the Control Room Par Score is named after which speedrunner?',
+    Answers: QuizNaming.People.Vetroxity,
+  },
+  {
+    Question:
+      'The "Whistle Stop Tour" achievement for beating the Two Betrayals Par Time is named after which speedrunner?',
+    Answers: QuizNaming.People.sub_WHISTLE,
+  },
+  {
+    Question:
+      'The "Scurty Bump" achievement for beating the Keyes Par Time is named after which speedrunner?',
+    Answers: QuizNaming.People.Scurty,
+  },
+  {
+    Question:
+      'The "Force of Will" achievement for beating the Gravemind Par Time is named after which speedrunner?',
+    Answers: QuizNaming.People.Willzorss,
+  },
+  {
+    Question:
+      'The "Reed the Strategy" achievement for beating The Oracle Par Time is named after which speedrunner?',
+    Answers: QuizNaming.People.Stylo,
+  },
+  {
+    Question:
+      'The "Making History" achievement for beating the Cortana Par Time is named after which speedrunner?',
+    Answers: QuizNaming.People.History100,
+  },
+  {
+    Question:
+      'The "Time Shift" achievement for beating the Crow\'s Nest Par Time is named after which speedrunner?',
+    Answers: QuizNaming.People.SHIFTY,
+  },
+  {
+    Question:
+      'The "Naked Tyrant" achievement for beating the Halo 4 LASO Campaign Playlist is named after two speedrunners, name one of them.',
+    Answers: ["Naked Eli & Mythic Tyrant"].concat(
+      QuizNaming.People.NakedEli,
+      QuizNaming.People.MythicTyrant
+    ),
+  },
+  {
+    Question:
+      "What is the name of the achievement for beating the par times on all Halo: CE levels?",
+    Answers: [
+      "Did Somebody Say...",
+      "Did Somebody Say",
+      "Did Someone Say...",
+      "Did Someone Say",
+    ],
+  },
+  {
+    Question:
+      "What is the name of the achievement for beating the par times on all Halo 2:Anniversary levels?",
+    Answers: ["Going Nowhere Fast"],
+  },
+  {
+    Question: "Which game in MCC has the longest sum of par times?",
+    Answers: QuizNaming.Games.Halo2,
+  },
+  {
+    Question: "Which game in MCC has the shortest sum of par times?",
+    Answers: QuizNaming.Games.Halo3ODST,
+  },
+  {
+    Question: "Which mission in Halo 2 has the longest par time?",
+    Answers: QuizNaming.Levels.H2.Oracle,
+  },
+  {
+    Question: "Which mission in Halo CE has the longest par time?",
+    Answers: QuizNaming.Levels.HCE.Library,
+  },
+];

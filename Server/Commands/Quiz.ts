@@ -12,7 +12,6 @@ import {
   apiClient,
   TwitchDisableSlowMode,
   TwitchEnableSlowMode,
-  Wingman953,
 } from "../Integrations/Twitch";
 import { setChatPollingInterval } from "../Integrations/YouTube";
 
@@ -184,6 +183,9 @@ export async function StartBasicQuiz() {
       sendChatMessage(quizFailedMessage);
 
       await sleep(1000);
+
+      // Set YouTube chat polling interval to be normal post quiz
+      setChatPollingInterval();
 
       TwitchDisableSlowMode();
 
