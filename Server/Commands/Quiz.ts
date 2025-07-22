@@ -199,7 +199,10 @@ async function BasicQuizAnswer(msg: UnifiedChatMessage) {
     quizCategories[categoryIndex].CategoryQuestions[
       questionIndex
     ].Answers.findIndex((element: string) => {
-      return element.toLowerCase() == msg.message.text.toLowerCase();
+      return (
+        element.toLowerCase() ==
+        msg.message.text.toLowerCase().replace(/[.,!?;:]+$/, "")
+      );
     }) >= 0
   ) {
     const username = msg.author.displayName;
@@ -385,7 +388,10 @@ async function MultiUserQuizAnswer(msg: UnifiedChatMessage) {
     quizCategories[categoryIndex].CategoryQuestions[
       questionIndex
     ].Answers.findIndex((element: string) => {
-      return element.toLowerCase() == msg.message.text.toLowerCase();
+      return (
+        element.toLowerCase() ==
+        msg.message.text.toLowerCase().replace(/[.,!?;:]+$/, "")
+      );
     }) >= 0
   ) {
     let found = false;

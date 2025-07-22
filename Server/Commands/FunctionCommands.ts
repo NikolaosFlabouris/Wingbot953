@@ -201,7 +201,7 @@ const functionMap = [
   },
   {
     Command: ["!2013"],
-    Username: ["Wingman953", "thiccElite"],
+    Username: ["Wingman953", "Wingbot953", "thiccElite"],
     Function: Is2013Song,
   },
   // HaloRuns
@@ -216,7 +216,7 @@ const functionMap = [
   // Quiz
   {
     Command: ["!quizstart"],
-    Username: ["Wingman953"],
+    Username: ["Wingman953", "Wingbot953"],
     Function: StartQuiz,
   },
   {
@@ -225,7 +225,7 @@ const functionMap = [
   },
   {
     Command: ["!addscore"],
-    Username: ["Wingman953"],
+    Username: ["Wingman953", "Wingbot953"],
     Function: AddQuizScore,
   },
   {
@@ -239,30 +239,36 @@ const functionMap = [
   },
   // Admin
   {
-    Command: ["!setsplittable", "!setsplittablegame", "!setlivesplitgame"],
-    Username: ["Wingman953"],
+    Command: [
+      "!setsplittable",
+      "!setsplittablegame",
+      "!setlivesplitgame",
+      "!setgame",
+      "!settable",
+    ],
+    Username: ["Wingman953", "Wingbot953"],
     Function: (msg: UnifiedChatMessage) => {
       LiveSplitClient.getInstance().setGame(msg);
     },
   },
   {
     Command: ["!runad"],
-    Username: ["Wingman953"],
+    Username: ["Wingman953", "Wingbot953"],
     Function: TwitchRunAd,
   },
   {
     Command: ["!publishleaderboards"],
-    Username: ["Wingman953"],
+    Username: ["Wingman953", "Wingbot953"],
     Function: PublishLeaderboards,
   },
   // {
   //     Command: ["!publishnewleaderboard"],
-  //     Username: ["Wingman953"],
+  //     Username: ["Wingman953", "Wingbot953"],
   //     Function: PublishNewLeaderboard,
   // },
   // {
   //     Command: ["!createreward"],
-  //     Username: ["Wingman953"],
+  //     Username: ["Wingman953", "Wingbot953"],
   //     Function: CreateReward,
   // },
 ];

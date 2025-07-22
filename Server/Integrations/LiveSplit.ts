@@ -14,13 +14,16 @@ interface SplitData {
   worldRecord: string;
   personalBest: string;
   pbRank: number;
-  bestSplit: string;
-  currentComparison: string;
+  bestSplit?: string;
+  currentComparison?: string;
   character: string;
 }
 
 interface SplitInfo {
   game?: string;
+  category?: string;
+  runnableSegment?: string;
+  difficulty?: string;
   previousSplit?: SplitData;
   currentSplit: SplitData;
   nextSplit?: SplitData;
@@ -47,17 +50,17 @@ const h1SplitNames: { [key: number]: SplitDetails } = {
 const h2SplitNames: { [key: number]: SplitDetails } = {
   0: { name: "Cairo Station", character: "Master Chief" },
   1: { name: "Outskirts", character: "Master Chief" },
-  3: { name: "Metropolis", character: "Master Chief" },
-  4: { name: "The Arbiter", character: "Arbiter" },
-  5: { name: "The Oracle", character: "Arbiter" },
-  6: { name: "Delta Halo", character: "Master Chief" },
-  7: { name: "Regret", character: "Master Chief" },
-  8: { name: "Sacred Icon", character: "Arbiter" },
-  9: { name: "Quarantine Zone", character: "Arbiter" },
-  10: { name: "Gravemind", character: "Master Chief" },
-  11: { name: "Uprising", character: "Arbiter" },
-  12: { name: "High Charity", character: "Master Chief" },
-  13: { name: "The Great Journey", character: "Arbiter" },
+  2: { name: "Metropolis", character: "Master Chief" },
+  3: { name: "The Arbiter", character: "Arbiter" },
+  4: { name: "The Oracle", character: "Arbiter" },
+  5: { name: "Delta Halo", character: "Master Chief" },
+  6: { name: "Regret", character: "Master Chief" },
+  7: { name: "Sacred Icon", character: "Arbiter" },
+  8: { name: "Quarantine Zone", character: "Arbiter" },
+  9: { name: "Gravemind", character: "Master Chief" },
+  10: { name: "Uprising", character: "Arbiter" },
+  11: { name: "High Charity", character: "Master Chief" },
+  12: { name: "The Great Journey", character: "Arbiter" },
 };
 
 const h3SplitNames: { [key: number]: SplitDetails } = {
@@ -91,15 +94,15 @@ const odstSplitNames: { [key: number]: SplitDetails } = {
 };
 
 const reachSplitNames: { [key: number]: SplitDetails } = {
-  0: { name: "Winter Contingency", character: "Nobel 6" },
-  1: { name: "ONI: Sword Base", character: "Nobel 6" },
-  2: { name: "Nightfall", character: "Nobel 6" },
-  3: { name: "Tip of the Spear", character: "Nobel 6" },
-  4: { name: "Long Night of Solace", character: "Nobel 6" },
-  5: { name: "Exodus", character: "Nobel 6" },
-  6: { name: "New Alexandria", character: "Nobel 6" },
-  7: { name: "The Package", character: "Nobel 6" },
-  8: { name: "The Pillar of Autumn", character: "Nobel 6" },
+  0: { name: "Winter Contingency", character: "Noble 6" },
+  1: { name: "ONI: Sword Base", character: "Noble 6" },
+  2: { name: "Nightfall", character: "Noble 6" },
+  3: { name: "Tip of the Spear", character: "Noble 6" },
+  4: { name: "Long Night of Solace", character: "Noble 6" },
+  5: { name: "Exodus", character: "Noble 6" },
+  6: { name: "New Alexandria", character: "Noble 6" },
+  7: { name: "The Package", character: "Noble 6" },
+  8: { name: "The Pillar of Autumn", character: "Noble 6" },
 };
 
 const h4SplitNames: { [key: number]: SplitDetails } = {
@@ -174,6 +177,9 @@ export class LiveSplitClient {
   private category: string;
   private difficulty: string;
   private runnableSegment: string;
+  private currentWr: TimeSpan;
+  private currentPersonalBest: TimeSpan;
+  private currentPbRank: number;
 
   private constructor() {
     this.host = "localhost";
@@ -219,9 +225,12 @@ export class LiveSplitClient {
     this.previousPreviousComparisonSplit = TimeSpan.zero;
     this.activeSplitNames = odstSplitNames;
     this.game = "Halo 3: ODST";
-    this.difficulty = "Easy";
     this.category = "Solo";
     this.runnableSegment = "Full Game";
+    this.difficulty = "Easy";
+    this.currentWr = TimeSpan.zero;
+    this.currentPersonalBest = TimeSpan.zero;
+    this.currentPbRank = 0;
   }
 
   public static getInstance(): LiveSplitClient {
@@ -257,7 +266,27 @@ export class LiveSplitClient {
 
     this.activeSplitNames = gameToSplitMapping[this.game];
 
-    this.updateTableInfo();
+    GetHaloRunsWr(
+      this.game,
+      this.category,
+      this.runnableSegment,
+      this.difficulty
+    )
+      .then((wr) => {
+        this.currentWr = wr.Time;
+        let hrPb = GetHaloRunsPb(
+          this.game,
+          this.category,
+          this.runnableSegment,
+          this.difficulty
+        );
+        this.currentPersonalBest = hrPb.Time;
+        this.currentPbRank = hrPb.Rank;
+        this.updateTableInfo();
+      })
+      .catch((error) => {
+        console.error("Error fetching world record:", error);
+      });
   }
 
   public connect() {
@@ -559,6 +588,7 @@ export class LiveSplitClient {
 
   private async getVirgilMood(): Promise<string> {
     try {
+      if (this.currentSplitIndex < 0) return "Neutral";
       // Logic to determine Virgil's mood based on run progress
       const delta = await this.getDelta();
       if (delta.totalMilliseconds < 0) {
@@ -581,17 +611,34 @@ export class LiveSplitClient {
 
   private sendTableInfo() {
     if (this.runnableSegment === "Full Game") {
-      this.sentMultiLevelTableInfo();
+      this.sendMultiLevelTableInfo();
     } else {
-      this.sentSingleLevelTableInfo();
+      this.sendSingleLevelTableInfo();
     }
   }
 
-  private sentSingleLevelTableInfo() {
+  private sendSingleLevelTableInfo() {
     const splitInfo: SplitInfo = {
       game: this.game,
-      currentSplit: this.currentSplitData,
+      category: this.category,
+      difficulty: this.difficulty,
+      runnableSegment: this.runnableSegment,
+      currentSplit: {
+        name: this.runnableSegment,
+        worldRecord: this.currentWr.string,
+        personalBest: this.currentPersonalBest.string,
+        pbRank: this.currentPbRank,
+        character: (() => {
+          for (const [key, value] of Object.entries(this.activeSplitNames)) {
+            if (value.name === this.runnableSegment) {
+              return value.character;
+            }
+          }
+          return "";
+        })(),
+      },
     };
+
     const splitMessage = JSON.stringify(splitInfo);
 
     this.wssSplitData.clients.forEach((client) => {
@@ -601,9 +648,12 @@ export class LiveSplitClient {
     });
   }
 
-  private sentMultiLevelTableInfo() {
+  private sendMultiLevelTableInfo() {
     const splitInfo: SplitInfo = {
       game: this.game,
+      category: this.category,
+      difficulty: this.difficulty,
+      runnableSegment: this.runnableSegment,
       previousSplit: this.previousSplitData,
       currentSplit: this.currentSplitData,
       nextSplit: this.nextSplitData,

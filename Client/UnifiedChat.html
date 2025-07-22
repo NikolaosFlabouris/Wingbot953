@@ -561,25 +561,25 @@
                     <div className="admin-panel-container">
                         <button
                             className="admin-ad-button"
-                            onClick={() => onSendMessage("!runad 30")}
+                            onClick={() => onSendMessage("!runad 30", "system")}
                         >
                             30sec Ad
                         </button>
                         <button
                             className="admin-ad-button"
-                            onClick={() => onSendMessage("!runad 60")}
+                            onClick={() => onSendMessage("!runad 60", "system")}
                         >
                             60sec Ad
                         </button>
                         <button
                             className="admin-ad-button"
-                            onClick={() => onSendMessage("!runad 90")}
+                            onClick={() => onSendMessage("!runad 90", "system")}
                         >
                             90sec Ad
                         </button>
                         <button
                             className="admin-ad-button"
-                            onClick={() => onSendMessage("!runad 120")}
+                            onClick={() => onSendMessage("!runad 120", "system")}
                         >
                             120sec Ad
                         </button>
@@ -591,53 +591,88 @@
             const AdminInput = ({ onSendMessage }) => {
                 const [inputText, setInputText] = useState("")
 
-                const handleSendMessage = () => {
+                const onSendMessageWrapper = (platform) => {
                     if (inputText.trim()) {
-                        onSendMessage(inputText)
+                        onSendMessage(inputText, platform)
                         setInputText("")
                     }
                 }
 
                 const handleKeyDown = (e) => {
                     if (e.key === "Enter") {
-                        handleSendMessage()
+                        onSendMessageWrapper("all")
                     }
                 }
 
                 return (
-                    <div className="admin-input-container">
-                        <input
-                            type="text"
-                            className="admin-input"
-                            value={inputText}
-                            onChange={(e) => setInputText(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            placeholder="Type a message..."
-                        />
-                        <button
-                            className="admin-send-button"
-                            onClick={handleSendMessage}
-                        >
-                            Send
-                        </button>
-                    </div>
-                )
+                        <div className="admin-input-container">
+                            <input
+                                type="text"
+                                className="admin-input"
+                                value={inputText}
+                                onChange={(e) => setInputText(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                placeholder="Type a message..."
+                            />
+                            <button
+                                className="admin-send-button"
+                                style={{ borderRadius: "0" }}
+                                onClick={() => onSendMessageWrapper("all")}
+                            >
+                                Send
+                            </button>
+                            <button
+                                className="admin-send-button"
+                                style={{ backgroundColor: "#6441a5", borderRadius: "0" }}
+                                onClick={() => onSendMessageWrapper("twitch")}
+                            >
+                                Twitch
+                            </button>
+                            <button
+                                className="admin-send-button"
+                                style={{ backgroundColor: "#ff0000", borderRadius: "0" }}
+                                onClick={() => onSendMessageWrapper("youtube")}
+                            >
+                                YouTube
+                            </button>
+                            <button
+                                className="admin-send-button"
+                                style={{ backgroundColor: "#bbbbbb", borderRadius: "0 4px 4px 0" }}
+                                onClick={() => onSendMessageWrapper("system")}
+                            >
+                                System
+                            </button>
+                        </div>
+                    )
             }
 
             // Chat Application
             const ChatApp = () => {
                 const [messages, setMessages] = useState([])
                 const [socket, setSocket] = useState(null)
+                const [connectionStatus, setConnectionStatus] = useState('disconnected') // 'connecting', 'connected', 'disconnected'
                 const messageWindowRef = useRef(null)
+                const reconnectTimeoutRef = useRef(null)
+                const reconnectAttemptsRef = useRef(0)
                 const params = parseUrlParams()
                 const isAdminMode = params.admin === "true"
 
-                useEffect(() => {
-                    // Initialize WebSocket connection
+                const connectWebSocket = () => {
+                    // Clear any existing reconnect timeout
+                    if (reconnectTimeoutRef.current) {
+                        clearTimeout(reconnectTimeoutRef.current)
+                        reconnectTimeoutRef.current = null
+                    }
+
+                    setConnectionStatus('connecting')
+                    console.log(`Attempting to connect to WebSocket server (attempt ${reconnectAttemptsRef.current + 1})`)
+                    
                     const ws = new WebSocket("ws://localhost:8080")
 
                     ws.onopen = () => {
                         console.log("Connected to WebSocket server")
+                        setConnectionStatus('connected')
+                        reconnectAttemptsRef.current = 0 // Reset reconnect attempts on successful connection
                     }
 
                     ws.onmessage = (event) => {
@@ -685,16 +720,34 @@
                         console.error("WebSocket error:", error)
                     }
 
-                    ws.onclose = () => {
-                        console.log("Disconnected from WebSocket server")
+                    ws.onclose = (event) => {
+                        console.log("Disconnected from WebSocket server", event.code, event.reason)
+                        setConnectionStatus('disconnected')
+                        
+                        // Attempt to reconnect with exponential backoff
+                        const reconnectDelay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 20000) // Cap at 30 seconds
+                        reconnectAttemptsRef.current++
+                        
+                        console.log(`Reconnecting in ${reconnectDelay}ms...`)
+                        reconnectTimeoutRef.current = setTimeout(() => {
+                            connectWebSocket()
+                        }, reconnectDelay)
                     }
 
                     setSocket(ws)
+                }
 
-                    // Clean up WebSocket connection when component unmounts
+                useEffect(() => {
+                    // Initialize WebSocket connection
+                    connectWebSocket()
+
+                    // Clean up WebSocket connection and timeout when component unmounts
                     return () => {
-                        if (ws) {
-                            ws.close()
+                        if (reconnectTimeoutRef.current) {
+                            clearTimeout(reconnectTimeoutRef.current)
+                        }
+                        if (socket) {
+                            socket.close()
                         }
                     }
                 }, [isAdminMode])
@@ -712,14 +765,14 @@
                     }
                 }, [messages, isAdminMode])
 
-                const handleSendMessage = (text) => {
+                const handleSendMessage = (text, platform = "all") => {
                     if (socket && socket.readyState === WebSocket.OPEN) {
                         // Create UnifiedChatMessage structure
                         const adminMessage = {
-                            platform: "all",
+                            platform: platform,
                             timestamp: new Date(),
                             channel: {
-                                name: "Admin",
+                                name: platform === "system" ? "Admin" : "Wingman953",
                             },
                             author: {
                                 name: "Admin",
@@ -735,14 +788,31 @@
 
                         // Send the message over WebSocket
                         socket.send(JSON.stringify(adminMessage))
+                    } else {
+                        console.warn("Cannot send message: WebSocket is not connected")
                     }
                 }
 
                 return (
                     <div className="chat-container">
+                        {/* Optional: Show connection status in admin mode */}
+                        {isAdminMode && connectionStatus !== 'connected' && (
+                            <div style={{ 
+                                padding: '8px', 
+                                backgroundColor: connectionStatus === 'connecting' ? '#664400' : '#660000',
+                                color: 'white', 
+                                textAlign: 'center', 
+                                fontSize: '0.9em',
+                                borderRadius: '4px',
+                                marginBottom: '10px'
+                            }}>
+                                {connectionStatus === 'connecting' ? 'Connecting to server...' : 'Disconnected - Attempting to reconnect...'}
+                            </div>
+                        )}
+                        
                         {isAdminMode && (
-                        <AdminPanel onSendMessage={handleSendMessage} />
-                    )}
+                            <AdminPanel onSendMessage={handleSendMessage} />
+                        )}
                         <div
                             className={`message-window ${
                                 isAdminMode ? "admin-mode" : ""

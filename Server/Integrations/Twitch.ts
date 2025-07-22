@@ -594,7 +594,7 @@ export async function SubscriberFirstMessageQuiz(msg: UnifiedChatMessage) {
 
       let subQuizTwitchMessage = structuredClone(Wingbot953Message);
       subQuizTwitchMessage.platform = "twitch";
-      subQuizTwitchMessage.message.text = `wingma14Think TWITCH SUBSCRIBER QUIZ! LET'S GO! wingma14Think`;
+      subQuizTwitchMessage.message.text = `wingma14Think ${msg.author.displayName}'s sheer presence has started a quiz! wingma14Think`;
 
       sendChatMessage(subQuizTwitchMessage);
 

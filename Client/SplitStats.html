@@ -13,13 +13,23 @@
                 font-style: normal;
             }
 
+            .tableTitle {
+                background: #00000000;
+                font-family: "Denmark", sans-serif;
+                font-weight: bold;
+                font-size: 1.5em;
+                text-align: center;
+                border: none;
+                margin-left: 220px;
+            }
+
             /* Increase the base font size for table cells */
             th,
             td {
                 padding: 3px 5px; /* Reduce padding slightly */
                 text-align: center;
                 border: 1px solid #444;
-                font-size: 1.5em;
+                font-size: 1.4em;
                 line-height: 1.2; /* Add tighter line height */
             }
 
@@ -46,10 +56,10 @@
                 background: #2a2a3a;
             }
             .current {
-                background: #3a2a2a;
+                background: #2a3a2a;
             }
             .next {
-                background: #2a3a2a;
+                background: #2a383a;
             }
 
             .time {
@@ -60,7 +70,7 @@
 
             /* Make table fill available space */
             table {
-                height: 200px;
+                height: 190px;
                 width: 100%;
                 max-width: 100%; /* Ensure it doesn't exceed viewport */
                 border: none;
@@ -72,10 +82,12 @@
             /* Optimize padding in the body */
             body {
                 margin: 0;
-                padding: 3px; /* Reduced from 5px */
+                padding: 3px;
                 font-family: "Courier New", monospace;
                 background: #000;
                 color: #fff;
+                max-width: 1000px;
+                max-height: 250px;
             }
 
             /* Reduce spacing around headings if any exist in table */
@@ -90,6 +102,7 @@
         </style>
     </head>
     <body>
+        <h1 class="tableTitle" id="title">Category Title</h1>
         <table id="splitTable">
             <tbody>
                 <tr>
@@ -131,6 +144,19 @@
             </tbody>
         </table>
 
+        <table id="individualLevelTable" style="display: none; max-height: 120px;">
+            <tbody>
+                <tr>
+                    <th class="row-title">World Record</th>
+                    <td class="current time" id="il-current-worldRecord"></td>
+                </tr>
+                <tr>
+                    <th class="row-title">Personal Best</th>
+                    <td class="current time" id="il-current-personalBest"></td>
+                </tr>
+            </tbody>
+        </table>
+
         <script>
             const trophyMap = {
                 1: "./images/trophies/GoldTrophy.png",
@@ -148,7 +174,7 @@
 
                     this.ws.onmessage = (event) => {
                         const splitInfo = JSON.parse(event.data)
-                        this.updateTable(splitInfo)
+                        this.updateDisplay(splitInfo)
                     }
 
                     this.ws.onclose = () => {
@@ -156,7 +182,30 @@
                     }
                 }
 
-                updateTable(splitInfo) {
+                updateDisplay(splitInfo) {
+                    // Determine which table to show
+                    const isFullGame = splitInfo.runnableSegment === "Full Game"
+                    
+                    const title = document.getElementById("title")
+                    const fullGameTable = document.getElementById("splitTable")
+                    const individualLevelTable = document.getElementById("individualLevelTable")
+                    
+                    if (isFullGame) {
+                        fullGameTable.style.display = "table"
+                        individualLevelTable.style.display = "none"
+                        title.textContent = `${splitInfo.game} - ${splitInfo.category} - ${splitInfo.difficulty}`
+                        title.style.marginTop = "0px"
+                        this.updateFullGameTable(splitInfo)
+                    } else {
+                        fullGameTable.style.display = "none"
+                        individualLevelTable.style.display = "table"
+                        title.textContent = `${splitInfo.game} - ${splitInfo.category} - ${splitInfo.runnableSegment} - ${splitInfo.difficulty}`
+                        title.style.marginTop = "40px"
+                        this.updateIndividualLevelTable(splitInfo)
+                    }
+                }
+
+                updateFullGameTable(splitInfo) {
                     // Helper function to add trophy to an element
                     const addTrophy = (element, rank) => {
                         if (rank >= 1 && rank <= 3) {
@@ -177,10 +226,14 @@
                         }
                     }
 
-                    // Update previous split data
-                    document.getElementById(
-                        "previous-name"
-                    ).textContent = `${splitInfo.previousSplit.name}`
+                    if (!splitInfo.previousSplit.name || splitInfo.previousSplit.name === "") {
+                        document.getElementById("previous-name").textContent = "Previous Split"
+                    } else {
+                        document.getElementById("previous-name").textContent =
+                            splitInfo.previousSplit.name
+                    }
+                    document.getElementById("previous-name").textContent =
+                            splitInfo.previousSplit.name
 
                     // World Record - add gold trophy if value exists
                     const prevWorldRecordEl = document.getElementById(
@@ -217,10 +270,16 @@
                     document.getElementById(
                         "previous-currentComparison"
                     ).textContent = splitInfo.previousSplit.currentComparison
+
                     // Update current split data
-                    document.getElementById(
-                        "current-name"
-                    ).textContent = `${splitInfo.currentSplit.name}`
+                    if (!splitInfo.currentSplit.name || splitInfo.currentSplit.name === "") {
+                        document.getElementById("current-name").textContent = "Current Split"
+                    } else {
+                        document.getElementById("current-name").textContent =
+                            splitInfo.currentSplit.name
+                    }
+                        document.getElementById("current-name").textContent =
+                            splitInfo.currentSplit.name
 
                     // World Record - add gold trophy if value exists
                     const currentWorldRecordEl = document.getElementById(
@@ -261,10 +320,16 @@
                     document.getElementById(
                         "current-currentComparison"
                     ).textContent = splitInfo.currentSplit.currentComparison
+
                     // Update next split data
-                    document.getElementById(
-                        "next-name"
-                    ).textContent = `${splitInfo.nextSplit.name}`
+                    if (!splitInfo.nextSplit.name || splitInfo.nextSplit.name === "") {
+                        document.getElementById("next-name").textContent = "Next Split"
+                    } else {
+                        document.getElementById("next-name").textContent =
+                            splitInfo.nextSplit.name
+                    }
+                        document.getElementById("next-name").textContent =
+                            splitInfo.nextSplit.name
 
                     // World Record - add gold trophy if value exists
                     const nextWorldRecordEl =
@@ -299,6 +364,64 @@
                     document.getElementById(
                         "next-currentComparison"
                     ).textContent = splitInfo.nextSplit.currentComparison
+                }
+
+                updateIndividualLevelTable(splitInfo) {
+                    // Helper function to add trophy to an element
+                    const addTrophy = (element, rank) => {
+                        if (rank >= 1 && rank <= 3) {
+                            const trophyImg = document.createElement("img")
+                            trophyImg.src = trophyMap[rank]
+                            trophyImg.style.height = "1em"
+                            trophyImg.style.marginLeft = "5px"
+                            trophyImg.style.verticalAlign = "middle"
+                            element.appendChild(trophyImg)
+                        } else if (rank >= 4) {
+                            const rankSpan = document.createElement("span")
+                            rankSpan.textContent = ` (${rank}${this.getOrdinalSuffix(
+                                rank
+                            )})`
+                            rankSpan.style.fontSize = "0.8em"
+                            rankSpan.style.color = "#aaa"
+                            element.appendChild(rankSpan)
+                        }
+                    }
+
+                    // World Record - add gold trophy if value exists
+                    const currentWorldRecordEl = document.getElementById(
+                        "il-current-worldRecord"
+                    )
+                    currentWorldRecordEl.innerHTML = "" // Clear previous content
+                    currentWorldRecordEl.textContent =
+                        splitInfo.currentSplit.worldRecord
+                    if (
+                        splitInfo.currentSplit.worldRecord &&
+                        splitInfo.currentSplit.worldRecord !== ""
+                    ) {
+                        const trophyImg = document.createElement("img")
+                        trophyImg.src = trophyMap[1] // Gold trophy
+                        trophyImg.style.height = "1em"
+                        trophyImg.style.marginLeft = "5px"
+                        trophyImg.style.verticalAlign = "middle"
+                        currentWorldRecordEl.appendChild(trophyImg)
+                    }
+
+                    // Personal Best - add rank information
+                    const currentPBEl = document.getElementById(
+                        "il-current-personalBest"
+                    )
+                    currentPBEl.innerHTML = "" // Clear previous content
+                    currentPBEl.textContent =
+                        splitInfo.currentSplit.personalBest
+                    if (
+                        splitInfo.currentSplit.personalBest &&
+                        splitInfo.currentSplit.personalBest !== ""
+                    ) {
+                        addTrophy(
+                            currentPBEl,
+                            splitInfo.currentSplit.pbRank || 0
+                        )
+                    }
                 }
 
                 // Helper function to get ordinal suffix
