@@ -205,6 +205,10 @@ export const halorunsQuestions = [
     Answers: ["Red Team", "Red"],
   },
   {
+    Question: "Which team won the HaloRuns Easy Relay Race in 2025?",
+    Answers: ["Green Team", "Green"],
+  },
+  {
     Question: "Which team won the HaloRuns Easy Relay Race in 2024?",
     Answers: ["Red Team", "Red"],
   },
@@ -306,6 +310,16 @@ export const halorunsQuestions = [
     Question:
       "In March 2021 III_Zoo_III set their first Halo speedrunning WR on which level?",
     Answers: QuizNaming.Levels.H3.Halo,
+  },
+  {
+    Question:
+      "In June 2025 KidTrouble set their first Halo speedrunning WR on which level?",
+    Answers: QuizNaming.Levels.H4.Composer,
+  },
+  {
+    Question:
+      "In July 2025 SlateThelyon set their first Halo speedrunning WR (and held it for 11hrs) on which level?",
+    Answers: QuizNaming.Levels.H4.Requiem,
   },
   {
     Question:
