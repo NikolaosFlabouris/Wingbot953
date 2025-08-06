@@ -215,7 +215,7 @@ export const odstQuestions = [
   },
   {
     Question:
-      "Which flashback mission has a different end cutscene when played on the Legendary difficulty?",
+      "Which mission in ODST has a cutscene that is slightly different on the Legendary difficulty?",
     Answers: QuizNaming.Levels.ODST.NMPDHQ,
   },
   {

@@ -86,8 +86,6 @@ export function handleChatMessage(msg: UnifiedChatMessage) {
 
   sendToWebSocketClients(msg);
 
-  let commandExecuted = false;
-
   if (quizActive) {
     // Check if the message is an answer to a quiz
     onQuizHandler(msg);
@@ -101,21 +99,24 @@ export function handleChatMessage(msg: UnifiedChatMessage) {
   }
 
   /* COMMAND DICTIONARIES */
-  if (SearchCommandDictionary(msg, commandMap)) {
-    commandExecuted = true;
-  } else if (SearchCommandDictionary(msg, quoteMap)) {
-    commandExecuted = true;
-  } else if (SearchCommandDictionary(msg, functionMap)) {
-    commandExecuted = true;
-  } else if (!commandExecuted && msg.message.text.charAt(0) == "!") {
-    let message = structuredClone(Wingbot953Message);
-    message.platform = msg.platform;
-    message.message.text = "Unknown command";
-    message.replyingTo = msg;
-    message.channel = msg.channel;
+  let commandExecuted = SearchCommandDictionary(msg, commandMap);
 
-    sendChatMessage(message);
+  if (!commandExecuted) {
+    commandExecuted = SearchCommandDictionary(msg, quoteMap);
   }
+  if (!commandExecuted) {
+    commandExecuted = SearchCommandDictionary(msg, functionMap);
+  }
+
+  // if (!commandExecuted && msg.message.text.charAt(0) == "!") {
+  //   let message = structuredClone(Wingbot953Message);
+  //   message.platform = msg.platform;
+  //   message.message.text = "Unknown command";
+  //   message.replyingTo = msg;
+  //   message.channel = msg.channel;
+
+  //   sendChatMessage(message);
+  // }
 }
 
 export function sendChatMessage(
