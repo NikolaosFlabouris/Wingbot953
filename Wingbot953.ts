@@ -1,7 +1,7 @@
 import { DiscordSetup } from "./Server/Integrations/Discord";
 import { TwitchSetup } from "./Server/Integrations/Twitch";
 import { SpotifySetup } from "./Server/Integrations/Spotify";
-import { QuizSetup } from "./Server/Commands/Quiz";
+import { QuizManager } from "./Server/Commands/Quiz";
 import { HaloRunsSetup } from "./Server/Integrations/HaloRuns";
 import { GenerateCommandsList } from "./Server/Commands/FunctionCommands";
 
@@ -27,7 +27,7 @@ async function main() {
 
   await YoutubeSetup();
 
-  QuizSetup();
+  await QuizManager.getInstance().initialize();
 
   await HaloRunsSetup();
 

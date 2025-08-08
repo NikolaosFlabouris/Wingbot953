@@ -10,9 +10,9 @@ import {
   HandleInfiniteQuote,
 } from "../Commands/Quotes";
 import {
-  StartQuiz,
-  GetQuizScore,
+  QuizManager,
   GetQuizLeaderboards,
+  GetQuizScore,
   AddQuizScore,
   PublishLeaderboards,
 } from "../Commands/Quiz";
@@ -217,7 +217,7 @@ const functionMap = [
   {
     Command: ["!quizstart"],
     Username: ["Wingman953", "Wingbot953"],
-    Function: StartQuiz,
+    Function: QuizManager.getInstance().queueQuiz,
   },
   {
     Command: ["!quizscore", "!score", "!points"],

@@ -3,8 +3,8 @@ import {
   sendTwitchMessage as sendTwitchMessage,
   SubscriberFirstMessageQuiz,
 } from "./Integrations/Twitch";
-import { CheckForVipWelcome } from "./Commands/VipWelcome";
-import { onQuizHandler, quizActive } from "./Commands/Quiz";
+import { CheckForWelcomeMessage } from "./Commands/VipWelcome";
+import { QuizManager } from "./Commands/Quiz";
 import { Between } from "./Commands/Utils";
 import { commandMap } from "./Commands/GeneralCommands";
 import { quoteMap } from "./Commands/Quotes";
@@ -86,15 +86,12 @@ export function handleChatMessage(msg: UnifiedChatMessage) {
 
   sendToWebSocketClients(msg);
 
-  if (quizActive) {
-    // Check if the message is an answer to a quiz
-    onQuizHandler(msg);
-  }
+  QuizManager.getInstance().handleMessage(msg);
 
   Converse(msg.author.displayName, msg);
 
   if (isLive) {
-    CheckForVipWelcome(msg);
+    CheckForWelcomeMessage(msg);
     SubscriberFirstMessageQuiz(msg);
   }
 

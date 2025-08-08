@@ -845,7 +845,7 @@ class LeaderboardManager {
  *
  * @class QuizManager
  */
-class QuizManager {
+export class QuizManager {
   /** Singleton instance of QuizManager */
   private static instance: QuizManager | null = null;
   /** Handles question selection and deduplication */
@@ -1143,101 +1143,6 @@ class QuizManager {
   }
 }
 
-// ========== LEGACY FUNCTION WRAPPERS FOR BACKWARD COMPATIBILITY ==========
-
-/** Global QuizManager instance used by legacy wrapper functions */
-const quizManager = QuizManager.getInstance();
-
-/**
- * Legacy wrapper for quiz system initialization.
- *
- * @deprecated Use QuizManager.getInstance().initialize() directly for new code
- * @returns Promise that resolves when quiz setup is complete
- */
-export async function QuizSetup(): Promise<void> {
-  await quizManager.initialize();
-}
-
-/**
- * Legacy wrapper to queue a quiz for execution.
- *
- * @deprecated Use QuizManager.getInstance().queueQuiz() directly for new code
- */
-export function StartQuiz(): void {
-  quizManager.queueQuiz();
-}
-
-/**
- * Legacy wrapper to reset the pool of used questions.
- *
- * @deprecated Use QuizManager.getInstance().resetUsedQuestions() directly for new code
- */
-export function ResetUsedQuestions(): void {
-  quizManager.resetUsedQuestions();
-}
-
-/**
- * Legacy global variable to track quiz state.
- * @deprecated Use QuizManager.getInstance().isQuizActive() for new code
- */
-export let quizActive: boolean = false;
-
-/**
- * Legacy wrapper for handling quiz messages and updating quiz state.
- *
- * @deprecated Use QuizManager.getInstance().handleMessage() directly for new code
- * @param msg - The unified chat message to process
- * @returns Promise that resolves when message handling is complete
- */
-export async function onQuizHandler(msg: UnifiedChatMessage): Promise<void> {
-  quizActive = quizManager.isQuizActive();
-  await quizManager.handleMessage(msg);
-}
-
-/**
- * Legacy wrapper to attempt triggering a bonus quiz.
- *
- * @deprecated Use QuizManager.getInstance().rollBonusQuiz() directly for new code
- * @returns Promise that resolves when bonus quiz processing is complete
- */
-export async function RollBonusQuiz(): Promise<void> {
-  await quizManager.rollBonusQuiz();
-}
-
-/**
- * Legacy wrapper to start a first-to-answer quiz (first correct answer wins).
- *
- * @deprecated Use QuizManager.getInstance().startQuiz(true) directly for new code
- * @returns Promise that resolves when the quiz is complete
- */
-export async function StartFirstToAnswerQuiz(): Promise<void> {
-  await quizManager.startQuiz(true);
-}
-
-/**
- * @deprecated Legacy alias for StartFirstToAnswerQuiz - use StartFirstToAnswerQuiz instead
- */
-export async function StartBasicQuiz(): Promise<void> {
-  await quizManager.startQuiz(true);
-}
-
-/**
- * Legacy wrapper to start an all-correct-answers quiz (all correct answers within time limit).
- *
- * @deprecated Use QuizManager.getInstance().startQuiz(false) directly for new code
- * @returns Promise that resolves when the quiz is complete
- */
-export async function StartAllCorrectAnswersQuiz(): Promise<void> {
-  await quizManager.startQuiz(false);
-}
-
-/**
- * @deprecated Legacy alias for StartAllCorrectAnswersQuiz - use StartAllCorrectAnswersQuiz instead
- */
-export async function StartMultiUserQuiz(): Promise<void> {
-  await quizManager.startQuiz(false);
-}
-
 /**
  * Retrieves and displays the top 5 quiz users for the requesting user's platform.
  *
@@ -1248,7 +1153,7 @@ export async function GetQuizLeaderboards(
   msg: UnifiedChatMessage
 ): Promise<void> {
   try {
-    const topUsers = await quizManager
+    const topUsers = await QuizManager.getInstance()
       .getLeaderboardManager()
       .getTopUsers(msg.platform, 5);
 
@@ -1287,7 +1192,7 @@ export async function GetQuizScore(msg: UnifiedChatMessage): Promise<void> {
       searchUsername = originalMessage.split(" ")[1].trim();
     }
 
-    const userScore = await quizManager
+    const userScore = await QuizManager.getInstance()
       .getLeaderboardManager()
       .getScore(searchUsername, userId, platform);
 
@@ -1323,7 +1228,7 @@ export async function AddQuizScore(msg: UnifiedChatMessage): Promise<void> {
     if (parts.length === 2) {
       const username = parts[1].trim();
 
-      await quizManager
+      await QuizManager.getInstance()
         .getLeaderboardManager()
         .updateScore([{ Username: username, Platform: msg.platform }], 1);
 
@@ -1346,7 +1251,8 @@ export async function AddQuizScore(msg: UnifiedChatMessage): Promise<void> {
  */
 export async function PublishLeaderboards(): Promise<void> {
   try {
-    const leaderboardManager = quizManager.getLeaderboardManager();
+    const leaderboardManager =
+      QuizManager.getInstance().getLeaderboardManager();
     await leaderboardManager.loadLeaderboards();
 
     const allLeaderboards = await Promise.all([
@@ -1375,7 +1281,8 @@ export async function PublishLeaderboards(): Promise<void> {
  */
 async function UpdateLeaderboardsWithIds(): Promise<void> {
   try {
-    const leaderboardManager = quizManager.getLeaderboardManager();
+    const leaderboardManager =
+      QuizManager.getInstance().getLeaderboardManager();
     await leaderboardManager.loadLeaderboards();
 
     console.log("Updating leaderboards with IDs...");

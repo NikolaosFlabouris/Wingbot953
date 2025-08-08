@@ -4,11 +4,11 @@ import { sendChatMessage, Wingbot953Message } from "../MessageHandling";
 import { Between, sleep } from "./Utils";
 import fs from "fs";
 
-const vipWelcomeFilePath = "./Data/Users/VIPWelcome.json";
+const WelcomeMessageFilePath = "./Data/Users/VIPWelcome.json";
 
-var vipWelcome: VipWelcome[];
+var welcomeMessages: WelcomeMessage[];
 
-interface VipWelcome {
+interface WelcomeMessage {
   Username: string[];
   UserId: string;
   Platform: string;
@@ -18,11 +18,11 @@ interface VipWelcome {
 
 export function LoadWelcomeMessages() {
   try {
-    const data = fs.readFileSync(vipWelcomeFilePath, "utf8");
-    vipWelcome = JSON.parse(data);
+    const data = fs.readFileSync(WelcomeMessageFilePath, "utf8");
+    welcomeMessages = JSON.parse(data);
 
-    for (var i = 0; i < vipWelcome.length; i++) {
-      vipWelcome[i].Arrived = false;
+    for (var i = 0; i < welcomeMessages.length; i++) {
+      welcomeMessages[i].Arrived = false;
     }
   } catch (err) {
     console.error(err);
@@ -31,49 +31,53 @@ export function LoadWelcomeMessages() {
 
 function SaveWelcomeMessages() {
   // Save the updated data to the file
-  fs.writeFile(vipWelcomeFilePath, JSON.stringify(vipWelcome), (err) => {
-    if (err) {
-      console.error("Error writing to file:", err);
-    } else {
-      console.log("VIP welcome messages updated successfully.");
+  fs.writeFile(
+    WelcomeMessageFilePath,
+    JSON.stringify(welcomeMessages),
+    (err) => {
+      if (err) {
+        console.error("Error writing to file:", err);
+      } else {
+        console.log("Welcome messages updated successfully.");
+      }
     }
-  });
+  );
 }
 
-export async function CheckForVipWelcome(msg: UnifiedChatMessage) {
-  for (var i = 0; i < vipWelcome.length; i++) {
-    // Check for VIP message either by UserId or by Username
+export async function CheckForWelcomeMessage(msg: UnifiedChatMessage) {
+  for (var i = 0; i < welcomeMessages.length; i++) {
+    // Check for welcome message either by UserId or by Username
     if (
-      (!vipWelcome[i].Arrived &&
-        vipWelcome[i].Platform === msg.platform &&
-        vipWelcome[i].UserId === msg.author.id) ||
-      (!vipWelcome[i].Arrived &&
-        vipWelcome[i].Platform === msg.platform &&
-        vipWelcome[i].Username.findIndex((element: string) => {
+      (!welcomeMessages[i].Arrived &&
+        welcomeMessages[i].Platform === msg.platform &&
+        welcomeMessages[i].UserId === msg.author.id) ||
+      (!welcomeMessages[i].Arrived &&
+        welcomeMessages[i].Platform === msg.platform &&
+        welcomeMessages[i].Username.findIndex((element: string) => {
           return element.toLowerCase() === msg.author.displayName.toLowerCase();
         }) >= 0)
     ) {
       console.log(
-        `VIP welcome message found for ${msg.author.displayName} (${msg.author.id}) on ${msg.platform}.`,
+        `Welcome message found for ${msg.author.displayName} (${msg.author.id}) on ${msg.platform}.`,
         `\nFULL MESSAGE: ${JSON.stringify(msg)}`
       );
 
-      var greetingIndex = Between(0, vipWelcome[i].Message.length - 1);
+      var greetingIndex = Between(0, welcomeMessages[i].Message.length - 1);
 
-      vipWelcome[i].Arrived = true;
+      welcomeMessages[i].Arrived = true;
 
-      let vipWelcomeMessage = structuredClone(Wingbot953Message);
-      vipWelcomeMessage.platform = "twitch";
-      vipWelcomeMessage.message.text = vipWelcome[i].Message[greetingIndex];
+      let welcome = structuredClone(Wingbot953Message);
+      welcome.platform = "twitch";
+      welcome.message.text = welcomeMessages[i].Message[greetingIndex];
 
       await sleep(1500);
-      sendChatMessage(vipWelcomeMessage);
+      sendChatMessage(welcome);
       return;
     }
   }
 }
 
-export async function AddVipWelcome(
+export async function AddWelcomeMessage(
   username: string,
   userId: string,
   platform: string,
@@ -82,13 +86,13 @@ export async function AddVipWelcome(
   let userFound: boolean = false;
 
   // Match by userId first
-  for (var i = 0; i < vipWelcome.length; i++) {
+  for (var i = 0; i < welcomeMessages.length; i++) {
     if (
-      vipWelcome[i].UserId === userId &&
-      vipWelcome[i].Platform === platform
+      welcomeMessages[i].UserId === userId &&
+      welcomeMessages[i].Platform === platform
     ) {
       userFound = true;
-      vipWelcome[i].Message.push(greeting);
+      welcomeMessages[i].Message.push(greeting);
 
       // Save the updated data to the file
       SaveWelcomeMessages();
@@ -97,9 +101,9 @@ export async function AddVipWelcome(
 
   // If not found by userId, match by username
   if (!userFound) {
-    for (var i = 0; i < vipWelcome.length; i++) {
+    for (var i = 0; i < welcomeMessages.length; i++) {
       if (
-        vipWelcome[i].Username.findIndex((element: string) => {
+        welcomeMessages[i].Username.findIndex((element: string) => {
           return element.toLowerCase() === username.toLowerCase();
         }) >= 0
       ) {
@@ -107,9 +111,9 @@ export async function AddVipWelcome(
           `User found by Username and not UserId + Platform. Adding message and updating UserId + Platform.`
         );
         userFound = true;
-        vipWelcome[i].Message.push(greeting);
-        vipWelcome[i].UserId = userId;
-        vipWelcome[i].Platform = platform;
+        welcomeMessages[i].Message.push(greeting);
+        welcomeMessages[i].UserId = userId;
+        welcomeMessages[i].Platform = platform;
 
         // Save the updated data to the file
         SaveWelcomeMessages();
@@ -122,19 +126,19 @@ export async function AddVipWelcome(
     let user = await apiClient.users.getUserByName(username);
     if (!user) {
       console.log(
-        `Error: User ${username} not found. Cannot add VIP welcome message.`
+        `Error: User ${username} not found. Cannot add welcome message.`
       );
       return;
     }
 
-    let newUser: VipWelcome = {
+    let newUser: WelcomeMessage = {
       Username: [username],
       UserId: user.id,
       Platform: platform,
       Message: [greeting],
       Arrived: false,
     };
-    vipWelcome.push(newUser);
+    welcomeMessages.push(newUser);
 
     // Save the updated data to the file
     SaveWelcomeMessages();
@@ -143,9 +147,9 @@ export async function AddVipWelcome(
 
 async function UpdateGreetingsWithIDs() {
   LoadWelcomeMessages();
-  console.log("Updating VIP welcome messages with IDs...");
-  for (let i = 0; i < vipWelcome.length; i++) {
-    vipWelcome[i].Platform = "twitch";
+  console.log("Updating welcome messages with IDs...");
+  for (let i = 0; i < welcomeMessages.length; i++) {
+    welcomeMessages[i].Platform = "twitch";
   }
   SaveWelcomeMessages();
 }

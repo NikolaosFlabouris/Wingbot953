@@ -20,7 +20,7 @@ import {
 } from "@twurple/api";
 import open from "open";
 
-import { AddVipWelcome, LoadWelcomeMessages } from "../Commands/VipWelcome";
+import { AddWelcomeMessage, LoadWelcomeMessages } from "../Commands/VipWelcome";
 import { SecondsToDuration, Between, sleep } from "../Commands/Utils";
 
 import { TwitchLivestreamAlert } from "./Discord";
@@ -37,7 +37,7 @@ import {
   sendChatMessage,
   Wingbot953Message,
 } from "../MessageHandling";
-import { ResetUsedQuestions, StartQuiz } from "../Commands/Quiz";
+import { QuizManager } from "../Commands/Quiz";
 import { AddTracksFromPlaylistToQueue } from "./Spotify";
 import { EmoteInfo, UnifiedChatMessage } from "../../Common/UnifiedChatMessage";
 import { BadgeCache } from "./TwitchBadgeCache";
@@ -348,7 +348,7 @@ async function ContinueTwitchSetup() {
       });
 
       setTimeout(() => {
-        StartQuiz();
+        QuizManager.getInstance().queueQuiz();
       }, 5000);
     }
   );
@@ -380,7 +380,7 @@ async function ContinueTwitchSetup() {
       });
 
       setTimeout(() => {
-        StartQuiz();
+        QuizManager.getInstance().queueQuiz();
       }, 5000);
     }
   );
@@ -405,7 +405,7 @@ async function ContinueTwitchSetup() {
       });
 
       setTimeout(() => {
-        StartQuiz();
+        QuizManager.getInstance().queueQuiz();
       }, 5000);
     }
   );
@@ -434,7 +434,7 @@ async function ContinueTwitchSetup() {
       });
 
       setTimeout(() => {
-        StartQuiz();
+        QuizManager.getInstance().queueQuiz();
       }, 5000);
     }
   );
@@ -476,11 +476,14 @@ async function TwitchApiPolling() {
 
       TwitchLivestreamAlert(streamName, streamGame);
       LoadWelcomeMessages();
-      ResetUsedQuestions();
+      QuizManager.getInstance().resetUsedQuestions();
       HaloRunsSetup();
 
       // Automatic messages on timers
-      quizInterval = setInterval(StartQuiz, Between(2100000, 2700000)); // 35-45mins
+      quizInterval = setInterval(
+        QuizManager.getInstance().queueQuiz,
+        Between(2100000, 2700000)
+      ); // 35-45mins
       //didYouKnowInterval = setInterval(SendDidYouKnowFact, 2580000) // 43mins
       periodicMessagesInterval = setInterval(PeriodicTwitchMessages, 3300000); // 55mins
       streamNameAndGameInterval = setInterval(PollStreamNameAndGame, 60000); // 1min
@@ -600,7 +603,7 @@ export async function SubscriberFirstMessageQuiz(msg: UnifiedChatMessage) {
 
       await sleep(2000);
 
-      StartQuiz();
+      QuizManager.getInstance().queueQuiz();
     }
   }
 }
@@ -616,7 +619,7 @@ function HandleQuizStartRedemption(reward: HelixCustomRewardRedemption) {
   const rewardTitle = reward.rewardTitle;
 
   if (rewardTitle === "Start a Quiz Round") {
-    StartQuiz();
+    QuizManager.getInstance().queueQuiz();
   }
 }
 
@@ -663,7 +666,7 @@ async function HandleAddCustomGreetingRedemption(
 
   sendChatMessage(customGreetingMessage);
 
-  AddVipWelcome(
+  AddWelcomeMessage(
     userDisplayName,
     reward.userId,
     "twitch",
@@ -795,7 +798,7 @@ export async function TwitchRunAd(msg: UnifiedChatMessage) {
     ) as CommercialLength;
     console.log("Starting ad break for " + duration + " seconds.");
     await apiClient.channels.startChannelCommercial(Wingman953, duration);
-    StartQuiz();
+    QuizManager.getInstance().queueQuiz();
   } catch (error: any) {
     console.log(`* ERROR: Failed to start ad break: ${error.message}`);
   }
