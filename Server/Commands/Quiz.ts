@@ -900,7 +900,7 @@ export class QuizManager {
    * @returns Promise that resolves when initialization is complete
    * @throws Will throw an error if initialization fails
    */
-  async initialize(): Promise<void> {
+  async initialise(): Promise<void> {
     try {
       console.log(
         `Total question count: ${this.questionSelector.getTotalQuestionCount()}`

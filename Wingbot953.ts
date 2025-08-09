@@ -1,6 +1,6 @@
 import { DiscordSetup } from "./Server/Integrations/Discord";
 import { TwitchSetup } from "./Server/Integrations/Twitch";
-import { SpotifySetup } from "./Server/Integrations/Spotify";
+import { SpotifyManager } from "./Server/Integrations/Spotify";
 import { QuizManager } from "./Server/Commands/Quiz";
 import { HaloRunsSetup } from "./Server/Integrations/HaloRuns";
 import { GenerateCommandsList } from "./Server/Commands/FunctionCommands";
@@ -21,13 +21,13 @@ async function main() {
 
   await DiscordSetup();
 
-  await SpotifySetup(server);
+  await SpotifyManager.getInstance().initialise(server);
 
   await TwitchSetup(server);
 
   await YoutubeSetup();
 
-  await QuizManager.getInstance().initialize();
+  await QuizManager.getInstance().initialise();
 
   await HaloRunsSetup();
 

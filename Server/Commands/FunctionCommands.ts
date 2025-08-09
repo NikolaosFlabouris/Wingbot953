@@ -17,12 +17,7 @@ import {
   PublishLeaderboards,
 } from "../Commands/Quiz";
 import { HandleFastFact } from "../Commands/FastFacts";
-import {
-  GetCurrentSong,
-  AddSongToQueue,
-  Is2013Song,
-  GetSongYear,
-} from "../Integrations/Spotify";
+import { SpotifyManager } from "../Integrations/Spotify";
 import { commandMap } from "./GeneralCommands";
 import { HandleFollowAge, TwitchRunAd } from "../Integrations/Twitch";
 import { HandleUptime } from "../Integrations/Twitch";
@@ -189,20 +184,20 @@ const functionMap = [
   // Spotify
   {
     Command: ["!song"],
-    Function: GetCurrentSong,
+    Function: SpotifyManager.getInstance().getCurrentSong,
   },
   {
     Command: ["!sr", "!songrequest"],
-    Function: AddSongToQueue,
+    Function: SpotifyManager.getInstance().addSongToQueue,
   },
   {
     Command: ["!songyear"],
-    Function: GetSongYear,
+    Function: SpotifyManager.getInstance().getSongYear,
   },
   {
     Command: ["!2013"],
     Username: ["Wingman953", "Wingbot953", "thiccElite"],
-    Function: Is2013Song,
+    Function: SpotifyManager.getInstance().is2013Song,
   },
   // HaloRuns
   {

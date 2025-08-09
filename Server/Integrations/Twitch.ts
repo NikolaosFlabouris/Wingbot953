@@ -38,7 +38,6 @@ import {
   Wingbot953Message,
 } from "../MessageHandling";
 import { QuizManager } from "../Commands/Quiz";
-import { AddTracksFromPlaylistToQueue } from "./Spotify";
 import { EmoteInfo, UnifiedChatMessage } from "../../Common/UnifiedChatMessage";
 import { BadgeCache } from "./TwitchBadgeCache";
 import util from "util";
@@ -684,10 +683,6 @@ async function HandleAddCustomGreetingRedemption(
     sendChatMessage(customGreetingResponseMessage, false);
   });
 }
-
-// function HandlePlaylistRedemption(reward: HelixCustomRewardRedemption) {
-//         AddTracksFromPlaylistToQueue("", 7)
-// }
 
 export async function HandleFollowAge(msg: UnifiedChatMessage) {
   try {
