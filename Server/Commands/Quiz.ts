@@ -52,7 +52,7 @@ import {
   TwitchDisableSlowMode,
   TwitchEnableSlowMode,
 } from "../Integrations/Twitch";
-import { setChatPollingInterval } from "../Integrations/YouTube";
+import { YouTubeManager } from "../Integrations/YouTube";
 
 // ========== INTERFACES AND TYPES ==========
 
@@ -253,7 +253,7 @@ abstract class BaseQuiz {
 
     try {
       TwitchEnableSlowMode(this.config.slowModeSeconds);
-      setChatPollingInterval(1000);
+      YouTubeManager.getInstance().setChatPollingInterval(1000);
     } catch (error) {
       console.error(`Failed to configure quiz settings: ${error}`);
     }
@@ -301,7 +301,7 @@ abstract class BaseQuiz {
    */
   async cleanup(): Promise<void> {
     try {
-      setChatPollingInterval();
+      YouTubeManager.getInstance().setChatPollingInterval();
       TwitchDisableSlowMode();
     } catch (error) {
       console.error(`Quiz cleanup error: ${error}`);

@@ -10,7 +10,7 @@ import { commandMap } from "./Commands/GeneralCommands";
 import { quoteMap } from "./Commands/Quotes";
 import functionMap from "./Commands/FunctionCommands";
 import util from "util";
-import { sendYouTubeMessage } from "./Integrations/YouTube";
+import { YouTubeManager } from "./Integrations/YouTube";
 import WebSocket from "ws";
 import { UnifiedChatMessage } from "../Common/UnifiedChatMessage";
 
@@ -140,7 +140,7 @@ export function sendChatMessage(
     sendToPlatform
   ) {
     // Handle YouTube-specific response logic
-    sendYouTubeMessage(msg.message.text);
+    YouTubeManager.getInstance().sendMessage(msg.message.text);
   }
   if ((msg.platform === "twitch" || msg.platform === "all") && sendToPlatform) {
     // Handle Twitch-specific response logic
