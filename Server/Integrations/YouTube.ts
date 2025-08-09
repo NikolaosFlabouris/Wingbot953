@@ -893,7 +893,7 @@ export class YouTubeManager {
       }
 
       if (!this.liveChatId) {
-        console.error("No active livestream chat to send message to");
+        //console.error("No active livestream chat to send message to");
         return false;
       }
 

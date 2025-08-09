@@ -1,5 +1,5 @@
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage";
-import { apiClient } from "../Integrations/Twitch";
+import { TwitchManager } from "../Integrations/Twitch";
 import { sendChatMessage, Wingbot953Message } from "../MessageHandling";
 import { Between, sleep } from "./Utils";
 import fs from "fs";
@@ -123,7 +123,9 @@ export async function AddWelcomeMessage(
 
   // If not found by username, add a new entry
   if (!userFound) {
-    let user = await apiClient.users.getUserByName(username);
+    let user = await TwitchManager.getInstance().api!.users.getUserByName(
+      username
+    );
     if (!user) {
       console.log(
         `Error: User ${username} not found. Cannot add welcome message.`

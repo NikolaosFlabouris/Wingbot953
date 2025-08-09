@@ -1,6 +1,6 @@
 import SpotifyWebApi from "spotify-web-api-node";
 import open from "open";
-import { isLive } from "./Twitch.js";
+import { TwitchManager } from "./Twitch.js";
 import "dotenv/config";
 import * as http from "http";
 import * as url from "url";
@@ -349,7 +349,7 @@ export class SpotifyManager {
    * @param msg The unified chat message containing platform and user info
    */
   public async getCurrentSong(msg: UnifiedChatMessage): Promise<void> {
-    if (!isLive) {
+    if (!TwitchManager.getInstance().live) {
       this.sendResponse(msg, "No song is currently playing.");
       return;
     }
@@ -377,7 +377,7 @@ export class SpotifyManager {
    * @param msg The unified chat message containing platform and user info
    */
   public async getSongYear(msg: UnifiedChatMessage): Promise<void> {
-    if (!isLive) {
+    if (!TwitchManager.getInstance().live) {
       this.sendResponse(msg, "No song is currently playing.");
       return;
     }
@@ -405,7 +405,7 @@ export class SpotifyManager {
    * @param msg The unified chat message containing platform and user info
    */
   public async is2013Song(msg: UnifiedChatMessage): Promise<void> {
-    if (!isLive) {
+    if (!TwitchManager.getInstance().live) {
       this.sendResponse(msg, "No song is currently playing.");
       return;
     }
@@ -697,7 +697,7 @@ export class SpotifyManager {
    * @param msg The unified chat message containing the song request
    */
   public async addSongToQueue(msg: UnifiedChatMessage): Promise<void> {
-    if (!isLive) {
+    if (!TwitchManager.getInstance().live) {
       this.sendResponse(msg, "Cannot add song to queue right now.");
       return;
     }

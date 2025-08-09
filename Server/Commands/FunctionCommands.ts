@@ -19,8 +19,7 @@ import {
 import { HandleFastFact } from "../Commands/FastFacts";
 import { SpotifyManager } from "../Integrations/Spotify";
 import { commandMap } from "./GeneralCommands";
-import { HandleFollowAge, TwitchRunAd } from "../Integrations/Twitch";
-import { HandleUptime } from "../Integrations/Twitch";
+import { TwitchManager } from "../Integrations/Twitch";
 import { HandleHaloRunsWr, HandleWingman953Pb } from "../Integrations/HaloRuns";
 import { sendChatMessage, Wingbot953Message } from "../MessageHandling";
 import { Between } from "./Utils";
@@ -175,29 +174,29 @@ const functionMap = [
   // Twitch
   {
     Command: ["!followage"],
-    Function: HandleFollowAge,
+    Function: (msg: UnifiedChatMessage) => TwitchManager.getInstance().handleFollowAge(msg),
   },
   {
     Command: ["!uptime"],
-    Function: HandleUptime,
+    Function: (msg: UnifiedChatMessage) => TwitchManager.getInstance().handleUptime(msg),
   },
   // Spotify
   {
     Command: ["!song"],
-    Function: SpotifyManager.getInstance().getCurrentSong,
+    Function: (msg: UnifiedChatMessage) => SpotifyManager.getInstance().getCurrentSong(msg),
   },
   {
     Command: ["!sr", "!songrequest"],
-    Function: SpotifyManager.getInstance().addSongToQueue,
+    Function: (msg: UnifiedChatMessage) => SpotifyManager.getInstance().addSongToQueue(msg),
   },
   {
     Command: ["!songyear"],
-    Function: SpotifyManager.getInstance().getSongYear,
+    Function: (msg: UnifiedChatMessage) => SpotifyManager.getInstance().getSongYear(msg),
   },
   {
     Command: ["!2013"],
     Username: ["Wingman953", "Wingbot953", "thiccElite"],
-    Function: SpotifyManager.getInstance().is2013Song,
+    Function: (msg: UnifiedChatMessage) => SpotifyManager.getInstance().is2013Song(msg),
   },
   // HaloRuns
   {
@@ -212,7 +211,7 @@ const functionMap = [
   {
     Command: ["!quizstart"],
     Username: ["Wingman953", "Wingbot953"],
-    Function: QuizManager.getInstance().queueQuiz,
+    Function: () => QuizManager.getInstance().queueQuiz(),
   },
   {
     Command: ["!quizscore", "!score", "!points"],
@@ -249,7 +248,7 @@ const functionMap = [
   {
     Command: ["!runad"],
     Username: ["Wingman953", "Wingbot953"],
-    Function: TwitchRunAd,
+    Function: (msg: UnifiedChatMessage) => TwitchManager.getInstance().runAd(msg),
   },
   {
     Command: ["!publishleaderboards"],

@@ -1,8 +1,4 @@
-import {
-  isLive,
-  sendTwitchMessage as sendTwitchMessage,
-  SubscriberFirstMessageQuiz,
-} from "./Integrations/Twitch";
+import { TwitchManager } from "./Integrations/Twitch";
 import { CheckForWelcomeMessage } from "./Commands/VipWelcome";
 import { QuizManager } from "./Commands/Quiz";
 import { Between } from "./Commands/Utils";
@@ -90,9 +86,9 @@ export function handleChatMessage(msg: UnifiedChatMessage) {
 
   Converse(msg.author.displayName, msg);
 
-  if (isLive) {
+  if (TwitchManager.getInstance().live) {
     CheckForWelcomeMessage(msg);
-    SubscriberFirstMessageQuiz(msg);
+    TwitchManager.getInstance().subscriberFirstMessageQuiz(msg);
   }
 
   /* COMMAND DICTIONARIES */
@@ -144,7 +140,7 @@ export function sendChatMessage(
   }
   if ((msg.platform === "twitch" || msg.platform === "all") && sendToPlatform) {
     // Handle Twitch-specific response logic
-    sendTwitchMessage(msg.message.text);
+    TwitchManager.getInstance().sendMessage(msg.message.text);
   }
 
   if (sendToWebSocket) {

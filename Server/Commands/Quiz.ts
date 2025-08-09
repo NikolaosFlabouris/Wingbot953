@@ -47,11 +47,7 @@ import {
 import { quizCategories } from "../../Data/QuizQuestions/QuizCategories";
 import { sendChatMessage, Wingbot953Message } from "../MessageHandling";
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage";
-import {
-  apiClient,
-  TwitchDisableSlowMode,
-  TwitchEnableSlowMode,
-} from "../Integrations/Twitch";
+import { TwitchManager } from "../Integrations/Twitch";
 import { YouTubeManager } from "../Integrations/YouTube";
 
 // ========== INTERFACES AND TYPES ==========
@@ -252,7 +248,7 @@ abstract class BaseQuiz {
     this.startTime = Date.now();
 
     try {
-      TwitchEnableSlowMode(this.config.slowModeSeconds);
+      TwitchManager.getInstance().enableSlowMode(this.config.slowModeSeconds);
       YouTubeManager.getInstance().setChatPollingInterval(1000);
     } catch (error) {
       console.error(`Failed to configure quiz settings: ${error}`);
@@ -302,7 +298,7 @@ abstract class BaseQuiz {
   async cleanup(): Promise<void> {
     try {
       YouTubeManager.getInstance().setChatPollingInterval();
-      TwitchDisableSlowMode();
+      TwitchManager.getInstance().disableSlowMode();
     } catch (error) {
       console.error(`Quiz cleanup error: ${error}`);
     }
@@ -1293,9 +1289,10 @@ async function UpdateLeaderboardsWithIds(): Promise<void> {
       if (!leaderboardUser.UserId && leaderboardUser.Username) {
         try {
           console.log(`Updating ID for user ${leaderboardUser.Username}`);
-          const user = await apiClient.users.getUserByName(
-            leaderboardUser.Username
-          );
+          const user =
+            await TwitchManager.getInstance().api!.users.getUserByName(
+              leaderboardUser.Username
+            );
 
           if (user) {
             console.log(

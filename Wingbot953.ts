@@ -1,5 +1,5 @@
 import { DiscordSetup } from "./Server/Integrations/Discord";
-import { TwitchSetup } from "./Server/Integrations/Twitch";
+import { TwitchManager } from "./Server/Integrations/Twitch";
 import { SpotifyManager } from "./Server/Integrations/Spotify";
 import { QuizManager } from "./Server/Commands/Quiz";
 import { HaloRunsSetup } from "./Server/Integrations/HaloRuns";
@@ -11,21 +11,22 @@ import { BadgeCache } from "./Server/Integrations/TwitchBadgeCache";
 
 import * as http from "http";
 
-const server = http.;
+const server = http.createServer();
 const port = 3000;
 
 async function main() {
   server.listen(port);
+  console.log(`Server listening on port ${port}`);
 
   createWebSocket();
 
   await DiscordSetup();
 
-  await SpotifyManager.getInstance().initialise();
+  await SpotifyManager.getInstance().initialise(server);
 
-  await TwitchSetup(server);
+  await TwitchManager.getInstance().initialise(server);
 
-  await YouTubeManager.getInstance().initialise();
+  await YouTubeManager.getInstance().initialise(server);
 
   await QuizManager.getInstance().initialise();
 
@@ -38,6 +39,7 @@ async function main() {
   // Graceful shutdown
   process.on("SIGINT", () => {
     console.log("\nShutting down...");
+    TwitchManager.getInstance().dispose();
     YouTubeManager.getInstance().dispose();
     SpotifyManager.getInstance().dispose();
     LiveSplitClient.getInstance().disconnect(); // Cleanup when needed
