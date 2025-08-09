@@ -4,14 +4,14 @@ import { SpotifyManager } from "./Server/Integrations/Spotify";
 import { QuizManager } from "./Server/Commands/Quiz";
 import { HaloRunsSetup } from "./Server/Integrations/HaloRuns";
 import { GenerateCommandsList } from "./Server/Commands/FunctionCommands";
-
-import express = require("express");
-import { YoutubeSetup } from "./Server/Integrations/YouTube";
+import { YouTubeManager } from "./Server/Integrations/YouTube";
 import { createWebSocket } from "./Server/MessageHandling";
 import { LiveSplitClient } from "./Server/Integrations/LiveSplit";
 import { BadgeCache } from "./Server/Integrations/TwitchBadgeCache";
 
-const server = express();
+import * as http from "http";
+
+const server = http.;
 const port = 3000;
 
 async function main() {
@@ -21,11 +21,11 @@ async function main() {
 
   await DiscordSetup();
 
-  await SpotifyManager.getInstance().initialise(server);
+  await SpotifyManager.getInstance().initialise();
 
   await TwitchSetup(server);
 
-  await YoutubeSetup();
+  await YouTubeManager.getInstance().initialise();
 
   await QuizManager.getInstance().initialise();
 
@@ -38,6 +38,8 @@ async function main() {
   // Graceful shutdown
   process.on("SIGINT", () => {
     console.log("\nShutting down...");
+    YouTubeManager.getInstance().dispose();
+    SpotifyManager.getInstance().dispose();
     LiveSplitClient.getInstance().disconnect(); // Cleanup when needed
     BadgeCache.destroy();
     process.exit(0);
