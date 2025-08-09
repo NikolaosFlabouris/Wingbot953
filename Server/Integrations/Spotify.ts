@@ -2,8 +2,8 @@ import SpotifyWebApi from "spotify-web-api-node";
 import open from "open";
 import { TwitchManager } from "./Twitch.js";
 import "dotenv/config";
-import * as http from "http";
-import * as url from "url";
+import * as http from "node:http";
+import * as url from "node:url";
 
 import { sendChatMessage, Wingbot953Message } from "../MessageHandling.js";
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage";

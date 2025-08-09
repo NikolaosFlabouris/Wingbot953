@@ -9,7 +9,7 @@ import { createWebSocket } from "./Server/MessageHandling";
 import { LiveSplitClient } from "./Server/Integrations/LiveSplit";
 import { BadgeCache } from "./Server/Integrations/TwitchBadgeCache";
 
-import * as http from "http";
+import * as http from "node:http";
 
 const server = http.createServer();
 const port = 3000;

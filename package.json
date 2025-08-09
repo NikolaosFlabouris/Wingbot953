@@ -9,36 +9,19 @@
         "start": "node Build/Wingbot953.js"
     },
     "dependencies": {
-        "@d-fischer/shared-utils": "^3.6.4",
-        "@tsconfig/recommended": "^1.0.8",
         "@twurple/api": "^7.2.1",
         "@twurple/auth": "^7.2.1",
         "@twurple/chat": "^7.2.1",
-        "@twurple/ebs-helper": "^7.2.1",
-        "@twurple/eventsub": "^5.3.4",
-        "@twurple/eventsub-ngrok": "^7.2.1",
-        "@twurple/pubsub": "^7.2.1",
         "axios": "^1.8.4",
-        "cors": "^2.8.5",
         "discord.js": "^14.18.0",
         "dotenv": "^16.5.0",
-        "express": "^5.1.0",
-        "fuse.js": "^7.1.0",
         "googleapis": "^148.0.0",
-        "http": "^0.0.1-security",
-        "node": "^23.11.0",
-        "npm-check-updates": "^17.1.18",
         "open": "^10.1.1",
-        "shared-utils": "^2.0.1",
         "socket.io": "^4.8.1",
-        "spotify-web-api-node": "^5.0.2",
-        "twurple": "^1.0.0"
-    },
-    "engines": {
-        "node": "23.x"
+        "spotify-web-api-node": "^5.0.2"
     },
     "devDependencies": {
-        "@types/express": "^5.0.1",
+        "@tsconfig/recommended": "^1.0.8",
         "@types/spotify-web-api-node": "^5.0.11",
         "@typescript-eslint/eslint-plugin": "^8.30.1",
         "@typescript-eslint/parser": "^8.30.1",

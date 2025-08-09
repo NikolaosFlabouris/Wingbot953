@@ -4,7 +4,7 @@ import { handleChatMessage, PeriodicYouTubeMessages } from "../MessageHandling";
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage";
 import * as fs from "fs";
 import open from "open";
-import * as http from "http";
+import * as http from "node:http";
 import { YoutubeLivestreamAlert } from "./Discord";
 
 // Load environment variables

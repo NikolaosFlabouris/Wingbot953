@@ -19,7 +19,7 @@ import {
   HelixUser,
 } from "@twurple/api";
 import open from "open";
-import * as http from "http";
+import * as http from "node:http";
 import * as fs from "fs";
 
 import { AddWelcomeMessage, LoadWelcomeMessages } from "../Commands/VipWelcome";
