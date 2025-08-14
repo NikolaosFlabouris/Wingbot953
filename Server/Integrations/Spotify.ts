@@ -3,7 +3,6 @@ import open from "open";
 import { TwitchManager } from "./Twitch.js";
 import "dotenv/config";
 import * as http from "node:http";
-import * as url from "node:url";
 
 import { sendChatMessage, Wingbot953Message } from "../MessageHandling.js";
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage";
@@ -115,13 +114,13 @@ export class SpotifyManager {
       req: http.IncomingMessage,
       res: http.ServerResponse
     ) => {
-      const parsedUrl = url.parse(req.url || "", true);
+      const parsedUrl = new URL(req.url || "/", "http://localhost:3000");
 
       // Check if this is the Spotify callback
       if (parsedUrl.pathname === "/spotify/callback") {
         console.log("Spotify Callback received");
 
-        const code = parsedUrl.query.code as string;
+        const code = parsedUrl.searchParams.get("code");
 
         if (!code) {
           res.writeHead(400, { "Content-Type": "text/plain" });
@@ -210,12 +209,12 @@ export class SpotifyManager {
                   <div class="success">✓</div>
                   <h2>Spotify Authentication Successful</h2>
                   <p>Wingbot953 is now connected to your Spotify account!</p>
-                  <p>This window will close in <span id="countdown">3</span> seconds...</p>
+                  <p>This window will close in <span id="countdown">1</span> seconds...</p>
                   <button onclick="window.close()">Close Now</button>
                 </div>
                 
                 <script>
-                  let count = 3;
+                  let count = 1;
                   const countdown = document.getElementById('countdown');
                   
                   const timer = setInterval(() => {
