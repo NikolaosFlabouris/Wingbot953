@@ -1,6 +1,11 @@
 import { google, youtube_v3 } from "googleapis";
 import * as dotenv from "dotenv";
-import { handleChatMessage, PeriodicYouTubeMessages } from "../MessageHandling";
+import {
+  handleChatMessage,
+  PeriodicYouTubeMessages,
+  sendChatMessage,
+  Wingbot953Message,
+} from "../MessageHandling";
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage";
 import * as fs from "fs";
 import open from "open";
@@ -164,15 +169,8 @@ export class YouTubeManager {
     // Start monitoring for livestreams
     await this.youTubeApiPolling();
 
-    // Clear any existing polling interval
-    if (this.youTubeApiPollingInterval) {
-      clearInterval(this.youTubeApiPollingInterval);
-    }
-
-    this.youTubeApiPollingInterval = setInterval(
-      () => this.youTubeApiPolling(),
-      120000
-    ); // 120secs
+    // Only start polling interval if not already connected to a livestream
+    this.startApiPollingIfNeeded();
   }
 
   /**
@@ -451,11 +449,42 @@ export class YouTubeManager {
   }
 
   /**
+   * Start API polling interval only if not connected to a livestream
+   * @private
+   */
+  private startApiPollingIfNeeded(): void {
+    // Clear any existing polling interval
+    if (this.youTubeApiPollingInterval) {
+      clearInterval(this.youTubeApiPollingInterval);
+      this.youTubeApiPollingInterval = undefined;
+    }
+
+    // Only start polling if not connected to a livestream
+    if (!this.isMonitoring) {
+      this.youTubeApiPollingInterval = setInterval(
+        () => this.youTubeApiPolling(),
+        120000
+      ); // 120secs
+      console.log("Started YouTube API polling interval");
+    } else {
+      console.log(
+        "Skipping YouTube API polling - already monitoring livestream"
+      );
+    }
+  }
+
+  /**
    * Polls the YouTube API for active livestreams and connects when found
    * @private
    */
   private async youTubeApiPolling(): Promise<void> {
     try {
+      // Skip polling if already monitoring a livestream
+      if (this.isMonitoring) {
+        console.log("Skipping API polling - already monitoring livestream");
+        return;
+      }
+
       if (!this.isMonitoring) {
         // Search for the channel using the handle as a query
         if (!this.youtubeClient) {
@@ -493,16 +522,12 @@ export class YouTubeManager {
           return;
         }
 
-        // Connect to YouTube livestream
-        const connected = await this.connectToYouTubeLivestream(
+        // Connect to YouTube livestream and start monitoring
+        const connected = await this.connectAndStartMonitoring(
           streamInfo.videoId
         );
 
-        if (connected) {
-          console.log("Connected to YouTube livestream");
-          // Start monitoring chat
-          await this.startMonitoring();
-        } else {
+        if (!connected) {
           console.error(`Failed to connect to YouTube Livestream`);
           // Don't exit the entire process - just log error and continue polling
           console.log("Will retry on next polling interval");
@@ -628,12 +653,12 @@ export class YouTubeManager {
   }
 
   /**
-   * Connect to a YouTube livestream by video ID
+   * Connect to a YouTube livestream and start monitoring chat
    * @private
    * @param videoId The YouTube video ID of the livestream
-   * @returns Promise that resolves to true if connection successful
+   * @returns Promise that resolves to true if connection and monitoring started successfully
    */
-  private async connectToYouTubeLivestream(videoId: string): Promise<boolean> {
+  private async connectAndStartMonitoring(videoId: string): Promise<boolean> {
     try {
       if (!this.youtubeClient) {
         console.error("YouTube client not initialised");
@@ -665,27 +690,50 @@ export class YouTubeManager {
         return false;
       }
 
+      // Set connection state
       this.activeLivestream = videoId;
       this.liveChatId = video.liveStreamingDetails.activeLiveChatId;
+      this.isMonitoring = true;
+      this.nextPageToken = undefined;
+
       console.log(`Connected to YouTube livestream: ${video.snippet?.title}`);
       console.log(`Live chat ID: ${this.liveChatId}`);
 
-      // const anyVideo = video as any
-      // let gameName = ""
-      // // Check if video has gameInfo property
-      // if ("gameInfo" in anyVideo) {
-      //     if ("gameId" in anyVideo.gameInfo) {
-      //         console.log(
-      //             `YouTube Stream Game Title: ${anyVideo.gameInfo.gameTitle}`
-      //         )
-      //         gameName = anyVideo.gameInfo.gameTitle
-      //     }
-      // }
+      // Stop API polling since we're now connected to a livestream
+      if (this.youTubeApiPollingInterval) {
+        clearInterval(this.youTubeApiPollingInterval);
+        this.youTubeApiPollingInterval = undefined;
+        console.log("Stopped YouTube API polling - connected to livestream");
+      }
 
+      // Start chat monitoring
+      await this.pollLiveChatMessages();
+      this.setChatPollingInterval();
+
+      // Start periodic messages
+      if (this.periodicMessagesInterval) {
+        clearInterval(this.periodicMessagesInterval);
+      }
+      this.periodicMessagesInterval = setInterval(
+        PeriodicYouTubeMessages,
+        3300000
+      ); // 55mins
+
+      // Send Discord notification
       YoutubeLivestreamAlert(
         video.snippet?.title || "Livestream",
         "",
         `https://www.youtube.com/watch?v=${videoId}`
+      );
+
+      let startStreamMessage: UnifiedChatMessage =
+        structuredClone(Wingbot953Message);
+      startStreamMessage.platform = "youtube";
+      startStreamMessage.message.text = `Good luck and have fun Streamer!`;
+      sendChatMessage(startStreamMessage);
+
+      console.log(
+        `Started monitoring YouTube chat with ${this.pollingInterval_ms}ms polling interval`
       );
 
       return true;
@@ -693,45 +741,6 @@ export class YouTubeManager {
       console.error("Error connecting to YouTube livestream:", error);
       return false;
     }
-  }
-
-  /**
-   * Start monitoring YouTube livestream chat
-   * @private
-   */
-  private async startMonitoring(): Promise<void> {
-    console.log("Starting YouTube chat monitoring");
-
-    if (!this.liveChatId) {
-      console.error("No active livestream to monitor");
-      return;
-    }
-
-    if (this.isMonitoring) {
-      console.log("Already monitoring chat");
-      return;
-    }
-
-    this.isMonitoring = true;
-    this.nextPageToken = undefined;
-
-    // Initial poll to get the first page token
-    await this.pollLiveChatMessages();
-
-    this.setChatPollingInterval();
-
-    // Clear any existing periodic messages interval
-    if (this.periodicMessagesInterval) {
-      clearInterval(this.periodicMessagesInterval);
-    }
-    this.periodicMessagesInterval = setInterval(
-      PeriodicYouTubeMessages,
-      3300000
-    ); // 55mins
-
-    console.log(
-      `Started monitoring YouTube chat with ${this.pollingInterval_ms}ms polling interval`
-    );
   }
 
   /**
@@ -770,6 +779,9 @@ export class YouTubeManager {
     this.liveChatId = undefined;
     this.nextPageToken = undefined;
     console.log("Stopped monitoring YouTube chat");
+
+    // Restart API polling to look for new livestreams
+    this.startApiPollingIfNeeded();
   }
 
   /**
