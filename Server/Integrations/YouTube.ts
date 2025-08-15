@@ -492,22 +492,30 @@ export class YouTubeManager {
           return;
         }
 
-        const searchResponse = await this.youtubeClient.search.list({
-          q: this.channelHandle,
-          type: ["channel"],
-          part: ["id", "snippet"],
-          maxResults: 1,
-        });
-
-        if (searchResponse.data.items && searchResponse.data.items.length > 0) {
-          this.channelId = searchResponse.data.items[0].id?.channelId || null;
-        }
-
         if (!this.channelId) {
-          console.error(
-            `Channel ID not found for handle: ${this.channelHandle}`
-          );
-          return;
+          const searchResponse = await this.youtubeClient.search.list({
+            q: this.channelHandle,
+            type: ["channel"],
+            part: ["id", "snippet"],
+            maxResults: 1,
+          });
+
+          if (
+            searchResponse.data.items &&
+            searchResponse.data.items.length > 0
+          ) {
+            this.channelId = searchResponse.data.items[0].id?.channelId || null;
+            console.log(
+              `Found channel ID for handle ${this.channelHandle}: ${this.channelId}`
+            );
+          }
+
+          if (!this.channelId) {
+            console.error(
+              `Channel ID not found for handle: ${this.channelHandle}`
+            );
+            return;
+          }
         }
 
         const streamInfo = await this.getCurrentLivestream(this.channelId);
@@ -560,28 +568,7 @@ export class YouTubeManager {
         throw new Error("YouTube client not initialised");
       }
 
-      // Method 1: Search for live videos from the channel
-      const searchResponse = await this.youtubeClient.search.list({
-        channelId: channelId,
-        eventType: "live",
-        type: ["video"],
-        part: ["id", "snippet"],
-        maxResults: 1,
-      });
-
-      if (searchResponse.data.items && searchResponse.data.items.length > 0) {
-        const videoId = searchResponse.data.items[0].id?.videoId || null;
-        const title = searchResponse.data.items[0].snippet?.title || null;
-
-        // If found via search, return with active status
-        return {
-          videoId,
-          title,
-          status: "active",
-        };
-      }
-
-      // Method 2: Get all broadcasts for the channel to check for scheduled or recently ended streams
+      // Use Live Broadcasts API only (1 quota unit vs 100 for search API)
       const broadcastsResponse = await this.youtubeClient.liveBroadcasts.list({
         broadcastStatus: "all", // Check active, completed, and upcoming
         part: ["id", "snippet", "status"],
@@ -732,9 +719,7 @@ export class YouTubeManager {
       startStreamMessage.message.text = `Good luck and have fun Streamer!`;
       sendChatMessage(startStreamMessage);
 
-      console.log(
-        `Started monitoring YouTube chat with ${this.pollingInterval_ms}ms polling interval`
-      );
+      console.log(`Started monitoring YouTube chat.`);
 
       return true;
     } catch (error) {
@@ -747,9 +732,8 @@ export class YouTubeManager {
    * Set the chat polling interval
    * @param interval_ms Polling interval in milliseconds (defaults to current setting)
    */
-  public setChatPollingInterval(
-    interval_ms: number = this.pollingInterval_ms
-  ): void {
+  public setChatPollingInterval(interval_ms: number = 30000): void {
+    this.pollingInterval_ms = interval_ms;
     // Set up interval to poll for new messages
     if (this.youTubeChatPollingInterval) {
       clearInterval(this.youTubeChatPollingInterval);
@@ -804,17 +788,23 @@ export class YouTubeManager {
       });
 
       const { data } = response;
+      let recommendedPollingInterval: number | null | undefined =
+        data.pollingIntervalMillis;
 
-      // Update polling interval if suggested by the API
+      // Update polling interval if
+      // - suggested by the API (range of 5 - 30secs)
+      // - interval isn't set to custom value below 5secs (e.g during quiz)
+      // - recommended interval is significantly different from current setting
       if (
-        data.pollingIntervalMillis &&
-        data.pollingIntervalMillis !== this.pollingInterval_ms
+        recommendedPollingInterval &&
+        this.pollingInterval_ms > 5000 &&
+        recommendedPollingInterval > this.pollingInterval_ms + 2000 &&
+        recommendedPollingInterval < this.pollingInterval_ms - 2000
       ) {
         console.log(
-          `Updating polling interval to ${data.pollingIntervalMillis}ms (suggested by API)`
+          `Updating polling interval to ${recommendedPollingInterval}ms (suggested by API)`
         );
-        this.pollingInterval_ms = data.pollingIntervalMillis;
-        this.setChatPollingInterval(this.pollingInterval_ms);
+        this.setChatPollingInterval(recommendedPollingInterval);
       }
 
       // Save the next page token for subsequent requests
