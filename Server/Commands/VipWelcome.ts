@@ -50,6 +50,7 @@ export async function CheckForWelcomeMessage(msg: UnifiedChatMessage) {
     if (
       (!welcomeMessages[i].Arrived &&
         welcomeMessages[i].Platform === msg.platform &&
+        welcomeMessages[i].UserId !== undefined &&
         welcomeMessages[i].UserId === msg.author.id) ||
       (!welcomeMessages[i].Arrived &&
         welcomeMessages[i].Platform === msg.platform &&
@@ -57,10 +58,10 @@ export async function CheckForWelcomeMessage(msg: UnifiedChatMessage) {
           return element.toLowerCase() === msg.author.displayName.toLowerCase();
         }) >= 0)
     ) {
-      console.log(
-        `Welcome message found for ${msg.author.displayName} (${msg.author.id}) on ${msg.platform}.`,
-        `\nFULL MESSAGE: ${JSON.stringify(msg)}`
-      );
+      // console.log(
+      //   `Welcome message found for ${msg.author.displayName} (${msg.author.id}) on ${msg.platform}.`,
+      //   `\nFULL MESSAGE: ${JSON.stringify(msg)}`
+      // );
 
       var greetingIndex = Between(0, welcomeMessages[i].Message.length - 1);
 

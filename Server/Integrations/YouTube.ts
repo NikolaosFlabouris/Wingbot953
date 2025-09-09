@@ -11,6 +11,7 @@ import * as fs from "fs";
 import open from "open";
 import * as http from "node:http";
 import { YoutubeLivestreamAlert } from "./Discord";
+import { EventBus, EventTypes } from "./EventBus";
 
 // Load environment variables
 dotenv.config();
@@ -81,11 +82,21 @@ export class YouTubeManager {
   private pollingInterval_ms: number = 30000; // 30 seconds
   private isTestMode: boolean = false;
 
+  // Event bus for inter-manager communication
+  private eventBus: EventBus;
+
+  // Twitch stream state tracking
+  private isTwitchLive: boolean = false;
+
   /**
    * Private constructor to prevent direct instantiation
    * Use getInstance() to get the singleton instance
    */
-  private constructor() {}
+  private constructor() {
+    // Initialize event bus and set up Twitch stream event listeners
+    this.eventBus = EventBus.getInstance();
+    this.setupTwitchEventListeners();
+  }
 
   /**
    * Gets the singleton instance of YouTubeManager
@@ -96,6 +107,37 @@ export class YouTubeManager {
       YouTubeManager.instance = new YouTubeManager();
     }
     return YouTubeManager.instance;
+  }
+
+  /**
+   * Sets up event listeners for Twitch stream state changes
+   * YouTube will only poll for active livestreams when Twitch is live
+   * @private
+   */
+  private setupTwitchEventListeners(): void {
+    // Listen for Twitch stream started events
+    this.eventBus.on(EventTypes.TWITCH_STREAM_STARTED, () => {
+      console.log("YouTube: Received Twitch stream started event");
+      this.isTwitchLive = true;
+
+      // Start YouTube API polling now that Twitch is live
+      if (!this.isMonitoring) {
+        this.startApiPollingIfNeeded();
+      }
+    });
+
+    // Listen for Twitch stream ended events
+    this.eventBus.on(EventTypes.TWITCH_STREAM_ENDED, () => {
+      console.log("YouTube: Received Twitch stream ended event");
+      this.isTwitchLive = false;
+
+      // Stop YouTube API polling since Twitch is no longer live
+      if (this.youTubeApiPollingInterval) {
+        clearInterval(this.youTubeApiPollingInterval);
+        this.youTubeApiPollingInterval = undefined;
+        console.log("YouTube: Stopped API polling - Twitch stream ended");
+      }
+    });
   }
 
   /**
@@ -166,10 +208,10 @@ export class YouTubeManager {
       throw error;
     }
 
-    // Start monitoring for livestreams
+    // Initial check for livestreams
     await this.youTubeApiPolling();
 
-    // Only start polling interval if not already connected to a livestream
+    // Only start polling interval if not already connected to a livestream and Twitch is live
     this.startApiPollingIfNeeded();
   }
 
@@ -449,7 +491,8 @@ export class YouTubeManager {
   }
 
   /**
-   * Start API polling interval only if not connected to a livestream
+   * Start API polling interval only if not connected to a livestream and Twitch is live
+   * YouTube will only search for active streams when Twitch stream is also active
    * @private
    */
   private startApiPollingIfNeeded(): void {
@@ -459,29 +502,42 @@ export class YouTubeManager {
       this.youTubeApiPollingInterval = undefined;
     }
 
-    // Only start polling if not connected to a livestream
-    if (!this.isMonitoring) {
+    // Only start polling if not monitoring a livestream AND Twitch is live
+    if (!this.isMonitoring && this.isTwitchLive) {
       this.youTubeApiPollingInterval = setInterval(
         () => this.youTubeApiPolling(),
         120000
       ); // 120secs
-      console.log("Started YouTube API polling interval");
+      console.log("YouTube: Started API polling interval (Twitch is live)");
+    } else if (!this.isMonitoring && !this.isTwitchLive) {
+      console.log("YouTube: Skipping API polling - Twitch stream is not live");
     } else {
       console.log(
-        "Skipping YouTube API polling - already monitoring livestream"
+        "YouTube: Skipping API polling - already monitoring livestream"
       );
     }
   }
 
   /**
    * Polls the YouTube API for active livestreams and connects when found
+   * Only polls when Twitch stream is active to reduce unnecessary API calls
    * @private
    */
   private async youTubeApiPolling(): Promise<void> {
     try {
       // Skip polling if already monitoring a livestream
       if (this.isMonitoring) {
-        console.log("Skipping API polling - already monitoring livestream");
+        console.log(
+          "YouTube: Skipping API polling - already monitoring livestream"
+        );
+        return;
+      }
+
+      // Skip polling if Twitch is not live (unless this is the initial check during setup)
+      if (!this.isTwitchLive && this.youTubeApiPollingInterval) {
+        console.log(
+          "YouTube: Skipping API polling - Twitch stream is not live"
+        );
         return;
       }
 
@@ -526,7 +582,7 @@ export class YouTubeManager {
           streamInfo.status === null ||
           streamInfo.status !== "active"
         ) {
-          console.log("No active livestream found");
+          console.log("YouTube: No active livestream found");
           return;
         }
 
@@ -543,14 +599,14 @@ export class YouTubeManager {
       }
     } catch (error: any) {
       console.log(
-        "CATCH: Failed to reach YouTube API. Trying to refresh token."
+        "YouTube: CATCH: Failed to reach YouTube API. Trying to refresh token."
       );
-      console.error("API Polling Error:", error.message);
+      console.error("YouTube API Polling Error:", error.message);
 
       try {
         await this.refreshToken();
       } catch (refreshError: any) {
-        console.error("Token refresh failed:", refreshError.message);
+        console.error("YouTube token refresh failed:", refreshError.message);
         this.isAuthenticated = false;
       }
     }
@@ -568,58 +624,28 @@ export class YouTubeManager {
         throw new Error("YouTube client not initialised");
       }
 
-      // Use Live Broadcasts API only (1 quota unit vs 100 for search API)
-      const broadcastsResponse = await this.youtubeClient.liveBroadcasts.list({
-        broadcastStatus: "all", // Check active, completed, and upcoming
-        part: ["id", "snippet", "status"],
-        maxResults: 10,
+      // Use Search API to find live videos for the specific channel (100 quota units)
+      // This is necessary because liveBroadcasts.list only works for authenticated user's own broadcasts
+      const searchResponse = await this.youtubeClient.search.list({
+        channelId: channelId,
+        eventType: "live", // Only live broadcasts
+        type: ["video"],
+        part: ["id", "snippet"],
+        maxResults: 5,
+        order: "date",
       });
 
       if (
-        broadcastsResponse.data.items &&
-        broadcastsResponse.data.items.length > 0
+        searchResponse.data.items &&
+        searchResponse.data.items.length > 0
       ) {
-        // First, check for any active streams
-        const activeBroadcast = broadcastsResponse.data.items.find(
-          (item) => item.status?.lifeCycleStatus === "live"
-        );
-
-        if (activeBroadcast) {
-          return {
-            videoId: activeBroadcast.id || null,
-            title: activeBroadcast.snippet?.title || null,
-            status: "active",
-          };
-        }
-
-        // Next, check for upcoming streams
-        const upcomingBroadcast = broadcastsResponse.data.items.find(
-          (item) =>
-            item.status?.lifeCycleStatus === "ready" ||
-            item.status?.lifeCycleStatus === "testStarting" ||
-            item.status?.lifeCycleStatus === "testing"
-        );
-
-        if (upcomingBroadcast) {
-          return {
-            videoId: upcomingBroadcast.id || null,
-            title: upcomingBroadcast.snippet?.title || null,
-            status: "upcoming",
-          };
-        }
-
-        // Finally, return the most recently completed stream
-        const recentBroadcast = broadcastsResponse.data.items.find(
-          (item) => item.status?.lifeCycleStatus === "complete"
-        );
-
-        if (recentBroadcast) {
-          return {
-            videoId: recentBroadcast.id || null,
-            title: recentBroadcast.snippet?.title || null,
-            status: "completed",
-          };
-        }
+        // Found live broadcasts - return the first one (most recent)
+        const liveVideo = searchResponse.data.items[0];
+        return {
+          videoId: liveVideo.id?.videoId || null,
+          title: liveVideo.snippet?.title || null,
+          status: "active",
+        };
       }
 
       // No livestreams found
@@ -762,9 +788,9 @@ export class YouTubeManager {
     this.isMonitoring = false;
     this.liveChatId = undefined;
     this.nextPageToken = undefined;
-    console.log("Stopped monitoring YouTube chat");
+    console.log("YouTube: Stopped monitoring chat");
 
-    // Restart API polling to look for new livestreams
+    // Restart API polling to look for new livestreams (only if Twitch is still live)
     this.startApiPollingIfNeeded();
   }
 

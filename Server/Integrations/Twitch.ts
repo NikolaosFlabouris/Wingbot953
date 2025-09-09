@@ -34,6 +34,7 @@ import {
 import { QuizManager } from "../Commands/Quiz";
 import { EmoteInfo, UnifiedChatMessage } from "../../Common/UnifiedChatMessage";
 import { BadgeCache } from "./TwitchBadgeCache";
+import { EventBus, EventTypes } from "./EventBus";
 
 /**
  * Twitch OAuth scopes required for the application
@@ -159,11 +160,17 @@ export class TwitchManager {
   // Subscriber tracking
   private subscriberFirstMessageReceived: string[] = [];
 
+  // Event bus for inter-manager communication
+  private eventBus: EventBus;
+
   /**
    * Private constructor to prevent direct instantiation
    * Use getInstance() to get the singleton instance
    */
-  private constructor() {}
+  private constructor() {
+    // Initialize event bus for inter-manager communication
+    this.eventBus = EventBus.getInstance();
+  }
 
   /**
    * Gets the singleton instance of TwitchManager
@@ -972,6 +979,9 @@ export class TwitchManager {
         this.isLiveState = false;
         console.log("Streamer went offline!");
 
+        // Emit stream ended event for other managers
+        this.eventBus.safeEmit(EventTypes.TWITCH_STREAM_ENDED);
+
         this.clearIntervals();
         this.resetSubscriberFirstMessageReceived();
 
@@ -987,6 +997,9 @@ export class TwitchManager {
         // Stream started
         this.isLiveState = true;
         console.log("Streamer went live!");
+
+        // Emit stream started event for other managers
+        this.eventBus.safeEmit(EventTypes.TWITCH_STREAM_STARTED);
 
         this.streamName = streamWingman953.title;
         this.streamGame = streamWingman953.gameName;
