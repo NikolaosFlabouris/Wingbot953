@@ -1,4 +1,4 @@
-import https from "https";
+import https from "node:https";
 
 import { CommandNaming } from "../../Data/Naming/CommandNaming";
 import { sendChatMessage, Wingbot953Message } from "../MessageHandling";

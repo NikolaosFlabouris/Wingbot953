@@ -51,6 +51,29 @@
                 overflow-y: scroll; /* Enable vertical scrolling in admin mode */
             }
 
+            /* Non-admin mode - increase content size by 20% */
+            .message-window:not(.admin-mode) .platform-icon {
+                width: 24px;
+                height: 24px;
+            }
+
+            .message-window:not(.admin-mode) .badge-icon {
+                width: 24px;
+                height: 24px;
+            }
+
+            .message-window:not(.admin-mode) .author {
+                font-size: 1.44em;
+            }
+
+            .message-window:not(.admin-mode) .message-text {
+                font-size: 1.56em;
+            }
+
+            .message-window:not(.admin-mode) .inline-emote {
+                height: 36px;
+            }
+
             .message {
                 margin-bottom: 12px;
                 display: flex;
@@ -557,6 +580,55 @@
 
              // Admin Panel Component
             const AdminPanel = ({ onSendMessage }) => {
+                const [youtubeToggleState, setYoutubeToggleState] = useState("auto") // "auto", "force_on", "force_off"
+
+                const handleYoutubeToggle = () => {
+                    let nextState, command, buttonText
+
+                    switch (youtubeToggleState) {
+                        case "auto":
+                            nextState = "force_on"
+                            command = "!youtube_toggle_on"
+                            buttonText = "YT: Force ON"
+                            break
+                        case "force_on":
+                            nextState = "force_off"
+                            command = "!youtube_toggle_off"
+                            buttonText = "YT: Force OFF"
+                            break
+                        case "force_off":
+                            nextState = "auto"
+                            command = "!youtube_toggle_auto"
+                            buttonText = "YT: Auto"
+                            break
+                        default:
+                            nextState = "auto"
+                            command = "!youtube_toggle_auto"
+                            buttonText = "YT: Auto"
+                    }
+
+                    setYoutubeToggleState(nextState)
+                    onSendMessage(command, "system")
+                }
+
+                const getYoutubeButtonText = () => {
+                    switch (youtubeToggleState) {
+                        case "auto": return "YT: Auto"
+                        case "force_on": return "YT: Force ON"
+                        case "force_off": return "YT: Force OFF"
+                        default: return "YT: Auto"
+                    }
+                }
+
+                const getYoutubeButtonColor = () => {
+                    switch (youtubeToggleState) {
+                        case "auto": return "#444444"
+                        case "force_on": return "#008800"
+                        case "force_off": return "#880000"
+                        default: return "#444444"
+                    }
+                }
+
                 return (
                     <div className="admin-panel-container">
                         <button
@@ -582,6 +654,13 @@
                             onClick={() => onSendMessage("!runad 120", "system")}
                         >
                             120sec Ad
+                        </button>
+                        <button
+                            className="admin-ad-button"
+                            style={{ backgroundColor: getYoutubeButtonColor() }}
+                            onClick={handleYoutubeToggle}
+                        >
+                            {getYoutubeButtonText()}
                         </button>
                     </div>
                 )

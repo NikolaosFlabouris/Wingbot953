@@ -1,16 +1,12 @@
-import {
-  isLive,
-  sendTwitchMessage as sendTwitchMessage,
-  SubscriberFirstMessageQuiz,
-} from "./Integrations/Twitch";
-import { CheckForVipWelcome } from "./Commands/VipWelcome";
-import { onQuizHandler, quizActive } from "./Commands/Quiz";
+import { TwitchManager } from "./Integrations/Twitch";
+import { CheckForWelcomeMessage } from "./Commands/VipWelcome";
+import { QuizManager } from "./Commands/Quiz";
 import { Between } from "./Commands/Utils";
 import { commandMap } from "./Commands/GeneralCommands";
 import { quoteMap } from "./Commands/Quotes";
 import functionMap from "./Commands/FunctionCommands";
 import util from "util";
-import { sendYouTubeMessage } from "./Integrations/YouTube";
+import { YouTubeManager } from "./Integrations/YouTube";
 import WebSocket from "ws";
 import { UnifiedChatMessage } from "../Common/UnifiedChatMessage";
 
@@ -86,16 +82,13 @@ export function handleChatMessage(msg: UnifiedChatMessage) {
 
   sendToWebSocketClients(msg);
 
-  if (quizActive) {
-    // Check if the message is an answer to a quiz
-    onQuizHandler(msg);
-  }
+  QuizManager.getInstance().handleMessage(msg);
 
   Converse(msg.author.displayName, msg);
 
-  if (isLive) {
-    CheckForVipWelcome(msg);
-    SubscriberFirstMessageQuiz(msg);
+  if (TwitchManager.getInstance().live) {
+    CheckForWelcomeMessage(msg);
+    TwitchManager.getInstance().subscriberFirstMessageQuiz(msg);
   }
 
   /* COMMAND DICTIONARIES */
@@ -143,11 +136,11 @@ export function sendChatMessage(
     sendToPlatform
   ) {
     // Handle YouTube-specific response logic
-    sendYouTubeMessage(msg.message.text);
+    YouTubeManager.getInstance().sendMessage(msg.message.text);
   }
   if ((msg.platform === "twitch" || msg.platform === "all") && sendToPlatform) {
     // Handle Twitch-specific response logic
-    sendTwitchMessage(msg.message.text);
+    TwitchManager.getInstance().sendMessage(msg.message.text);
   }
 
   if (sendToWebSocket) {
