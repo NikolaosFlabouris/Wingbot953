@@ -88,6 +88,9 @@ export class YouTubeManager {
   // Twitch stream state tracking
   private isTwitchLive: boolean = false;
 
+  // YouTube polling override state
+  private youtubePollingOverride: null | "force_on" | "force_off" = null;
+
   /**
    * Private constructor to prevent direct instantiation
    * Use getInstance() to get the singleton instance
@@ -491,8 +494,7 @@ export class YouTubeManager {
   }
 
   /**
-   * Start API polling interval only if not connected to a livestream and Twitch is live
-   * YouTube will only search for active streams when Twitch stream is also active
+   * Start API polling interval based on override state or Twitch status
    * @private
    */
   private startApiPollingIfNeeded(): void {
@@ -502,15 +504,34 @@ export class YouTubeManager {
       this.youTubeApiPollingInterval = undefined;
     }
 
-    // Only start polling if not monitoring a livestream AND Twitch is live
-    if (!this.isMonitoring && this.isTwitchLive) {
+    // Check if we should start polling based on override or Twitch state
+    let shouldStartPolling = false;
+
+    if (this.youtubePollingOverride === "force_on") {
+      shouldStartPolling = true;
+      console.log("YouTube: Polling forced ON by override");
+    } else if (this.youtubePollingOverride === "force_off") {
+      shouldStartPolling = false;
+      console.log("YouTube: Polling forced OFF by override");
+    } else {
+      // Auto mode - follow Twitch stream status
+      shouldStartPolling = this.isTwitchLive;
+      console.log(
+        `YouTube: Auto mode - Twitch is ${
+          this.isTwitchLive ? "live" : "not live"
+        }`
+      );
+    }
+
+    // Only start polling if not monitoring a livestream AND should start polling
+    if (!this.isMonitoring && shouldStartPolling) {
       this.youTubeApiPollingInterval = setInterval(
         () => this.youTubeApiPolling(),
         120000
       ); // 120secs
-      console.log("YouTube: Started API polling interval (Twitch is live)");
-    } else if (!this.isMonitoring && !this.isTwitchLive) {
-      console.log("YouTube: Skipping API polling - Twitch stream is not live");
+      console.log("YouTube: Started API polling interval");
+    } else if (!this.isMonitoring && !shouldStartPolling) {
+      console.log("YouTube: Skipping API polling - conditions not met");
     } else {
       console.log(
         "YouTube: Skipping API polling - already monitoring livestream"
@@ -533,11 +554,26 @@ export class YouTubeManager {
         return;
       }
 
-      // Skip polling if Twitch is not live (unless this is the initial check during setup)
-      if (!this.isTwitchLive && this.youTubeApiPollingInterval) {
-        console.log(
-          "YouTube: Skipping API polling - Twitch stream is not live"
-        );
+      // Check if we should skip polling based on override or Twitch state
+      let shouldSkipPolling = false;
+
+      if (this.youtubePollingOverride === "force_off") {
+        shouldSkipPolling = true;
+        console.log("YouTube: Skipping API polling - forced OFF by override");
+      } else if (this.youtubePollingOverride === "force_on") {
+        shouldSkipPolling = false;
+        // Continue with polling regardless of Twitch state
+      } else {
+        // Auto mode - skip if Twitch is not live (unless this is the initial check during setup)
+        if (!this.isTwitchLive && this.youTubeApiPollingInterval) {
+          shouldSkipPolling = true;
+          console.log(
+            "YouTube: Skipping API polling - Twitch stream is not live (auto mode)"
+          );
+        }
+      }
+
+      if (shouldSkipPolling) {
         return;
       }
 
@@ -635,10 +671,7 @@ export class YouTubeManager {
         order: "date",
       });
 
-      if (
-        searchResponse.data.items &&
-        searchResponse.data.items.length > 0
-      ) {
+      if (searchResponse.data.items && searchResponse.data.items.length > 0) {
         // Found live broadcasts - return the first one (most recent)
         const liveVideo = searchResponse.data.items[0];
         return {
@@ -906,6 +939,38 @@ export class YouTubeManager {
 
     // Pass the message to the handler
     handleChatMessage(unifiedMessage);
+  }
+
+  /**
+   * Set the YouTube polling override mode
+   * @param mode Override mode: 'force_on', 'force_off', or null for auto mode
+   */
+  public setPollingOverride(mode: null | "force_on" | "force_off"): void {
+    const oldMode = this.youtubePollingOverride;
+    this.youtubePollingOverride = mode;
+
+    console.log(`YouTube: Polling override changed from ${oldMode} to ${mode}`);
+
+    // Restart polling logic with new override
+    this.startApiPollingIfNeeded();
+  }
+
+  /**
+   * Get the current YouTube polling status
+   * @returns Object with override mode and current polling state
+   */
+  public getPollingStatus(): {
+    overrideMode: null | "force_on" | "force_off";
+    isPolling: boolean;
+    isMonitoring: boolean;
+    isTwitchLive: boolean;
+  } {
+    return {
+      overrideMode: this.youtubePollingOverride,
+      isPolling: !!this.youTubeApiPollingInterval,
+      isMonitoring: this.isMonitoring,
+      isTwitchLive: this.isTwitchLive,
+    };
   }
 
   /**

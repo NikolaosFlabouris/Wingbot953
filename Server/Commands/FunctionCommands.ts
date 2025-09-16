@@ -25,6 +25,7 @@ import { sendChatMessage, Wingbot953Message } from "../MessageHandling";
 import { Between } from "./Utils";
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage";
 import { LiveSplitClient } from "../Integrations/LiveSplit";
+import { YouTubeManager } from "../Integrations/YouTube";
 
 const commandsList: Array<string> = ["", ""];
 
@@ -117,6 +118,50 @@ export function HandleRandomNumberGeneration(msg: UnifiedChatMessage) {
     "Usage: Randomly selects a number between the given numbers (inclusive): !random <number> <number>";
   sendChatMessage(randomNumberMessage);
   return;
+}
+
+// YouTube toggle command handlers
+function HandleYouTubeToggleOn(msg: UnifiedChatMessage) {
+  YouTubeManager.getInstance().setPollingOverride('force_on');
+
+  let responseMessage = structuredClone(Wingbot953Message);
+  responseMessage.platform = msg.platform;
+  responseMessage.message.text = "YouTube polling forced ON - will search for streams regardless of Twitch status";
+  sendChatMessage(responseMessage);
+}
+
+function HandleYouTubeToggleOff(msg: UnifiedChatMessage) {
+  YouTubeManager.getInstance().setPollingOverride('force_off');
+
+  let responseMessage = structuredClone(Wingbot953Message);
+  responseMessage.platform = msg.platform;
+  responseMessage.message.text = "YouTube polling forced OFF - will not search for streams";
+  sendChatMessage(responseMessage);
+}
+
+function HandleYouTubeToggleAuto(msg: UnifiedChatMessage) {
+  YouTubeManager.getInstance().setPollingOverride(null);
+
+  let responseMessage = structuredClone(Wingbot953Message);
+  responseMessage.platform = msg.platform;
+  responseMessage.message.text = "YouTube polling set to AUTO - will follow Twitch stream status";
+  sendChatMessage(responseMessage);
+}
+
+function HandleYouTubeStatus(msg: UnifiedChatMessage) {
+  const status = YouTubeManager.getInstance().getPollingStatus();
+
+  let modeText = "AUTO (follows Twitch)";
+  if (status.overrideMode === 'force_on') {
+    modeText = "FORCED ON";
+  } else if (status.overrideMode === 'force_off') {
+    modeText = "FORCED OFF";
+  }
+
+  let responseMessage = structuredClone(Wingbot953Message);
+  responseMessage.platform = msg.platform;
+  responseMessage.message.text = `YouTube Status - Mode: ${modeText}, Polling: ${status.isPolling ? 'YES' : 'NO'}, Monitoring: ${status.isMonitoring ? 'YES' : 'NO'}, Twitch Live: ${status.isTwitchLive ? 'YES' : 'NO'}`;
+  sendChatMessage(responseMessage);
 }
 
 const functionMap = [
@@ -254,6 +299,27 @@ const functionMap = [
     Command: ["!publishleaderboards"],
     Username: ["Wingman953", "Wingbot953"],
     Function: PublishLeaderboards,
+  },
+  // YouTube toggle commands
+  {
+    Command: ["!youtube_toggle_on"],
+    Username: ["Wingman953", "Wingbot953"],
+    Function: HandleYouTubeToggleOn,
+  },
+  {
+    Command: ["!youtube_toggle_off"],
+    Username: ["Wingman953", "Wingbot953"],
+    Function: HandleYouTubeToggleOff,
+  },
+  {
+    Command: ["!youtube_toggle_auto"],
+    Username: ["Wingman953", "Wingbot953"],
+    Function: HandleYouTubeToggleAuto,
+  },
+  {
+    Command: ["!youtube_status", "!ytstatus"],
+    Username: ["Wingman953", "Wingbot953"],
+    Function: HandleYouTubeStatus,
   },
   // {
   //     Command: ["!publishnewleaderboard"],
