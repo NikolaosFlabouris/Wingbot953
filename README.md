@@ -1,50 +1,169 @@
-# Twitch Getting Started with Chatbots & IRC
+# Wingbot953
 
-## Chatbot Overview
+A multi-platform chatbot that connects to Twitch, YouTube, and Discord simultaneously, providing a unified chat experience with quiz functionality, integrations with external services, and a web interface for monitoring.
 
-Twitch offers an Internet Relay Chat (IRC) interface for chat functionality. Chatbots allow you to programmatically interact with a Twitch chat feed using IRC standards; the bot connects to the Twitch IRC network as a client to perform these actions.This guide presents an easy bot example to get you started.
+## Features
 
-### Building the Bot
+### Multi-Platform Integration
+- **Twitch**: Chat integration with subscriber detection and moderation features
+- **YouTube**: Live stream chat monitoring with manual polling controls
+- **Discord**: Community server integration
+- **Unified Chat System**: All platforms use a consistent message handling system
 
-We’ll build a simple chatbot that responds in chat when someone types `!dice`. (This is known as a chatbot command.) When triggered, it randomly generates a number between 1-6. We run the fully-functioning chatbot on this Glitch,  as well as show you how to run locally on our [Developer Docs](https://dev.twitch.tv/docs/irc/).
+### Core Functionality
+- **Quiz System**: Interactive quiz games with leaderboards and VIP status rewards
+- **Spotify Integration**: Music requests and now-playing functionality for streams
+- **LiveSplit Integration**: Real-time speedrun split tracking
+- **HaloRuns API**: Speedrunning leaderboard integration
+- **WebSocket Broadcasting**: Real-time message monitoring for OBS overlays
 
-![example-screenshot](https://i.atzu.studio/6Zt1)
+### Admin Controls
+- **YouTube Polling Override**: Manual control over YouTube stream monitoring (force on/off/auto)
+- **Ad Break Management**: Configurable ad break announcements
+- **VIP Welcome System**: Automated welcome messages for VIP users
+- **Real-time Monitoring**: Web interface for chat monitoring and admin controls
 
+## Architecture
 
+### Project Structure
+```
+Wingbot953/
+├── Build/                    # Compiled JavaScript output
+├── Client/                   # HTML interfaces for OBS overlays
+├── Common/                   # Shared TypeScript interfaces
+├── Data/                     # Configuration and content files
+│   ├── QuizQuestions/        # Quiz questions by game category
+│   ├── QuizLeaderboards/     # Leaderboard data
+│   ├── Tokens/               # Authentication tokens
+│   └── Users/                # User data and VIP lists
+├── Server/                   # Main bot logic
+│   ├── Commands/             # Modular command handlers
+│   └── Integrations/         # Platform-specific handlers
+└── Wingbot953.ts            # Main entry point
+```
 
-### Get Environment Variables
+### Key Components
+- **`Wingbot953.ts`**: Main entry point that initializes all services
+- **`MessageHandling.ts`**: Central hub for processing chat messages
+- **Integration Managers**: Singleton pattern for Twitch, YouTube, Discord, Spotify
+- **Command System**: Modular command handlers with dictionary pattern
+- **EventBus**: Centralized event communication between services
 
-To start, you’ll need three environment variables:
- 
-| Variable       	| Description                                                                                                                                                                                                                                                                               	| 
-|----------------	|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
-| `BOT_USERNAME` 	| The account (username) that the chatbot uses to send chat messages. This can be your Twitch account. Alternately, many developers choose to create a second Twitch account for their bot, so it's clear from whom the messages originate.                                                 	|
-| `CHANNEL_NAME` 	| The Twitch channel name where you want to run the bot. Usually this is your main Twitch account.                                                                                                                                                                                          	|
-| `OAUTH_TOKEN`  	| The token to authenticate your chatbot with Twitch's servers. Generate this with [https://twitchapps.com/tmi/](https://twitchapps.com/tmi/) (a Twitch community-driven wrapper around the Twitch API), while logged in to your chatbot account. The token will be an alphanumeric string. 	| 
+## Setup and Installation
 
-### Running the bot
+### Prerequisites
+- Node.js 23.x or higher
+- TypeScript
+- Platform API credentials (see Environment Variables)
 
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/NikolaosFlabouris/Wingbot953.git
+   cd Wingbot953
+   ```
 
-1. To start with this template, click the Remix button in the upper right. 
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-2. Glitch automatically installs Node and Tmi.js for us.
+3. Set up environment variables (see Environment Variables section)
 
-3. Add the three environmental vars in our [`.env`](https://glitch.com/edit/#!/ng-twitch-bot?path=.env:1:0) file.
+4. Compile TypeScript:
+   ```bash
+   npm run compile
+   ```
 
-4. View the code in `bot.js`. 
+5. Start the bot:
+   ```bash
+   npm start
+   ```
 
-5. Your chatbot is ready to run! Glitch automatically deploys & runs each version. View the status button to ensure there are no errors. 
+### Development Commands
+```bash
+npm run compile    # Compile TypeScript to JavaScript
+npm run build      # Same as compile
+npm start          # Run the compiled bot
+npx eslint . --ext .ts    # Run linting
+```
 
-6. Try the chatbot! Interact with your channel (twitch.tv/<CHANNEL_NAME>) by trying  the `!dice` command. 
+## Environment Variables
 
-**Note**: This bot connects to the IRC network as a client and isn't designed to respond over HTTP. If you click "Show Live" you will see a simple "Hello World"
+Create a `.env` file in the root directory with the following variables:
 
+### Required
+| Variable | Description |
+|----------|-------------|
+| `TWITCH_CLIENT_ID` | Twitch application client ID |
+| `TWITCH_CLIENT_SECRET` | Twitch application client secret |
+| `TWITCH_BOT_USERNAME` | Bot account username for Twitch |
+| `TWITCH_CHANNEL_NAME` | Target Twitch channel name |
+| `YOUTUBE_API_KEY` | YouTube Data API v3 key |
+| `YOUTUBE_CHANNEL_ID` | Target YouTube channel ID |
+| `DISCORD_BOT_TOKEN` | Discord bot token |
+| `DISCORD_CHANNEL_ID` | Target Discord channel ID |
 
-## Next Steps
+### Optional
+| Variable | Description |
+|----------|-------------|
+| `SPOTIFY_CLIENT_ID` | Spotify Web API client ID |
+| `SPOTIFY_CLIENT_SECRET` | Spotify Web API client secret |
+| `HALO_RUNS_API_KEY` | HaloRuns API access key |
 
-* For a thorough understanding of Twitch chatbots and IRC, read the [Chatbots & IRC Guide](https://dev.twitch.tv/docs/irc/guide/) and the rest of the Twitch IRC documentation. 
-* To authenticate your chatbot in a production setting, we recommend you [register your app](https://dev.twitch.tv/docs/authentication/#registration) (chatbot) and use the OAuth Authorization code flow. This enables you to authenticate programmatically. To learn more, read the [Apps & Authentication Guide](https://dev.twitch.tv/docs/authentication/).
-Read [Chatbots & IRC documentation](https://dev.twitch.tv/docs/irc/guide/).
-* Reach out to the [Twitch chatbot forum](https://discuss.dev.twitch.tv/c/chat) for help!
+## Usage
 
+### Bot Commands
+- **Quiz Commands**: `!quiz`, `!leaderboard`, `!quizvip`
+- **Random Generation**: `!rng [min] [max]`, `!dice`
+- **YouTube Controls**: `!youtube_toggle_on/off/auto`, `!youtube_status`
+- **Spotify**: `!spotify`, `!song`, `!request [song]`
+- **Speedrun**: `!splits`, `!pb`, `!leaderboard [category]`
 
+### Admin Commands (Bot Owner Only)
+- `!youtube_toggle_on` - Force YouTube polling ON
+- `!youtube_toggle_off` - Force YouTube polling OFF
+- `!youtube_toggle_auto` - Set YouTube polling to auto mode
+- `!youtube_status` - Check YouTube polling status
+- `!publishleaderboard` - Publish quiz leaderboards
+
+### Web Interface
+The bot serves web interfaces on:
+- **Port 8080**: WebSocket server for real-time chat monitoring
+- **Port 3000**: Express server for OAuth callbacks and admin interfaces
+
+Access the unified chat interface at `http://localhost:3000/UnifiedChat.html` for OBS overlays and admin controls.
+
+## Features in Detail
+
+### Quiz System
+- Supports multiple game categories with JSON-based question storage
+- Automatic leaderboard tracking with VIP status rewards
+- Subscriber-only quiz features for Twitch
+- Real-time score updates and announcements
+
+### YouTube Integration
+- Automatic detection of live streams
+- Manual override controls (force on/off/auto modes)
+- Integration with Twitch stream status
+- Real-time chat monitoring and message relay
+
+### Unified Chat System
+All platforms use the `UnifiedChatMessage` interface for consistent processing:
+- Platform-agnostic message handling
+- Consistent command routing
+- Cross-platform user recognition
+- Real-time message broadcasting
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes following the existing code style
+4. Run linting: `npx eslint . --ext .ts`
+5. Test your changes thoroughly
+6. Submit a pull request
+
+## License
+
+This project is private. All rights reserved.
