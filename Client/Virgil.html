@@ -47,22 +47,66 @@
                 )
 
                 useEffect(() => {
-                    const ws = new WebSocket("ws://localhost:8081")
+                    let ws = null
+                    let reconnectTimeout = null
+                    let reconnectAttempts = 0
+                    const reconnectDelay = 5000 // Fixed 5 second delay
+                    let shouldReconnect = true
 
-                    ws.onmessage = (event) => {
-                        const message = event.data.trim().replace(/['"]+/g, "")
-                        console.log("Received message:", message)
-                        if (imageMap[message]) {
-                            console.log("Set Image:", imageMap[message])
-                            setCurrentImage(imageMap[message])
+                    function connect() {
+                        ws = new WebSocket("ws://localhost:8081")
+
+                        ws.onopen = () => {
+                            console.log("WebSocket connected")
+                            reconnectAttempts = 0
+                        }
+
+                        ws.onmessage = (event) => {
+                            const message = event.data.trim().replace(/['"]+/g, "")
+                            console.log("Received message:", message)
+                            if (imageMap[message]) {
+                                console.log("Set Image:", imageMap[message])
+                                setCurrentImage(imageMap[message])
+                            }
+                        }
+
+                        ws.onerror = (error) => {
+                            console.error("WebSocket error:", error)
+                        }
+
+                        ws.onclose = () => {
+                            console.log("WebSocket disconnected")
+                            if (shouldReconnect) {
+                                attemptReconnect()
+                            }
                         }
                     }
 
-                    ws.onerror = (error) => {
-                        console.error("WebSocket error:", error)
+                    function attemptReconnect() {
+                        reconnectAttempts++
+                        console.log(
+                            `Reconnecting in 5s (attempt ${reconnectAttempts})...`
+                        )
+
+                        reconnectTimeout = setTimeout(() => {
+                            console.log("Attempting to reconnect...")
+                            connect()
+                        }, reconnectDelay)
                     }
 
-                    return () => ws.close()
+                    // Initial connection
+                    connect()
+
+                    // Cleanup function
+                    return () => {
+                        shouldReconnect = false
+                        if (reconnectTimeout) {
+                            clearTimeout(reconnectTimeout)
+                        }
+                        if (ws) {
+                            ws.close()
+                        }
+                    }
                 }, [])
 
                 return currentImage

@@ -171,7 +171,7 @@
   {
     "Username": "daxicron",
     "Platform": "twitch",
-    "Score": 144,
+    "Score": 145,
     "UserId": "115184099"
   },
   {
@@ -1114,7 +1114,7 @@
   {
     "Username": "T0YCHEST",
     "Platform": "twitch",
-    "Score": 35
+    "Score": 36
   },
   {
     "Username": "whyyshadow",
@@ -1604,5 +1604,10 @@
     "UserId": "801780582",
     "Platform": "twitch",
     "Score": 2
+  },
+  {
+    "Username": "Egg92",
+    "Platform": "twitch",
+    "Score": 1
   }
 ]
