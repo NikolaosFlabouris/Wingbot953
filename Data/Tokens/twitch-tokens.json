@@ -50,7 +50,7 @@
     "obtainmentTimestamp": 1754718555279
   },
   "streamerTokens": {
-    "accessToken": "lrbdz4u43i89qq47dbvjjglu05ejlr",
+    "accessToken": "dj8zlnzbz5t186z9nx35wnv5t5dgn7",
     "refreshToken": "oja9pe6gq0hqrda5g5wy54n32vvqwiewqocxg60a3ph4cwbzdl",
     "scope": [
       "analytics:read:extensions",
@@ -96,8 +96,8 @@
       "user:read:subscriptions",
       "whispers:edit"
     ],
-    "expiresIn": 14618,
-    "obtainmentTimestamp": 1760761217462
+    "expiresIn": 15503,
+    "obtainmentTimestamp": 1762141068771
   },
-  "lastUpdated": 1760761217462
+  "lastUpdated": 1762141068771
 }

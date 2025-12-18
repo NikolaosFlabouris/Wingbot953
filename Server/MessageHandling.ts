@@ -61,15 +61,15 @@ export function handleChatMessage(msg: UnifiedChatMessage) {
   // console.log(`Received message from ${msg.author.name}: ${msg.message.text}`);
 
   // console.log(
-  //     util.inspect(msg, {
-  //         showHidden: false,
-  //         depth: null,
-  //         colors: true,
-  //     })
-  // )
+  //   util.inspect(msg, {
+  //     showHidden: false,
+  //     depth: null,
+  //     colors: true,
+  //   })
+  // );
 
-  if (msg.author.displayName == "Wingbot953") {
-    // console.log("Message from Wingbot953, ignoring.")
+  if (msg.author.displayName.includes("Wingbot953")) {
+    // console.log(`Message from ${msg.author.displayName}, ignoring.`);
     return;
   } else if (msg.author.displayName == "Admin" && msg.platform == "system") {
     // console.log("Message from Admin.")

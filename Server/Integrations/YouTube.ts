@@ -909,7 +909,7 @@ export class YouTubeManager {
       },
       author: {
         id: authorDetails.channelId || "",
-        name: authorDetails.displayName || "",
+        name: (authorDetails.displayName || "").replace(/^@/, ""),
         displayName: authorDetails.displayName || "",
         isModerator: authorDetails.isChatModerator || false,
         isSubscriber: authorDetails.isChatSponsor || false,
