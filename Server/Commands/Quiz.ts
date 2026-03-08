@@ -848,6 +848,10 @@ export class QuizManager {
   private quizQueue: number = 0;
   /** Flag to prevent concurrent quiz operations */
   private isBlocked: boolean = false;
+  /** Safety timeout handle that auto-resets isBlocked if quiz doesn't complete normally */
+  private blockSafetyTimeout: NodeJS.Timeout | null = null;
+  /** Maximum time in ms that isBlocked can stay true before auto-reset (90 seconds) */
+  private static readonly BLOCK_TIMEOUT_MS: number = 90000;
   /** Timer for checking and processing the quiz queue */
   private queueCheckInterval: NodeJS.Timeout | null = null;
 
@@ -944,13 +948,68 @@ export class QuizManager {
       await this.startQuiz(isFirstToAnswer);
     } catch (error) {
       console.error(`Failed to start quiz: ${String(error)}`);
-      this.isBlocked = false;
+      this.clearBlocked();
+    }
+  }
+
+  /**
+   * Sets the isBlocked flag and starts a safety timeout that will auto-reset it.
+   * This prevents the quiz system from being permanently blocked if an exception
+   * occurs and the normal reset in the finally block somehow fails.
+   *
+   * @private
+   */
+  private setBlocked(): void {
+    this.isBlocked = true;
+    this.clearBlockSafetyTimeout();
+    this.blockSafetyTimeout = setTimeout(() => {
+      if (this.isBlocked) {
+        console.error(
+          "Quiz block safety timeout triggered - auto-resetting isBlocked after " +
+            `${QuizManager.BLOCK_TIMEOUT_MS / 1000}s`
+        );
+        this.isBlocked = false;
+        if (this.activeQuiz) {
+          try {
+            this.activeQuiz.cleanup();
+          } catch (error) {
+            console.error(
+              `Error during safety timeout cleanup: ${String(error)}`
+            );
+          }
+          this.activeQuiz = null;
+        }
+      }
+    }, QuizManager.BLOCK_TIMEOUT_MS);
+  }
+
+  /**
+   * Clears the isBlocked flag and cancels the safety timeout.
+   *
+   * @private
+   */
+  private clearBlocked(): void {
+    this.isBlocked = false;
+    this.clearBlockSafetyTimeout();
+  }
+
+  /**
+   * Clears the block safety timeout if one is active.
+   *
+   * @private
+   */
+  private clearBlockSafetyTimeout(): void {
+    if (this.blockSafetyTimeout) {
+      clearTimeout(this.blockSafetyTimeout);
+      this.blockSafetyTimeout = null;
     }
   }
 
   /**
    * Starts a new quiz with the specified type.
    * Prevents concurrent quiz execution and handles the complete quiz lifecycle.
+   * Uses setBlocked/clearBlocked with a safety timeout to ensure isBlocked is
+   * always reset even if an unexpected error prevents normal cleanup.
    *
    * @param isFirstToAnswer - True for FirstToAnswerQuiz, false for AllCorrectAnswersQuiz. Defaults to random selection.
    * @returns Promise that resolves when the quiz is complete
@@ -963,7 +1022,7 @@ export class QuizManager {
       return;
     }
 
-    this.isBlocked = true;
+    this.setBlocked();
 
     try {
       const questionData = this.questionSelector.selectRandomQuestion();
@@ -990,7 +1049,7 @@ export class QuizManager {
       }
     } finally {
       this.activeQuiz = null;
-      this.isBlocked = false;
+      this.clearBlocked();
     }
   }
 
@@ -1122,6 +1181,8 @@ export class QuizManager {
       this.queueCheckInterval = null;
     }
 
+    this.clearBlockSafetyTimeout();
+
     if (this.activeQuiz) {
       try {
         this.activeQuiz.cleanup();
@@ -1130,6 +1191,8 @@ export class QuizManager {
       }
       this.activeQuiz = null;
     }
+
+    this.isBlocked = false;
   }
 }
 
