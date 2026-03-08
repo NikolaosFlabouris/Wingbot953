@@ -15,10 +15,10 @@ const {
         runAd: vi.fn(),
         enableSlowMode: vi.fn(),
         disableSlowMode: vi.fn(),
-        subscriberFirstMessageQuiz: vi.fn(),
+        subscriberFirstMessageQuiz: vi.fn().mockResolvedValue(undefined),
     },
     mockYouTubeInstance: {
-        sendMessage: vi.fn(),
+        sendMessage: vi.fn().mockResolvedValue(undefined),
         setChatPollingInterval: vi.fn(),
         setPollingOverride: vi.fn(),
         getPollingStatus: vi.fn(() => ({
@@ -28,7 +28,7 @@ const {
             isTwitchLive: false,
         })),
     },
-    mockCheckForWelcomeMessage: vi.fn(),
+    mockCheckForWelcomeMessage: vi.fn().mockResolvedValue(undefined),
     mockQuizHandleMessage: vi.fn(),
 }))
 
