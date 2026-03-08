@@ -3,10 +3,11 @@
 // is blocked from the moment the module loads.
 process.env.DEBUG = "TRUE"
 
-import { handleChatMessage, createWebSocket } from "../MessageHandling"
+import { handleChatMessage, sendChatMessage, createWebSocket } from "../MessageHandling"
 import { GenerateCommandsList } from "../Commands/FunctionCommands"
 import {
     generateSimulatedMessage,
+    generateSimulatedSpecialEvent,
     simulationProfiles,
     SimulationProfile,
 } from "./SimulatedData"
@@ -27,6 +28,7 @@ import * as http from "node:http"
 
 let twitchInterval: NodeJS.Timeout | undefined
 let youtubeInterval: NodeJS.Timeout | undefined
+let specialEventInterval: NodeJS.Timeout | undefined
 
 function startSimulation(profile: SimulationProfile) {
     console.log(`\n=== SIMULATION MODE ===`)
@@ -49,6 +51,17 @@ function startSimulation(profile: SimulationProfile) {
         console.log(`[SIM-YOUTUBE] ${msg.author.displayName}: ${msg.message.text}`)
         handleChatMessage(msg)
     }, profile.intervalMs * 1.5)
+
+    // Generate special events (subs, raids, bans, etc.) at a slower rate
+    specialEventInterval = setInterval(() => {
+        const event = generateSimulatedSpecialEvent()
+        console.log(`[SIM-EVENT] ${event.botMessage.twitchSpecific?.messageType ?? "event"}: ${event.botMessage.message.text}`)
+        sendChatMessage(event.botMessage, true, false)
+        if (event.userMessage) {
+            console.log(`[SIM-EVENT-USER] ${event.userMessage.author.displayName}: ${event.userMessage.message.text}`)
+            handleChatMessage(event.userMessage)
+        }
+    }, profile.intervalMs * 5)
 }
 
 function stopSimulation() {
@@ -59,6 +72,10 @@ function stopSimulation() {
     if (youtubeInterval) {
         clearInterval(youtubeInterval)
         youtubeInterval = undefined
+    }
+    if (specialEventInterval) {
+        clearInterval(specialEventInterval)
+        specialEventInterval = undefined
     }
 }
 
