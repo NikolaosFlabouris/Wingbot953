@@ -128,6 +128,63 @@ export function buildShoutoutReceiveMessage(broadcasterDisplayName: string): str
 }
 
 /**
+ * Builds the community gift subscription (sub bomb) notification message text.
+ */
+export function buildCommunitySubMessage(
+  gifter: string,
+  count: number
+): string {
+  const subWord = count === 1 ? "subscription" : "subscriptions";
+  return `wingma14Blush Thank you ${gifter} for gifting ${count} ${subWord} to the community! wingma14Blush Let's celebrate with a Quiz!`;
+}
+
+/**
+ * Builds the gift-paid-upgrade notification message text.
+ */
+export function buildGiftPaidUpgradeMessage(
+  displayName: string,
+  originalGifter: string
+): string {
+  return `wingma14Blush ${displayName} is continuing their gifted sub from ${originalGifter} with a paid subscription! wingma14Blush`;
+}
+
+/**
+ * Builds the prime-paid-upgrade notification message text.
+ */
+export function buildPrimePaidUpgradeMessage(
+  displayName: string
+): string {
+  return `wingma14Blush ${displayName} has upgraded from Prime to a paid subscription! wingma14Blush`;
+}
+
+/**
+ * Builds the standard pay-forward notification message text.
+ */
+export function buildStandardPayForwardMessage(
+  displayName: string,
+  recipientDisplayName: string,
+  originalGifterDisplayName?: string
+): string {
+  const gifterPart = originalGifterDisplayName
+    ? ` from ${originalGifterDisplayName}`
+    : "";
+  return `wingma14Blush ${displayName} is paying forward their gift sub${gifterPart} to ${recipientDisplayName}! wingma14Blush`;
+}
+
+/**
+ * Builds the community pay-forward notification message text.
+ */
+export function buildCommunityPayForwardMessage(
+  displayName: string,
+  originalGifterDisplayName?: string
+): string {
+  const gifterPart = originalGifterDisplayName
+    ? ` from ${originalGifterDisplayName}`
+    : "";
+  return `wingma14Blush ${displayName} is paying forward their gift sub${gifterPart} to the community! wingma14Blush`;
+}
+
+/**
  * Parses emote position strings ("start-end") into numeric start/end pairs.
  */
 export function parseEmotePosition(

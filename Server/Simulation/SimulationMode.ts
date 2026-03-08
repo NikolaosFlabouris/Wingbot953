@@ -52,11 +52,15 @@ function startSimulation(profile: SimulationProfile) {
         handleChatMessage(msg)
     }, profile.intervalMs * 1.5)
 
-    // Generate special events (follows, hype trains, polls, etc.) at a slower rate
+    // Generate special events (follows, hype trains, polls, subs, raids, bans, etc.) at a slower rate
     specialEventInterval = setInterval(() => {
         const event = generateSimulatedSpecialEvent()
         console.log(`[SIM-EVENT] ${event.botMessage.twitchSpecific?.messageType ?? "event"}: ${event.botMessage.message.text}`)
         sendChatMessage(event.botMessage, true, false)
+        if (event.userMessage) {
+            console.log(`[SIM-EVENT-USER] ${event.userMessage.author.displayName}: ${event.userMessage.message.text}`)
+            handleChatMessage(event.userMessage)
+        }
     }, profile.intervalMs * 5)
 }
 

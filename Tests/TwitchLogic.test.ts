@@ -16,6 +16,11 @@ import {
     buildPredictionBeginMessage,
     buildPredictionEndMessage,
     buildShoutoutReceiveMessage,
+    buildCommunitySubMessage,
+    buildGiftPaidUpgradeMessage,
+    buildPrimePaidUpgradeMessage,
+    buildStandardPayForwardMessage,
+    buildCommunityPayForwardMessage,
     parseEmotePosition,
     extractEmoteName,
     buildEmoteUrl,
@@ -236,5 +241,75 @@ describe("buildShoutoutReceiveMessage", () => {
         const msg = buildShoutoutReceiveMessage("CoolStreamer")
         expect(msg).toContain("CoolStreamer")
         expect(msg).toContain("shoutout")
+    })
+})
+
+describe("buildCommunitySubMessage", () => {
+    it("includes gifter and count", () => {
+        const msg = buildCommunitySubMessage("GenerousUser", 5)
+        expect(msg).toContain("GenerousUser")
+        expect(msg).toContain("5 subscriptions")
+        expect(msg).toContain("Quiz")
+    })
+
+    it("uses singular for 1 subscription", () => {
+        const msg = buildCommunitySubMessage("GenerousUser", 1)
+        expect(msg).toContain("1 subscription")
+        expect(msg).not.toContain("1 subscriptions")
+    })
+
+    it("uses plural for multiple subscriptions", () => {
+        const msg = buildCommunitySubMessage("GenerousUser", 20)
+        expect(msg).toContain("20 subscriptions")
+    })
+})
+
+describe("buildGiftPaidUpgradeMessage", () => {
+    it("includes the upgrader and original gifter", () => {
+        const msg = buildGiftPaidUpgradeMessage("UpgradeUser", "OriginalGifter")
+        expect(msg).toContain("UpgradeUser")
+        expect(msg).toContain("OriginalGifter")
+        expect(msg).toContain("paid subscription")
+    })
+})
+
+describe("buildPrimePaidUpgradeMessage", () => {
+    it("includes the upgrader", () => {
+        const msg = buildPrimePaidUpgradeMessage("PrimeUser")
+        expect(msg).toContain("PrimeUser")
+        expect(msg).toContain("Prime")
+        expect(msg).toContain("paid subscription")
+    })
+})
+
+describe("buildStandardPayForwardMessage", () => {
+    it("includes forwarder, recipient, and original gifter", () => {
+        const msg = buildStandardPayForwardMessage("Forwarder", "Recipient", "OriginalGifter")
+        expect(msg).toContain("Forwarder")
+        expect(msg).toContain("Recipient")
+        expect(msg).toContain("OriginalGifter")
+    })
+
+    it("handles missing original gifter", () => {
+        const msg = buildStandardPayForwardMessage("Forwarder", "Recipient", undefined)
+        expect(msg).toContain("Forwarder")
+        expect(msg).toContain("Recipient")
+        expect(msg).not.toContain("undefined")
+    })
+})
+
+describe("buildCommunityPayForwardMessage", () => {
+    it("includes forwarder and original gifter", () => {
+        const msg = buildCommunityPayForwardMessage("Forwarder", "OriginalGifter")
+        expect(msg).toContain("Forwarder")
+        expect(msg).toContain("OriginalGifter")
+        expect(msg).toContain("community")
+    })
+
+    it("handles missing original gifter", () => {
+        const msg = buildCommunityPayForwardMessage("Forwarder", undefined)
+        expect(msg).toContain("Forwarder")
+        expect(msg).toContain("community")
+        expect(msg).not.toContain("undefined")
     })
 })

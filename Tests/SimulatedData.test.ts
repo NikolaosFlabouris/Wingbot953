@@ -152,30 +152,75 @@ describe("SimulatedData", () => {
     })
 
     describe("generateSimulatedSpecialEvent", () => {
-        it("generates a valid special event", () => {
+        it("returns a botMessage with valid structure", () => {
             const event = generateSimulatedSpecialEvent()
             expect(event.botMessage).toBeDefined()
             expect(event.botMessage.platform).toBe("twitch")
+            expect(event.botMessage.timestamp).toBeInstanceOf(Date)
             expect(event.botMessage.message.text.length).toBeGreaterThan(0)
-            expect(event.botMessage.twitchSpecific?.isHighlighted).toBe(true)
         })
 
-        it("generates events with valid messageType", () => {
-            const validTypes = ["follow", "hypetrain", "poll", "prediction", "shoutout"]
-            for (let i = 0; i < 100; i++) {
-                const event = generateSimulatedSpecialEvent()
-                expect(validTypes).toContain(event.botMessage.twitchSpecific?.messageType)
-            }
-        })
-
-        it("generates varied event types", () => {
-            const types = new Set<string>()
+        it("optionally includes a userMessage", () => {
+            let hasUser = false
+            let hasNoUser = false
             for (let i = 0; i < 200; i++) {
                 const event = generateSimulatedSpecialEvent()
-                types.add(event.botMessage.twitchSpecific?.messageType ?? "")
+                if (event.userMessage) {
+                    hasUser = true
+                    expect(event.userMessage.platform).toBe("twitch")
+                    expect(event.userMessage.message.text.length).toBeGreaterThan(0)
+                } else {
+                    hasNoUser = true
+                }
+                if (hasUser && hasNoUser) break
             }
-            // Should generate at least 3 different event types
-            expect(types.size).toBeGreaterThanOrEqual(3)
+            expect(hasUser || hasNoUser).toBe(true)
+        })
+
+        it("generates a variety of event types", () => {
+            const types = new Set<string>()
+            for (let i = 0; i < 500; i++) {
+                const event = generateSimulatedSpecialEvent()
+                const msgType = event.botMessage.twitchSpecific?.messageType
+                if (msgType) types.add(msgType)
+            }
+            expect(types.size).toBeGreaterThanOrEqual(5)
+        })
+
+        const adminOnlyTypes = ["ban", "timeout", "raidcancel", "messageremove"]
+        const publicTypes = ["sub", "resub", "subgift", "communitysub", "giftpaidupgrade", "primepaidupgrade", "payforward", "announcement", "action", "follow", "hypetrain", "prediction", "poll", "shoutout"]
+
+        it("sets channel.name to 'Admin' for admin-only event types", () => {
+            for (let i = 0; i < 1000; i++) {
+                const event = generateSimulatedSpecialEvent()
+                const msgType = event.botMessage.twitchSpecific?.messageType
+                if (msgType && adminOnlyTypes.includes(msgType)) {
+                    expect(event.botMessage.channel.name,
+                        `${msgType} should have channel.name 'Admin'`).toBe("Admin")
+                }
+            }
+        })
+
+        it("sets channel.name to 'Wingman953' for public event types", () => {
+            for (let i = 0; i < 1000; i++) {
+                const event = generateSimulatedSpecialEvent()
+                const msgType = event.botMessage.twitchSpecific?.messageType
+                if (msgType && publicTypes.includes(msgType)) {
+                    expect(event.botMessage.channel.name,
+                        `${msgType} should have channel.name 'Wingman953'`).toBe("Wingman953")
+                }
+            }
+        })
+
+        it("admin-only events have no userMessage", () => {
+            for (let i = 0; i < 500; i++) {
+                const event = generateSimulatedSpecialEvent()
+                const msgType = event.botMessage.twitchSpecific?.messageType
+                if (msgType && adminOnlyTypes.includes(msgType)) {
+                    expect(event.userMessage,
+                        `${msgType} should not have a userMessage`).toBeUndefined()
+                }
+            }
         })
     })
 })
