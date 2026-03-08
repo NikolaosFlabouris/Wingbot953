@@ -10,6 +10,17 @@ import {
   ChatSubGiftInfo,
   ChatSubInfo,
   UserNotice,
+  ClearChat,
+  ClearMsg,
+  Whisper,
+} from "@twurple/chat";
+import type {
+  ChatCommunitySubInfo,
+  ChatAnnouncementInfo,
+  ChatSubUpgradeInfo,
+  ChatSubGiftUpgradeInfo,
+  ChatStandardPayForwardInfo,
+  ChatCommunityPayForwardInfo,
 } from "@twurple/chat";
 import {
   ApiClient,
@@ -41,6 +52,11 @@ import {
   buildResubMessage,
   buildSubGiftMessage,
   buildRaidMessage,
+  buildCommunitySubMessage,
+  buildGiftPaidUpgradeMessage,
+  buildPrimePaidUpgradeMessage,
+  buildStandardPayForwardMessage,
+  buildCommunityPayForwardMessage,
   parseEmotePosition,
   extractEmoteName,
   buildEmoteUrl,
@@ -933,6 +949,399 @@ export class TwitchManager {
         setTimeout(() => {
           QuizManager.getInstance().queueQuiz();
         }, 5000);
+      }
+    );
+
+    // Community gift sub handler (sub bombs)
+    this.chatClient.onCommunitySub(
+      (
+        channel: string,
+        user: string,
+        subInfo: ChatCommunitySubInfo,
+        msg: UserNotice
+      ) => {
+        console.log(
+          `Community sub bomb from ${subInfo.gifterDisplayName || "Anonymous"}: ${subInfo.count} subs`
+        );
+
+        const communitySubMessage: UnifiedChatMessage =
+          structuredClone(Wingbot953Message);
+        communitySubMessage.message.text = buildCommunitySubMessage(
+          subInfo.gifterDisplayName || subInfo.gifter || "Anonymous",
+          subInfo.count
+        );
+        communitySubMessage.platform = "twitch";
+        communitySubMessage.twitchSpecific = {
+          messageType: "communitysub",
+          isHighlighted: true,
+          giftCount: subInfo.count,
+        };
+
+        void sleep(1000).then(() => {
+          sendChatMessage(communitySubMessage);
+        });
+
+        setTimeout(() => {
+          QuizManager.getInstance().queueQuiz();
+        }, 5000);
+      }
+    );
+
+    // Announcement handler
+    this.chatClient.onAnnouncement(
+      (
+        channel: string,
+        user: string,
+        announcementInfo: ChatAnnouncementInfo,
+        msg: UserNotice
+      ) => {
+        console.log(
+          `Announcement from ${msg.userInfo.displayName}: ${msg.text}`
+        );
+
+        const announcementMessage: UnifiedChatMessage = {
+          id: msg.id,
+          platform: "twitch",
+          timestamp: new Date(),
+          channel: {
+            id: msg.channelId || undefined,
+            name: channel.replace("#", ""),
+          },
+          author: {
+            id: msg.userInfo.userId,
+            colour: msg.userInfo.color || "#FFFFFF",
+            name: user,
+            displayName: msg.userInfo.displayName || user,
+            isModerator: msg.userInfo.isMod || false,
+            isSubscriber: msg.userInfo.isSubscriber || false,
+            isOwner: msg.userInfo.isBroadcaster || false,
+          },
+          message: {
+            text: msg.text || "",
+          },
+          twitchSpecific: {
+            messageType: "announcement",
+            announcementColor: announcementInfo.color,
+            isHighlighted: true,
+          },
+        };
+
+        // Broadcast to WebSocket clients for unified chat display (don't send back to Twitch)
+        sendChatMessage(announcementMessage, true, false);
+      }
+    );
+
+    // Ban handler
+    this.chatClient.onBan(
+      (channel: string, user: string, msg: ClearChat) => {
+        console.log(`User ${user} was banned in ${channel}`);
+
+        const banMessage: UnifiedChatMessage = {
+          platform: "twitch",
+          timestamp: new Date(),
+          channel: {
+            id: msg.channelId || undefined,
+            name: channel.replace("#", ""),
+          },
+          author: {
+            id: msg.targetUserId || undefined,
+            name: user,
+            displayName: user,
+          },
+          message: {
+            text: `${user} has been banned.`,
+          },
+          twitchSpecific: {
+            messageType: "ban",
+          },
+        };
+
+        // Broadcast to WebSocket for moderation monitoring (don't send to chat)
+        sendChatMessage(banMessage, true, false);
+      }
+    );
+
+    // Timeout handler
+    this.chatClient.onTimeout(
+      (channel: string, user: string, duration: number, msg: ClearChat) => {
+        console.log(
+          `User ${user} was timed out for ${duration}s in ${channel}`
+        );
+
+        const timeoutMessage: UnifiedChatMessage = {
+          platform: "twitch",
+          timestamp: new Date(),
+          channel: {
+            id: msg.channelId || undefined,
+            name: channel.replace("#", ""),
+          },
+          author: {
+            id: msg.targetUserId || undefined,
+            name: user,
+            displayName: user,
+          },
+          message: {
+            text: `${user} has been timed out for ${duration} seconds.`,
+          },
+          twitchSpecific: {
+            messageType: "timeout",
+            timeoutDuration: duration,
+          },
+        };
+
+        // Broadcast to WebSocket for moderation monitoring (don't send to chat)
+        sendChatMessage(timeoutMessage, true, false);
+      }
+    );
+
+    // Gift paid upgrade handler (gifted sub converts to paid)
+    this.chatClient.onGiftPaidUpgrade(
+      (
+        channel: string,
+        user: string,
+        subInfo: ChatSubGiftUpgradeInfo,
+        msg: UserNotice
+      ) => {
+        console.log(
+          `${msg.userInfo.displayName} upgraded their gift sub from ${subInfo.gifterDisplayName} to a paid sub`
+        );
+
+        const upgradeMessage: UnifiedChatMessage =
+          structuredClone(Wingbot953Message);
+        upgradeMessage.message.text = buildGiftPaidUpgradeMessage(
+          msg.userInfo.displayName,
+          subInfo.gifterDisplayName
+        );
+        upgradeMessage.platform = "twitch";
+        upgradeMessage.twitchSpecific = {
+          messageType: "giftpaidupgrade",
+          isHighlighted: true,
+          originalGifter: subInfo.gifterDisplayName,
+        };
+
+        void sleep(1000).then(() => {
+          sendChatMessage(upgradeMessage);
+        });
+      }
+    );
+
+    // Prime paid upgrade handler (Prime sub converts to paid)
+    this.chatClient.onPrimePaidUpgrade(
+      (
+        channel: string,
+        user: string,
+        subInfo: ChatSubUpgradeInfo,
+        msg: UserNotice
+      ) => {
+        console.log(
+          `${msg.userInfo.displayName} upgraded from Prime to a paid Tier ${subInfo.plan} sub`
+        );
+
+        const upgradeMessage: UnifiedChatMessage =
+          structuredClone(Wingbot953Message);
+        upgradeMessage.message.text = buildPrimePaidUpgradeMessage(
+          msg.userInfo.displayName
+        );
+        upgradeMessage.platform = "twitch";
+        upgradeMessage.twitchSpecific = {
+          messageType: "primepaidupgrade",
+          isHighlighted: true,
+        };
+
+        void sleep(1000).then(() => {
+          sendChatMessage(upgradeMessage);
+        });
+      }
+    );
+
+    // Whisper handler
+    this.chatClient.onWhisper(
+      (user: string, text: string, msg: Whisper) => {
+        console.log(`Whisper from ${user}: ${text}`);
+
+        const whisperMessage: UnifiedChatMessage = {
+          platform: "twitch",
+          timestamp: new Date(),
+          channel: {
+            name: "whisper",
+          },
+          author: {
+            name: user,
+            displayName: user,
+          },
+          message: {
+            text: text,
+          },
+          twitchSpecific: {
+            messageType: "whisper",
+          },
+        };
+
+        // Broadcast to WebSocket for admin monitoring (don't send to chat)
+        sendChatMessage(whisperMessage, true, false);
+      }
+    );
+
+    // Standard pay forward handler (user pays forward a gift to a specific user)
+    this.chatClient.onStandardPayForward(
+      (
+        channel: string,
+        user: string,
+        forwardInfo: ChatStandardPayForwardInfo,
+        msg: UserNotice
+      ) => {
+        console.log(
+          `${forwardInfo.displayName} is paying forward a gift to ${forwardInfo.recipientDisplayName}`
+        );
+
+        const payForwardMessage: UnifiedChatMessage =
+          structuredClone(Wingbot953Message);
+        payForwardMessage.message.text = buildStandardPayForwardMessage(
+          forwardInfo.displayName,
+          forwardInfo.recipientDisplayName,
+          forwardInfo.originalGifterDisplayName
+        );
+        payForwardMessage.platform = "twitch";
+        payForwardMessage.twitchSpecific = {
+          messageType: "payforward",
+          isHighlighted: true,
+          originalGifter: forwardInfo.originalGifterDisplayName,
+        };
+
+        void sleep(1000).then(() => {
+          sendChatMessage(payForwardMessage);
+        });
+      }
+    );
+
+    // Community pay forward handler (user pays forward a gift to the community)
+    this.chatClient.onCommunityPayForward(
+      (
+        channel: string,
+        user: string,
+        forwardInfo: ChatCommunityPayForwardInfo,
+        msg: UserNotice
+      ) => {
+        console.log(
+          `${forwardInfo.displayName} is paying forward a gift to the community`
+        );
+
+        const payForwardMessage: UnifiedChatMessage =
+          structuredClone(Wingbot953Message);
+        payForwardMessage.message.text = buildCommunityPayForwardMessage(
+          forwardInfo.displayName,
+          forwardInfo.originalGifterDisplayName
+        );
+        payForwardMessage.platform = "twitch";
+        payForwardMessage.twitchSpecific = {
+          messageType: "payforward",
+          isHighlighted: true,
+          originalGifter: forwardInfo.originalGifterDisplayName,
+        };
+
+        void sleep(1000).then(() => {
+          sendChatMessage(payForwardMessage);
+        });
+      }
+    );
+
+    // Action (/me) message handler
+    this.chatClient.onAction(
+      (
+        channel: string,
+        user: string,
+        text: string,
+        msg: ChatMessage
+      ) => {
+        const actionMessage: UnifiedChatMessage = {
+          id: msg.id,
+          platform: "twitch",
+          timestamp: new Date(),
+          channel: {
+            id: msg.channelId || undefined,
+            name: channel.replace("#", ""),
+          },
+          author: {
+            id: msg.userInfo.userId,
+            colour: msg.userInfo.color || "#FFFFFF",
+            name: user,
+            displayName: msg.userInfo.displayName || user,
+            isModerator: msg.userInfo.isMod || false,
+            isSubscriber: msg.userInfo.isSubscriber || false,
+            isOwner: msg.userInfo.isBroadcaster || false,
+          },
+          message: {
+            text: text,
+            emoteMap: this.parseEmotesFromMessage(text, msg),
+          },
+          twitchSpecific: {
+            messageType: "action",
+          },
+        };
+
+        handleChatMessage(actionMessage);
+      }
+    );
+
+    // Raid cancel handler
+    this.chatClient.onRaidCancel(
+      (channel: string, msg: UserNotice) => {
+        console.log(
+          `Raid cancelled in ${channel}`
+        );
+
+        const raidCancelMessage: UnifiedChatMessage = {
+          platform: "twitch",
+          timestamp: new Date(),
+          channel: {
+            name: channel.replace("#", ""),
+          },
+          author: {
+            name: msg.userInfo.userName,
+            displayName: msg.userInfo.displayName,
+          },
+          message: {
+            text: `Raid from ${msg.userInfo.displayName} was cancelled.`,
+          },
+          twitchSpecific: {
+            messageType: "raidcancel",
+          },
+        };
+
+        // Broadcast to WebSocket (don't send to chat)
+        sendChatMessage(raidCancelMessage, true, false);
+      }
+    );
+
+    // Message remove handler (deleted messages)
+    this.chatClient.onMessageRemove(
+      (channel: string, messageId: string, msg: ClearMsg) => {
+        console.log(
+          `Message ${messageId} from ${msg.userName} was deleted in ${channel}`
+        );
+
+        const removeMessage: UnifiedChatMessage = {
+          id: messageId,
+          platform: "twitch",
+          timestamp: new Date(),
+          channel: {
+            id: msg.channelId || undefined,
+            name: channel.replace("#", ""),
+          },
+          author: {
+            name: msg.userName,
+            displayName: msg.userName,
+          },
+          message: {
+            text: msg.text || "",
+          },
+          twitchSpecific: {
+            messageType: "messageremove",
+          },
+        };
+
+        // Broadcast to WebSocket for moderation monitoring (don't send to chat)
+        sendChatMessage(removeMessage, true, false);
       }
     );
   }

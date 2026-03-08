@@ -52,7 +52,11 @@ export interface UnifiedChatMessage {
     returningChatter?: boolean;
     badges?: BadgeIcon[];
     isHighlighted?: boolean;
-    messageType?: "sub" | "resub" | "subgift";
+    messageType?: "sub" | "resub" | "subgift" | "communitysub" | "announcement" | "ban" | "timeout" | "giftpaidupgrade" | "primepaidupgrade" | "whisper" | "payforward" | "action" | "raidcancel" | "messageremove";
+    announcementColor?: string;
+    timeoutDuration?: number;
+    giftCount?: number;
+    originalGifter?: string;
   };
   youtubeSpecific?: {
     isSuperChat?: boolean;
