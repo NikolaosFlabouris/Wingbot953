@@ -83,6 +83,17 @@ The quiz system is a central feature with:
 - **Discord**: Community server integration
 - **Spotify**: Music integration for stream requests
 
+## Task Workflow
+
+Tasks are tracked in `.tasks/` as individual markdown files. Use these slash commands:
+
+- `/implement` — Pick the next TODO task by priority, implement it end-to-end (branch → code → test → commit → PR → automated review)
+- `/implement <number>` — Implement a specific task (e.g., `/implement 06`)
+- `/review-pr` — Run an independent automated code review on the current branch's changes
+- `/review-pr <number>` — Review a specific PR by number
+
+The `gh` CLI on this system is at `/c/Program Files/GitHub CLI/gh.exe`.
+
 ## Development Notes
 
 - The bot uses TypeScript with Node.js 24.x
