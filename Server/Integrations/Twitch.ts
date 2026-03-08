@@ -35,6 +35,16 @@ import { QuizManager } from "../Commands/Quiz";
 import { EmoteInfo, UnifiedChatMessage } from "../../Common/UnifiedChatMessage";
 import { BadgeCache } from "./TwitchBadgeCache";
 import { EventBus, EventTypes } from "./EventBus";
+import {
+  getSubQuizRollThreshold,
+  buildSubMessage,
+  buildResubMessage,
+  buildSubGiftMessage,
+  buildRaidMessage,
+  parseEmotePosition,
+  extractEmoteName,
+  buildEmoteUrl,
+} from "./TwitchLogic";
 
 /**
  * Twitch OAuth scopes required for the application
@@ -90,7 +100,7 @@ const TWITCH_SCOPES = [
 interface TwitchRewardHandler {
   reward: HelixCustomReward;
   lastRedemptionTime: number;
-  handler: (reward: HelixCustomRewardRedemption) => void;
+  handler: (reward: HelixCustomRewardRedemption) => void | Promise<void>;
 }
 
 /**
@@ -234,9 +244,9 @@ export class TwitchManager {
       // Check if we have saved tokens
       if (fs.existsSync(this.tokenPath)) {
         console.log("Loading existing Twitch tokens...");
-        const storedData: StoredTokens = JSON.parse(
+        const storedData = JSON.parse(
           fs.readFileSync(this.tokenPath, "utf-8")
-        );
+        ) as StoredTokens;
 
         if (storedData.botTokens && storedData.streamerTokens) {
           this.botTwitchAccessToken = storedData.botTokens;
@@ -332,7 +342,7 @@ export class TwitchManager {
               console.error("Error during token exchange:", error);
               res.writeHead(500, { "Content-Type": "text/html" });
               res.end(this.generateErrorResponse());
-              reject(error);
+              reject(error instanceof Error ? error : new Error(String(error)));
             }
             return; // We handled this request
           }
@@ -343,7 +353,7 @@ export class TwitchManager {
               try {
                 listener.call(server, req, res);
                 return; // Successfully handled by original listener
-              } catch (err) {
+              } catch {
                 continue; // Continue to next listener if this one fails
               }
             }
@@ -360,13 +370,13 @@ export class TwitchManager {
             res.writeHead(500, { "Content-Type": "text/plain" });
             res.end("Server error");
           }
-          reject(e);
+          reject(e instanceof Error ? e : new Error(String(e)));
         }
       };
 
       // Remove all existing listeners and add our handler
       server.removeAllListeners("request");
-      server.on("request", twitchHandler);
+      server.on("request", (req: http.IncomingMessage, res: http.ServerResponse) => { void twitchHandler(req, res); });
 
       // Start the auth flow by opening bot auth
       open(this.generateAuthUrl(), {
@@ -617,7 +627,7 @@ export class TwitchManager {
       );
 
       // Set up a handler to save tokens when they refresh
-      this.botAuthProvider.onRefresh(async (userId, newTokenData) => {
+      this.botAuthProvider.onRefresh((userId, newTokenData) => {
         try {
           this.botTwitchAccessToken = newTokenData;
           this.saveTokens();
@@ -642,7 +652,7 @@ export class TwitchManager {
       });
 
       // Set up a handler to save tokens when they refresh
-      this.streamerAuthProvider.onRefresh(async (userId, newTokenData) => {
+      this.streamerAuthProvider.onRefresh((userId, newTokenData) => {
         try {
           this.streamerTwitchAccessToken = newTokenData;
           this.saveTokens();
@@ -679,13 +689,13 @@ export class TwitchManager {
       }
 
       await this.setupRewards();
-      await this.setupEventHandlers();
+      this.setupEventHandlers();
 
       // Initialize badge cache
       BadgeCache.initialize(this.apiClient);
 
       // Connect to chat
-      await this.chatClient.connect();
+      this.chatClient.connect();
 
       // Start API polling
       this.startApiPolling();
@@ -760,19 +770,19 @@ export class TwitchManager {
    * Sets up Twitch event handlers for chat, subscriptions, etc.
    * @private
    */
-  private async setupEventHandlers(): Promise<void> {
+  private setupEventHandlers(): void {
     if (!this.chatClient || !this.streamerUser) {
       throw new Error("Chat client or streamer user not initialized");
     }
 
     // Chat message handler
     this.chatClient.onMessage(
-      async (
+      (
         channel: string,
         user: string,
         message: string,
         msg: ChatMessage
-      ) => {
+      ) => { void (async () => {
         const unifiedMessage: UnifiedChatMessage = {
           id: msg.id,
           platform: "twitch",
@@ -807,7 +817,7 @@ export class TwitchManager {
         };
 
         handleChatMessage(unifiedMessage);
-      }
+      })(); }
     );
 
     // Subscription handler
@@ -818,19 +828,14 @@ export class TwitchManager {
         subInfo: ChatSubInfo,
         msg: UserNotice
       ) => {
-        const monthsSubbed =
-          subInfo.months > 1
-            ? `${subInfo.months} months`
-            : `${subInfo.months} month`;
-
-        let subMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
-        subMessage.message.text = `wingma14Blush Thank you @${msg.userInfo.displayName} for subscribing to the channel for ${monthsSubbed}! wingma14Blush Let's celebrate with a Quiz!`;
+        const subMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+        subMessage.message.text = buildSubMessage(msg.userInfo.displayName, subInfo.months);
         subMessage.platform = "twitch";
         subMessage.twitchSpecific = {
           messageType: "sub",
         };
 
-        sleep(1000).then(() => {
+        void sleep(1000).then(() => {
           sendChatMessage(subMessage);
 
           if (subInfo.message) {
@@ -856,19 +861,14 @@ export class TwitchManager {
         subInfo: ChatSubInfo,
         msg: UserNotice
       ) => {
-        const monthsSubbed =
-          subInfo.months > 1
-            ? `${subInfo.months} months`
-            : `${subInfo.months} month`;
-
-        let subMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
-        subMessage.message.text = `wingma14Blush Thank you @${user} for subscribing to the channel for ${monthsSubbed}! wingma14Blush Let's celebrate with a Quiz!`;
+        const subMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+        subMessage.message.text = buildResubMessage(user, subInfo.months);
         subMessage.platform = "twitch";
         subMessage.twitchSpecific = {
           messageType: "resub",
         };
 
-        sleep(1000).then(() => {
+        void sleep(1000).then(() => {
           sendChatMessage(subMessage);
 
           if (subInfo.message) {
@@ -891,18 +891,17 @@ export class TwitchManager {
       (
         channel: string,
         user: string,
-        subInfo: ChatSubGiftInfo,
-        msg: UserNotice
+        subInfo: ChatSubGiftInfo
       ) => {
-        let subGiftMessage: UnifiedChatMessage =
+        const subGiftMessage: UnifiedChatMessage =
           structuredClone(Wingbot953Message);
-        subGiftMessage.message.text = `wingma14Blush Thank you ${subInfo.gifter} for gifting a subscription to ${user}! wingma14Blush Let's celebrate with a Quiz!`;
+        subGiftMessage.message.text = buildSubGiftMessage(subInfo.gifter || "Anonymous", user);
         subGiftMessage.platform = "twitch";
         subGiftMessage.twitchSpecific = {
           messageType: "subgift",
         };
 
-        sleep(1000).then(() => {
+        void sleep(1000).then(() => {
           sendChatMessage(subGiftMessage);
         });
 
@@ -917,23 +916,17 @@ export class TwitchManager {
       (
         channel: string,
         user: string,
-        raidInfo: ChatRaidInfo,
-        msg: UserNotice
+        raidInfo: ChatRaidInfo
       ) => {
-        let viewCount =
-          raidInfo.viewerCount > 1
-            ? `${raidInfo.viewerCount} viewers`
-            : `${raidInfo.viewerCount} viewer`;
-
-        let raidMessage: UnifiedChatMessage =
+        const raidMessage: UnifiedChatMessage =
           structuredClone(Wingbot953Message);
-        raidMessage.message.text = `wingma14Blush Thank you ${raidInfo.displayName} for the raid with ${viewCount}! wingma14Blush Let's celebrate with a Quiz!`;
+        raidMessage.message.text = buildRaidMessage(raidInfo.displayName, raidInfo.viewerCount);
         raidMessage.platform = "twitch";
         raidMessage.twitchSpecific = {
           isHighlighted: true,
         };
 
-        sleep(1000).then(() => {
+        void sleep(1000).then(() => {
           sendChatMessage(raidMessage);
         });
 
@@ -950,11 +943,11 @@ export class TwitchManager {
    */
   private startApiPolling(): void {
     // Start polling immediately
-    this.twitchApiPolling();
+    void this.twitchApiPolling();
 
     // Set up interval for polling
     this.twitchApiPollingInterval = setInterval(() => {
-      this.twitchApiPolling();
+      void this.twitchApiPolling();
     }, 5000); // 5 seconds
   }
 
@@ -973,7 +966,6 @@ export class TwitchManager {
       );
 
       // Check if stream status changed
-      const currentTimestamp = Date.now();
       if (this.isLiveState && streamWingman953?.startDate == null) {
         // Stream ended
         this.isLiveState = false;
@@ -985,7 +977,7 @@ export class TwitchManager {
         this.clearIntervals();
         this.resetSubscriberFirstMessageReceived();
 
-        let endstreamMessage: UnifiedChatMessage =
+        const endstreamMessage: UnifiedChatMessage =
           structuredClone(Wingbot953Message);
         endstreamMessage.platform = "twitch";
         endstreamMessage.message.text = `wingma14Blush Thanks for the stream!`;
@@ -1019,11 +1011,11 @@ export class TwitchManager {
           3300000
         ); // 55mins
         this.streamNameAndGameInterval = setInterval(
-          () => this.pollStreamNameAndGame(),
+          () => void this.pollStreamNameAndGame(),
           60000
         ); // 1min
 
-        let startStreamMessage: UnifiedChatMessage =
+        const startStreamMessage: UnifiedChatMessage =
           structuredClone(Wingbot953Message);
         startStreamMessage.platform = "twitch";
         startStreamMessage.message.text = `wingma14Arrive Good Luck Streamer! wingma14Blush`;
@@ -1047,11 +1039,11 @@ export class TwitchManager {
         ) {
           this.latestRedemptionDate =
             redemptions.data[0].redemptionDate.getTime();
-          reward.handler(redemptions.data[0]);
+          void reward.handler(redemptions.data[0]);
         }
       }
-    } catch (error: any) {
-      console.log(`* ERROR: Twitch API polling failed: ${error.message}`);
+    } catch (error: unknown) {
+      console.log(`* ERROR: Twitch API polling failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -1124,12 +1116,10 @@ export class TwitchManager {
     }
 
     setTimeout(() => {
-      try {
-        if (this.chatClient) {
-          this.chatClient.say(this.channelName, message);
-        }
-      } catch (error: any) {
-        console.log(`* ERROR: Twitch Message FAILED to send: ${error.message}`);
+      if (this.chatClient) {
+        this.chatClient.say(this.channelName, message).catch((error: unknown) => {
+          console.log(`* ERROR: Twitch Message FAILED to send: ${error instanceof Error ? error.message : String(error)}`);
+        });
       }
     }, delay);
   }
@@ -1169,15 +1159,7 @@ export class TwitchManager {
         );
       }
 
-      let rollThreshold = 14; // Tier 1
-
-      if (subTier === "2000") {
-        // Tier 2
-        rollThreshold = 50;
-      } else if (subTier === "3000") {
-        // Tier 3
-        rollThreshold = 100;
-      }
+      const rollThreshold = getSubQuizRollThreshold(subTier);
 
       const roll = Between(0, 99);
 
@@ -1188,7 +1170,7 @@ export class TwitchManager {
 
         await sleep(1000);
 
-        let subQuizTwitchMessage = structuredClone(Wingbot953Message);
+        const subQuizTwitchMessage = structuredClone(Wingbot953Message);
         subQuizTwitchMessage.platform = "twitch";
         subQuizTwitchMessage.message.text = `wingma14Think ${msg.author.displayName}'s sheer presence has started a quiz! wingma14Think`;
 
@@ -1216,7 +1198,7 @@ export class TwitchManager {
         msg.author.id
       );
 
-      let followMessage: UnifiedChatMessage =
+      const followMessage: UnifiedChatMessage =
         structuredClone(Wingbot953Message);
       followMessage.platform = "twitch";
 
@@ -1262,15 +1244,15 @@ export class TwitchManager {
       const channel = await this.apiClient.channels.getChannelInfoById(
         msg.channel.id!
       );
-      const stream = await this.apiClient.streams.getStreamByUserName(
-        channel?.displayName!
-      );
+      const stream = channel?.displayName
+        ? await this.apiClient.streams.getStreamByUserName(channel.displayName)
+        : null;
 
       if (stream) {
         const currentTimestamp = Date.now();
         const streamStartTimestamp = stream.startDate.getTime();
 
-        let uptimeMessage = structuredClone(Wingbot953Message);
+        const uptimeMessage = structuredClone(Wingbot953Message);
         uptimeMessage.message.text = `@${
           msg.author.displayName
         } Stream uptime: ${SecondsToDuration(
@@ -1302,8 +1284,8 @@ export class TwitchManager {
         slowModeDelay: delay_seconds,
       });
       console.log(`* Slow mode enabled for ${delay_seconds} seconds.`);
-    } catch (error: any) {
-      console.log(`* ERROR: Failed to enable slow mode: ${error.message}`);
+    } catch (error: unknown) {
+      console.log(`* ERROR: Failed to enable slow mode: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -1321,8 +1303,8 @@ export class TwitchManager {
         slowModeDelay: 0,
       });
       console.log("* Slow mode disabled.");
-    } catch (error: any) {
-      console.log(`* ERROR: Failed to disable slow mode: ${error.message}`);
+    } catch (error: unknown) {
+      console.log(`* ERROR: Failed to disable slow mode: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -1354,8 +1336,8 @@ export class TwitchManager {
         duration
       );
       QuizManager.getInstance().queueQuiz();
-    } catch (error: any) {
-      console.log(`* ERROR: Failed to start ad break: ${error.message}`);
+    } catch (error: unknown) {
+      console.log(`* ERROR: Failed to start ad break: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -1375,15 +1357,14 @@ export class TwitchManager {
     // Process emotes from the emoteOffsets Map provided by Twurple
     for (const [emoteId, positions] of msg.emoteOffsets.entries()) {
       for (const position of positions) {
-        const [start, end] = position.split("-").map(Number);
-        const emoteName = message.substring(start, end + 1);
+        const { start, end } = parseEmotePosition(position);
 
         emotes.push({
           id: emoteId,
-          name: emoteName,
+          name: extractEmoteName(message, start, end),
           startIndex: start,
           endIndex: end,
-          url: `https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default/dark/1.0`,
+          url: buildEmoteUrl(emoteId),
         });
       }
     }
@@ -1399,7 +1380,7 @@ export class TwitchManager {
    * @private
    * @param reward The reward redemption
    */
-  private handleQuizStartRedemption(reward: HelixCustomRewardRedemption): void {
+  private handleQuizStartRedemption(): void {
     QuizManager.getInstance().queueQuiz();
   }
 
@@ -1408,14 +1389,14 @@ export class TwitchManager {
    * @private
    * @param reward The reward redemption
    */
-  private async handleGDayRedemption(
+  private handleGDayRedemption(
     reward: HelixCustomRewardRedemption
-  ): Promise<void> {
+  ): void {
     if (!this.streamerUser) return;
 
     console.log(`${reward.userDisplayName} redeemed G'Day Streamer!`);
 
-    let gDayMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+    const gDayMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
     gDayMessage.platform = "twitch";
     gDayMessage.author.displayName = reward.userDisplayName;
     gDayMessage.author.id = reward.userId;
@@ -1432,14 +1413,14 @@ export class TwitchManager {
    * @private
    * @param reward The reward redemption
    */
-  private async handleGNightRedemption(
+  private handleGNightRedemption(
     reward: HelixCustomRewardRedemption
-  ): Promise<void> {
+  ): void {
     if (!this.streamerUser) return;
 
     console.log(`${reward.userDisplayName} redeemed G'Night Streamer!`);
 
-    let gNightMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+    const gNightMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
     gNightMessage.platform = "twitch";
     gNightMessage.author.displayName = reward.userDisplayName;
     gNightMessage.author.id = reward.userId;
@@ -1459,31 +1440,31 @@ export class TwitchManager {
   private async handleAddCustomGreetingRedemption(
     reward: HelixCustomRewardRedemption
   ): Promise<void> {
-    let userDisplayName = (await reward.getUser()).displayName;
+    const userDisplayName = (await reward.getUser()).displayName;
     console.log(`${userDisplayName} redeemed Add Custom Greeting!`);
 
-    let customGreetingMessage: UnifiedChatMessage =
+    const customGreetingMessage: UnifiedChatMessage =
       structuredClone(Wingbot953Message);
     customGreetingMessage.platform = "system";
     customGreetingMessage.message.text = `Twitch user ${userDisplayName} added a Custom Greeting!`;
 
     sendChatMessage(customGreetingMessage);
 
-    AddWelcomeMessage(
+    void AddWelcomeMessage(
       userDisplayName,
       reward.userId,
       "twitch",
-      (reward.userInput as string) || ""
+      (reward.userInput) || ""
     );
 
     console.log("Custom Greeting added!");
 
-    let customGreetingResponseMessage: UnifiedChatMessage =
+    const customGreetingResponseMessage: UnifiedChatMessage =
       structuredClone(Wingbot953Message);
     customGreetingResponseMessage.platform = "twitch";
     customGreetingResponseMessage.message.text = `@${userDisplayName}, your custom greeting has been added for future streams!`;
 
-    sleep(1000).then(() => {
+    void sleep(1000).then(() => {
       sendChatMessage(customGreetingResponseMessage, false);
     });
   }

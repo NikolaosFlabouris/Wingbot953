@@ -1,4 +1,4 @@
-import { google, youtube_v3 } from "googleapis";
+import { google, youtube_v3, Auth } from "googleapis";
 import * as dotenv from "dotenv";
 import {
   handleChatMessage,
@@ -12,9 +12,16 @@ import open from "open";
 import * as http from "node:http";
 import { YoutubeLivestreamAlert } from "./Discord";
 import { EventBus, EventTypes } from "./EventBus";
+import {
+  shouldStartPolling as shouldStartPollingLogic,
+  shouldSkipApiPolling as shouldSkipApiPollingLogic,
+  shouldUpdatePollingInterval,
+  microsToAmount,
+  stripAtPrefix,
+} from "./YouTubeLogic";
 
 // Load environment variables
-dotenv.config();
+dotenv.config({ quiet: true });
 
 /**
  * YouTube OAuth scopes required for the application
@@ -60,7 +67,7 @@ export class YouTubeManager {
 
   // Authentication state
   private youtubeClient?: youtube_v3.Youtube;
-  private oAuth2Client?: any;
+  private oAuth2Client?: Auth.OAuth2Client;
   private isAuthenticated: boolean = false;
   private tokenPath: string = "./Data/Tokens/youtube-tokens.json";
 
@@ -150,18 +157,21 @@ export class YouTubeManager {
    */
   public async initialise(
     server: http.Server,
-    testMode: boolean = false
+    testMode: boolean = false,
   ): Promise<void> {
     this.server = server;
     this.isTestMode = testMode;
     if (this.isTestMode) {
+      // Prevent writes to production data files (e.g. QuizLeaderboards.json)
+      process.env.DEBUG = "TRUE";
+
       console.log(
-        "TESTING: Skipping YouTube integration setup, starting test messages..."
+        "TESTING: Skipping YouTube integration setup, starting test messages...",
       );
 
       this.testInterval = setInterval(
         () => this.generateTestYouTubeMessage(),
-        3000
+        3000,
       ); // 3secs
       return;
     }
@@ -172,14 +182,16 @@ export class YouTubeManager {
     this.oAuth2Client = new google.auth.OAuth2(
       process.env.YOUTUBE_CLIENT_ID,
       process.env.YOUTUBE_CLIENT_SECRET,
-      process.env.YOUTUBE_REDIRECT_URI
+      process.env.YOUTUBE_REDIRECT_URI,
     );
 
     try {
       // Check if we have saved tokens
       if (fs.existsSync(this.tokenPath)) {
         console.log("Loading existing tokens...");
-        const tokens = JSON.parse(fs.readFileSync(this.tokenPath, "utf-8"));
+        const tokens = JSON.parse(
+          fs.readFileSync(this.tokenPath, "utf-8"),
+        ) as Auth.Credentials;
 
         // Set credentials
         this.oAuth2Client.setCredentials(tokens);
@@ -196,9 +208,9 @@ export class YouTubeManager {
           });
           console.log("Existing tokens are valid.");
           this.isAuthenticated = true;
-        } catch (e) {
+        } catch {
           console.log(
-            "Existing tokens are invalid. Starting new authentication flow..."
+            "Existing tokens are invalid. Starting new authentication flow...",
           );
           // Continue with new auth flow
           await this.startAuthFlow();
@@ -224,7 +236,7 @@ export class YouTubeManager {
    * @param server The HTTP server instance to handle OAuth callback
    * @returns Promise that resolves when authentication is complete
    */
-  private async startAuthFlow(): Promise<any> {
+  private async startAuthFlow(): Promise<void> {
     return new Promise((resolve, reject) => {
       // Add request listener to the existing server to handle YouTube OAuth callback
       const originalListeners = this.server!.listeners("request");
@@ -232,7 +244,7 @@ export class YouTubeManager {
       // Create our request handler
       const youtubeHandler = async (
         req: http.IncomingMessage,
-        res: http.ServerResponse
+        res: http.ServerResponse,
       ) => {
         try {
           const parsedUrl = new URL(req.url || "/", `http://localhost:3000`);
@@ -251,10 +263,10 @@ export class YouTubeManager {
 
             try {
               // Exchange the authorization code for tokens
-              const { tokens } = await this.oAuth2Client.getToken(code);
+              const { tokens } = await this.oAuth2Client!.getToken(code);
 
               // Set the credentials
-              this.oAuth2Client.setCredentials(tokens);
+              this.oAuth2Client!.setCredentials(tokens);
 
               this.youtubeClient = google.youtube({
                 version: "v3",
@@ -355,7 +367,7 @@ export class YouTubeManager {
                 </html>
               `);
 
-              resolve(tokens);
+              resolve();
             } catch (tokenError) {
               console.error("Error getting tokens:", tokenError);
               res.writeHead(500, { "Content-Type": "text/html" });
@@ -398,7 +410,11 @@ export class YouTubeManager {
                   </body>
                 </html>
               `);
-              reject(tokenError);
+              reject(
+                tokenError instanceof Error
+                  ? tokenError
+                  : new Error(String(tokenError)),
+              );
             }
             return; // We handled this request
           }
@@ -409,7 +425,7 @@ export class YouTubeManager {
               try {
                 listener.call(this.server, req, res);
                 return; // Successfully handled by original listener
-              } catch (err) {
+              } catch {
                 // Continue to next listener if this one fails
                 continue;
               }
@@ -427,16 +443,20 @@ export class YouTubeManager {
             res.writeHead(500, { "Content-Type": "text/plain" });
             res.end("Server error");
           }
-          reject(e);
+          reject(e instanceof Error ? e : new Error(String(e)));
         }
       };
 
       // Remove all existing listeners and add our handler
       this.server!.removeAllListeners("request");
-      this.server!.on("request", youtubeHandler);
+      this.server!.on(
+        "request",
+        (...args: Parameters<typeof youtubeHandler>) =>
+          void youtubeHandler(...args),
+      );
 
       // Generate the auth URL
-      const authUrl = this.oAuth2Client.generateAuthUrl({
+      const authUrl = this.oAuth2Client!.generateAuthUrl({
         access_type: "offline",
         scope: YOUTUBE_SCOPES,
         prompt: "consent", // Force consent screen to ensure refresh token
@@ -445,7 +465,7 @@ export class YouTubeManager {
       console.log("Opening browser to:", authUrl);
 
       // Open the auth URL in the default browser
-      open(authUrl, { app: { name: "chrome" } }).catch((e) => {
+      open(authUrl, { app: { name: "chrome" } }).catch(() => {
         console.error("Failed to open browser automatically.");
         console.log("Please open this URL manually:", authUrl);
       });
@@ -457,35 +477,30 @@ export class YouTubeManager {
    * @private
    * @returns Promise that resolves with new tokens
    */
-  private async refreshToken(): Promise<any> {
+  private async refreshToken(): Promise<void> {
     try {
       if (!this.oAuth2Client?.credentials.refresh_token) {
         throw new Error("No refresh token available. Please re-authenticate.");
       }
 
-      const refreshResponse = await this.oAuth2Client.refreshToken(
-        this.oAuth2Client.credentials.refresh_token as string
-      );
-
-      const newTokens = refreshResponse.tokens;
+      const { credentials } = await this.oAuth2Client.refreshAccessToken();
 
       // Preserve the refresh token if a new one wasn't provided
       if (
-        !newTokens.refresh_token &&
+        !credentials.refresh_token &&
         this.oAuth2Client.credentials.refresh_token
       ) {
-        newTokens.refresh_token = this.oAuth2Client.credentials.refresh_token;
+        credentials.refresh_token = this.oAuth2Client.credentials.refresh_token;
       }
 
       // Update the client with new tokens
-      this.oAuth2Client.setCredentials(newTokens);
+      this.oAuth2Client.setCredentials(credentials);
 
       // Save the updated tokens
-      fs.writeFileSync(this.tokenPath, JSON.stringify(newTokens, null, 2));
+      fs.writeFileSync(this.tokenPath, JSON.stringify(credentials, null, 2));
       console.log("YouTube Tokens refreshed and saved.");
 
       this.isAuthenticated = true;
-      return newTokens;
     } catch (error) {
       console.error("Error refreshing YouTube token:", error);
       this.isAuthenticated = false;
@@ -504,37 +519,36 @@ export class YouTubeManager {
       this.youTubeApiPollingInterval = undefined;
     }
 
-    // Check if we should start polling based on override or Twitch state
-    let shouldStartPolling = false;
+    const shouldStart = shouldStartPollingLogic(
+      this.youtubePollingOverride,
+      this.isTwitchLive,
+      this.isMonitoring,
+    );
 
     if (this.youtubePollingOverride === "force_on") {
-      shouldStartPolling = true;
       console.log("YouTube: Polling forced ON by override");
     } else if (this.youtubePollingOverride === "force_off") {
-      shouldStartPolling = false;
       console.log("YouTube: Polling forced OFF by override");
     } else {
-      // Auto mode - follow Twitch stream status
-      shouldStartPolling = this.isTwitchLive;
       console.log(
         `YouTube: Auto mode - Twitch is ${
           this.isTwitchLive ? "live" : "not live"
-        }`
+        }`,
       );
     }
 
     // Only start polling if not monitoring a livestream AND should start polling
-    if (!this.isMonitoring && shouldStartPolling) {
+    if (shouldStart) {
       this.youTubeApiPollingInterval = setInterval(
-        () => this.youTubeApiPolling(),
-        120000
+        () => void this.youTubeApiPolling(),
+        120000,
       ); // 120secs
       console.log("YouTube: Started API polling interval");
-    } else if (!this.isMonitoring && !shouldStartPolling) {
+    } else if (!this.isMonitoring && !shouldStart) {
       console.log("YouTube: Skipping API polling - conditions not met");
     } else {
       console.log(
-        "YouTube: Skipping API polling - already monitoring livestream"
+        "YouTube: Skipping API polling - already monitoring livestream",
       );
     }
   }
@@ -549,31 +563,29 @@ export class YouTubeManager {
       // Skip polling if already monitoring a livestream
       if (this.isMonitoring) {
         console.log(
-          "YouTube: Skipping API polling - already monitoring livestream"
+          "YouTube: Skipping API polling - already monitoring livestream",
         );
         return;
       }
 
-      // Check if we should skip polling based on override or Twitch state
-      let shouldSkipPolling = false;
+      const shouldSkip = shouldSkipApiPollingLogic(
+        this.youtubePollingOverride,
+        this.isTwitchLive,
+        this.isMonitoring,
+        !!this.youTubeApiPollingInterval,
+      );
 
-      if (this.youtubePollingOverride === "force_off") {
-        shouldSkipPolling = true;
-        console.log("YouTube: Skipping API polling - forced OFF by override");
-      } else if (this.youtubePollingOverride === "force_on") {
-        shouldSkipPolling = false;
-        // Continue with polling regardless of Twitch state
-      } else {
-        // Auto mode - skip if Twitch is not live (unless this is the initial check during setup)
-        if (!this.isTwitchLive && this.youTubeApiPollingInterval) {
-          shouldSkipPolling = true;
+      if (shouldSkip) {
+        if (this.youtubePollingOverride === "force_off") {
+          console.log("YouTube: Skipping API polling - forced OFF by override");
+        } else if (!this.isTwitchLive) {
           console.log(
-            "YouTube: Skipping API polling - Twitch stream is not live (auto mode)"
+            "YouTube: Skipping API polling - Twitch stream is not live (auto mode)",
           );
         }
       }
 
-      if (shouldSkipPolling) {
+      if (shouldSkip) {
         return;
       }
 
@@ -598,13 +610,13 @@ export class YouTubeManager {
           ) {
             this.channelId = searchResponse.data.items[0].id?.channelId || null;
             console.log(
-              `Found channel ID for handle ${this.channelHandle}: ${this.channelId}`
+              `Found channel ID for handle ${this.channelHandle}: ${this.channelId}`,
             );
           }
 
           if (!this.channelId) {
             console.error(
-              `Channel ID not found for handle: ${this.channelHandle}`
+              `Channel ID not found for handle: ${this.channelHandle}`,
             );
             return;
           }
@@ -624,7 +636,7 @@ export class YouTubeManager {
 
         // Connect to YouTube livestream and start monitoring
         const connected = await this.connectAndStartMonitoring(
-          streamInfo.videoId
+          streamInfo.videoId,
         );
 
         if (!connected) {
@@ -633,16 +645,22 @@ export class YouTubeManager {
           console.log("Will retry on next polling interval");
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log(
-        "YouTube: CATCH: Failed to reach YouTube API. Trying to refresh token."
+        "YouTube: CATCH: Failed to reach YouTube API. Trying to refresh token.",
       );
-      console.error("YouTube API Polling Error:", error.message);
+      console.error(
+        "YouTube API Polling Error:",
+        error instanceof Error ? error.message : error,
+      );
 
       try {
         await this.refreshToken();
-      } catch (refreshError: any) {
-        console.error("YouTube token refresh failed:", refreshError.message);
+      } catch (refreshError: unknown) {
+        console.error(
+          "YouTube token refresh failed:",
+          refreshError instanceof Error ? refreshError.message : refreshError,
+        );
         this.isAuthenticated = false;
       }
     }
@@ -762,17 +780,17 @@ export class YouTubeManager {
       }
       this.periodicMessagesInterval = setInterval(
         PeriodicYouTubeMessages,
-        3300000
+        3300000,
       ); // 55mins
 
       // Send Discord notification
       YoutubeLivestreamAlert(
         video.snippet?.title || "Livestream",
         "",
-        `https://www.youtube.com/watch?v=${videoId}`
+        `https://www.youtube.com/watch?v=${videoId}`,
       );
 
-      let startStreamMessage: UnifiedChatMessage =
+      const startStreamMessage: UnifiedChatMessage =
         structuredClone(Wingbot953Message);
       startStreamMessage.platform = "youtube";
       startStreamMessage.message.text = `Good luck and have fun Streamer!`;
@@ -798,8 +816,8 @@ export class YouTubeManager {
       clearInterval(this.youTubeChatPollingInterval);
     }
     this.youTubeChatPollingInterval = setInterval(
-      () => this.pollLiveChatMessages(),
-      interval_ms
+      () => void this.pollLiveChatMessages(),
+      interval_ms,
     );
   }
 
@@ -847,23 +865,20 @@ export class YouTubeManager {
       });
 
       const { data } = response;
-      let recommendedPollingInterval: number | null | undefined =
+      const recommendedPollingInterval: number | null | undefined =
         data.pollingIntervalMillis;
 
-      // Update polling interval if
-      // - suggested by the API (range of 5 - 30secs)
-      // - interval isn't set to custom value below 5secs (e.g during quiz)
-      // - recommended interval is significantly different from current setting
+      // Update polling interval if recommended differs significantly from current
       if (
-        recommendedPollingInterval &&
-        this.pollingInterval_ms > 5000 &&
-        recommendedPollingInterval > this.pollingInterval_ms + 2000 &&
-        recommendedPollingInterval < this.pollingInterval_ms - 2000
+        shouldUpdatePollingInterval(
+          recommendedPollingInterval,
+          this.pollingInterval_ms,
+        )
       ) {
         console.log(
-          `Updating polling interval to ${recommendedPollingInterval}ms (suggested by API)`
+          `Updating polling interval to ${recommendedPollingInterval}ms (suggested by API)`,
         );
-        this.setChatPollingInterval(recommendedPollingInterval);
+        this.setChatPollingInterval(recommendedPollingInterval!);
       }
 
       // Save the next page token for subsequent requests
@@ -873,14 +888,16 @@ export class YouTubeManager {
       if (data.items && data.items.length > 0) {
         data.items.forEach((item) => this.processYouTubeMessage(item));
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error polling live chat messages:", error);
 
       // Check for specific error conditions that indicate stream ended
+      const errMsg = error instanceof Error ? error.message : "";
+      const errCode = (error as { code?: number }).code;
       if (
-        error.code === 404 ||
-        (error.message && error.message.includes("Chat ended")) ||
-        (error.message && error.message.includes("disabled"))
+        errCode === 404 ||
+        errMsg.includes("Chat ended") ||
+        errMsg.includes("disabled")
       ) {
         console.log("Stream chat has ended, stopping monitoring");
         this.stopMonitoring();
@@ -909,7 +926,7 @@ export class YouTubeManager {
       },
       author: {
         id: authorDetails.channelId || "",
-        name: (authorDetails.displayName || "").replace(/^@/, ""),
+        name: stripAtPrefix(authorDetails.displayName || ""),
         displayName: authorDetails.displayName || "",
         isModerator: authorDetails.isChatModerator || false,
         isSubscriber: authorDetails.isChatSponsor || false,
@@ -929,8 +946,7 @@ export class YouTubeManager {
       unifiedMessage.youtubeSpecific = {
         isSuperChat: true,
         superChatDetails: {
-          amount:
-            parseFloat(snippet.superChatDetails.amountMicros || "0") / 1000000,
+          amount: microsToAmount(snippet.superChatDetails.amountMicros || "0"),
           currency: snippet.superChatDetails.currency || "USD",
           color: snippet.superChatDetails.tier?.toString() || "", // YouTube uses tiers instead of color directly
         },
@@ -990,7 +1006,7 @@ export class YouTubeManager {
         return false;
       }
 
-      const response = await this.youtubeClient.liveChatMessages.insert({
+      await this.youtubeClient.liveChatMessages.insert({
         part: ["snippet"],
         requestBody: {
           snippet: {
@@ -1003,20 +1019,22 @@ export class YouTubeManager {
         },
       });
 
-      //console.log("Message sent successfully:", response.data)
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error sending chat message:", error);
 
       // Check for specific error types
-      if (error.response) {
-        console.error("Response status:", error.response.status);
-        console.error("Response data:", error.response.data);
+      const errResponse = (
+        error as { response?: { status: number; data: unknown } }
+      ).response;
+      if (errResponse) {
+        console.error("Response status:", errResponse.status);
+        console.error("Response data:", errResponse.data);
 
         // Handle rate limiting
-        if (error.response.status === 403) {
+        if (errResponse.status === 403) {
           console.error(
-            "Rate limited or permission denied. Check your quota and permissions."
+            "Rate limited or permission denied. Check your quota and permissions.",
           );
         }
       }
@@ -1032,6 +1050,11 @@ export class YouTubeManager {
     "Short",
     "LoooooongUserName",
     "ThisIsAReallyLongUserNameThatIsInfactQuiteLongAndShouldBeTested",
+    "SimulatedViewer",
+    "HaloFan2024",
+    "SpeedrunWatcher",
+    "QuizChamp",
+    "CasualChatter",
   ];
 
   private readonly testMessages: string[] = [
@@ -1040,6 +1063,16 @@ export class YouTubeManager {
     "Testing, testing, 1, 2, 3...",
     "Super Chat Test!",
     "This is a very long message that should be truncated in the UI because it exceeds the maximum character limit for a single chat message.",
+    "!quiz",
+    "!discord",
+    "!faq",
+    "!lurk",
+    "!odst",
+    "!quote",
+    "GG streamer!",
+    "This run is looking good",
+    "is this a PB pace?",
+    "lol nice one",
   ];
 
   /**

@@ -167,7 +167,7 @@ abstract class BaseQuiz {
    * @param msg - The unified chat message containing the user's answer
    * @returns Promise that resolves to true if the answer was correct, false otherwise
    */
-  abstract handleAnswer(msg: UnifiedChatMessage): Promise<boolean>;
+  abstract handleAnswer(msg: UnifiedChatMessage): boolean;
 
   /**
    * Gets the result message to display when the quiz ends
@@ -184,18 +184,18 @@ abstract class BaseQuiz {
   async execute(): Promise<void> {
     try {
       this.state = QuizState.NOTIFICATION;
-      await this.sendNotificationMessage();
+      this.sendNotificationMessage();
       await sleep(this.config.notificationTimeMs);
 
       this.state = QuizState.ACTIVE;
-      await this.startQuiz();
+      this.startQuiz();
       await this.waitForQuizCompletion();
 
       this.state = QuizState.FINISHED;
-      await this.endQuiz();
+      this.endQuiz();
     } catch (error) {
-      console.error(`Quiz execution error: ${error}`);
-      await this.cleanup();
+      console.error(`Quiz execution error: ${String(error)}`);
+      this.cleanup();
       throw error;
     }
   }
@@ -220,7 +220,7 @@ abstract class BaseQuiz {
    * @private
    * @returns Promise that resolves when notification messages are sent
    */
-  private async sendNotificationMessage(): Promise<void> {
+  private sendNotificationMessage(): void {
     const message = `The next Quiz Question is in 20secs! ${this.getQuizTypeMessage()} The topic will be ${
       this.questionData.categoryName
     }! Good luck!`;
@@ -233,10 +233,8 @@ abstract class BaseQuiz {
     youtubeMessage.platform = "youtube";
     youtubeMessage.message.text = message;
 
-    await Promise.allSettled([
-      sendChatMessage(twitchMessage),
-      sendChatMessage(youtubeMessage, false),
-    ]);
+    sendChatMessage(twitchMessage);
+    sendChatMessage(youtubeMessage, false);
   }
 
   /**
@@ -244,14 +242,14 @@ abstract class BaseQuiz {
    * @private
    * @returns Promise that resolves when the question is sent to all platforms
    */
-  private async startQuiz(): Promise<void> {
+  private startQuiz(): void {
     this.startTime = Date.now();
 
     try {
-      TwitchManager.getInstance().enableSlowMode(this.config.slowModeSeconds);
+      void TwitchManager.getInstance().enableSlowMode(this.config.slowModeSeconds);
       YouTubeManager.getInstance().setChatPollingInterval(1000);
     } catch (error) {
-      console.error(`Failed to configure quiz settings: ${error}`);
+      console.error(`Failed to configure quiz settings: ${String(error)}`);
     }
 
     const twitchMessage = structuredClone(Wingbot953Message);
@@ -262,10 +260,8 @@ abstract class BaseQuiz {
     youtubeMessage.platform = "youtube";
     youtubeMessage.message.text = this.questionData.question;
 
-    await Promise.allSettled([
-      sendChatMessage(twitchMessage),
-      sendChatMessage(youtubeMessage, false),
-    ]);
+    sendChatMessage(twitchMessage);
+    sendChatMessage(youtubeMessage, false);
   }
 
   /**
@@ -273,7 +269,7 @@ abstract class BaseQuiz {
    * @private
    * @returns Promise that resolves when the quiz is fully ended
    */
-  private async endQuiz(): Promise<void> {
+  private endQuiz(): void {
     if (this.state !== QuizState.FINISHED || this.hasEnded) return;
 
     this.hasEnded = true;
@@ -283,24 +279,24 @@ abstract class BaseQuiz {
     resultMessage.message.text = this.getResultMessage();
 
     try {
-      await sendChatMessage(resultMessage);
+      sendChatMessage(resultMessage);
     } catch (error) {
-      console.error(`Failed to send result message: ${error}`);
+      console.error(`Failed to send result message: ${String(error)}`);
     }
 
-    await this.cleanup();
+    this.cleanup();
   }
 
   /**
    * Performs cleanup operations to reset platform settings and quiz state
    * @returns Promise that resolves when cleanup is complete
    */
-  async cleanup(): Promise<void> {
+  cleanup(): void {
     try {
       YouTubeManager.getInstance().setChatPollingInterval();
-      TwitchManager.getInstance().disableSlowMode();
+      void TwitchManager.getInstance().disableSlowMode();
     } catch (error) {
-      console.error(`Quiz cleanup error: ${error}`);
+      console.error(`Quiz cleanup error: ${String(error)}`);
     }
     this.state = QuizState.IDLE;
     this.correctUsers = [];
@@ -364,7 +360,7 @@ class FirstToAnswerQuiz extends BaseQuiz {
    * @param msg - The chat message containing the user's answer
    * @returns Promise resolving to true if this was the first correct answer, false otherwise
    */
-  async handleAnswer(msg: UnifiedChatMessage): Promise<boolean> {
+  handleAnswer(msg: UnifiedChatMessage): boolean {
     if (this.state !== QuizState.ACTIVE || this.winner) return false;
 
     if (this.isValidAnswer(msg.message.text)) {
@@ -401,8 +397,8 @@ class FirstToAnswerQuiz extends BaseQuiz {
    * Performs cleanup and resets the winner state
    * @returns Promise that resolves when cleanup is complete
    */
-  async cleanup(): Promise<void> {
-    await super.cleanup();
+  cleanup(): void {
+    super.cleanup();
     this.winner = null;
   }
 
@@ -450,7 +446,7 @@ class AllCorrectAnswersQuiz extends BaseQuiz {
    * @param msg - The chat message containing the user's answer
    * @returns Promise resolving to true if this was a new correct answer, false otherwise
    */
-  async handleAnswer(msg: UnifiedChatMessage): Promise<boolean> {
+  handleAnswer(msg: UnifiedChatMessage): boolean {
     if (this.state !== QuizState.ACTIVE) return false;
 
     if (this.isValidAnswer(msg.message.text)) {
@@ -672,12 +668,12 @@ class LeaderboardManager {
     try {
       const data = await fs.promises.readFile(this.filePath, "utf8");
       this.leaderboards = JSON.parse(data) as QuizUser[];
-    } catch (error) {
-      if ((error as any).code === "ENOENT") {
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") {
         console.log("Leaderboard file not found, creating empty leaderboard");
         this.leaderboards = [];
       } else {
-        console.error(`Failed to load leaderboards: ${error}`);
+        console.error(`Failed to load leaderboards: ${String(error)}`);
         throw error;
       }
     } finally {
@@ -702,7 +698,7 @@ class LeaderboardManager {
         JSON.stringify(this.leaderboards, null, 2)
       );
     } catch (error) {
-      console.error(`Failed to save leaderboards: ${error}`);
+      console.error(`Failed to save leaderboards: ${String(error)}`);
       throw error;
     } finally {
       this.isSaving = false;
@@ -740,7 +736,7 @@ class LeaderboardManager {
     }
 
     await this.saveLeaderboards();
-    await this.publishLeaderboards();
+    this.publishLeaderboards();
   }
 
   /**
@@ -820,14 +816,12 @@ class LeaderboardManager {
    * @private
    * @returns Promise that resolves when publishing attempts complete
    */
-  private async publishLeaderboards(): Promise<void> {
+  private publishLeaderboards(): void {
     try {
-      await Promise.allSettled([
-        PublishTwitchAllTimeLeaderboard(this.leaderboards),
-        PublishYouTubeAllTimeLeaderboard(this.leaderboards),
-      ]);
+      PublishTwitchAllTimeLeaderboard(this.leaderboards);
+      PublishYouTubeAllTimeLeaderboard(this.leaderboards);
     } catch (error) {
-      console.error(`Failed to publish leaderboards: ${error}`);
+      console.error(`Failed to publish leaderboards: ${String(error)}`);
     }
   }
 }
@@ -896,7 +890,7 @@ export class QuizManager {
    * @returns Promise that resolves when initialization is complete
    * @throws Will throw an error if initialization fails
    */
-  async initialise(): Promise<void> {
+  initialise(): void {
     try {
       console.log(
         `Total question count: ${this.questionSelector.getTotalQuestionCount()}`
@@ -910,7 +904,7 @@ export class QuizManager {
 
       this.startQueueMonitoring();
     } catch (error) {
-      console.error(`Failed to initialize QuizManager: ${error}`);
+      console.error(`Failed to initialize QuizManager: ${String(error)}`);
       throw error;
     }
   }
@@ -928,7 +922,7 @@ export class QuizManager {
 
     this.queueCheckInterval = setInterval(() => {
       this.processQueue().catch((error) => {
-        console.error(`Queue processing error: ${error}`);
+        console.error(`Queue processing error: ${String(error)}`);
       });
     }, 2000);
   }
@@ -949,7 +943,7 @@ export class QuizManager {
       const isFirstToAnswer = Between(0, 99) < this.config.firstToAnswerChance;
       await this.startQuiz(isFirstToAnswer);
     } catch (error) {
-      console.error(`Failed to start quiz: ${error}`);
+      console.error(`Failed to start quiz: ${String(error)}`);
       this.isBlocked = false;
     }
   }
@@ -990,9 +984,9 @@ export class QuizManager {
       await this.activeQuiz.execute();
       await this.handleQuizCompletion();
     } catch (error) {
-      console.error(`Quiz execution failed: ${error}`);
+      console.error(`Quiz execution failed: ${String(error)}`);
       if (this.activeQuiz) {
-        await this.activeQuiz.cleanup();
+        this.activeQuiz.cleanup();
       }
     } finally {
       this.activeQuiz = null;
@@ -1018,7 +1012,7 @@ export class QuizManager {
         await this.rollBonusQuiz();
       }
     } catch (error) {
-      console.error(`Failed to handle quiz completion: ${error}`);
+      console.error(`Failed to handle quiz completion: ${String(error)}`);
     }
   }
 
@@ -1029,12 +1023,12 @@ export class QuizManager {
    * @param msg - The unified chat message to process
    * @returns Promise that resolves when message handling is complete
    */
-  async handleMessage(msg: UnifiedChatMessage): Promise<void> {
+  handleMessage(msg: UnifiedChatMessage): void {
     if (!this.activeQuiz || this.activeQuiz.getState() !== QuizState.ACTIVE)
       return;
 
     try {
-      const wasCorrect = await this.activeQuiz.handleAnswer(msg);
+      const wasCorrect = this.activeQuiz.handleAnswer(msg);
 
       if (wasCorrect && this.activeQuiz instanceof FirstToAnswerQuiz) {
         console.log(
@@ -1042,7 +1036,7 @@ export class QuizManager {
         );
       }
     } catch (error) {
-      console.error(`Error handling quiz message: ${error}`);
+      console.error(`Error handling quiz message: ${String(error)}`);
     }
   }
 
@@ -1096,15 +1090,13 @@ export class QuizManager {
       youtubeMessage.message.text = bonusMessage;
 
       try {
-        await Promise.allSettled([
-          sendChatMessage(twitchMessage),
-          sendChatMessage(youtubeMessage),
-        ]);
+        sendChatMessage(twitchMessage);
+        sendChatMessage(youtubeMessage);
 
         await sleep(2000);
         this.queueQuiz();
       } catch (error) {
-        console.error(`Failed to send bonus quiz message: ${error}`);
+        console.error(`Failed to send bonus quiz message: ${String(error)}`);
       }
     } else {
       console.log(`Unsuccessful Bonus Quiz Roll: ${roll}`);
@@ -1131,9 +1123,11 @@ export class QuizManager {
     }
 
     if (this.activeQuiz) {
-      this.activeQuiz.cleanup().catch((error) => {
-        console.error(`Error during quiz cleanup on shutdown: ${error}`);
-      });
+      try {
+        this.activeQuiz.cleanup();
+      } catch (error) {
+        console.error(`Error during quiz cleanup on shutdown: ${String(error)}`);
+      }
       this.activeQuiz = null;
     }
   }
@@ -1163,9 +1157,9 @@ export async function GetQuizLeaderboards(
     quizMessage.platform = msg.platform;
     quizMessage.message.text = message;
 
-    await sendChatMessage(quizMessage);
+    sendChatMessage(quizMessage);
   } catch (error) {
-    console.error(`Failed to get quiz leaderboards: ${error}`);
+    console.error(`Failed to get quiz leaderboards: ${String(error)}`);
   }
 }
 
@@ -1203,9 +1197,9 @@ export async function GetQuizScore(msg: UnifiedChatMessage): Promise<void> {
       quizMessage.message.text = `No score found for user: ${searchUsername}`;
     }
 
-    await sendChatMessage(quizMessage);
+    sendChatMessage(quizMessage);
   } catch (error) {
-    console.error(`Failed to get quiz score: ${error}`);
+    console.error(`Failed to get quiz score: ${String(error)}`);
   }
 }
 
@@ -1232,10 +1226,10 @@ export async function AddQuizScore(msg: UnifiedChatMessage): Promise<void> {
       quizMessage.platform = msg.platform;
       quizMessage.message.text = `Score added for user: @${username}`;
 
-      await sendChatMessage(quizMessage);
+      sendChatMessage(quizMessage);
     }
   } catch (error) {
-    console.error(`Failed to add quiz score: ${error}`);
+    console.error(`Failed to add quiz score: ${String(error)}`);
   }
 }
 
@@ -1258,12 +1252,10 @@ export async function PublishLeaderboards(): Promise<void> {
 
     const combinedLeaderboards = [...allLeaderboards[0], ...allLeaderboards[1]];
 
-    await Promise.allSettled([
-      PublishTwitchAllTimeLeaderboard(combinedLeaderboards),
-      PublishYouTubeAllTimeLeaderboard(combinedLeaderboards),
-    ]);
+    PublishTwitchAllTimeLeaderboard(combinedLeaderboards);
+    PublishYouTubeAllTimeLeaderboard(combinedLeaderboards);
   } catch (error) {
-    console.error(`Failed to publish leaderboards: ${error}`);
+    console.error(`Failed to publish leaderboards: ${String(error)}`);
   }
 }
 
@@ -1275,52 +1267,3 @@ export async function PublishLeaderboards(): Promise<void> {
  * @private
  * @returns Promise that resolves when ID updates are complete
  */
-async function UpdateLeaderboardsWithIds(): Promise<void> {
-  try {
-    const leaderboardManager =
-      QuizManager.getInstance().getLeaderboardManager();
-    await leaderboardManager.loadLeaderboards();
-
-    console.log("Updating leaderboards with IDs...");
-
-    const twitchUsers = await leaderboardManager.getTopUsers("twitch", 1000);
-
-    for (const leaderboardUser of twitchUsers) {
-      if (!leaderboardUser.UserId && leaderboardUser.Username) {
-        try {
-          console.log(`Updating ID for user ${leaderboardUser.Username}`);
-          const user =
-            await TwitchManager.getInstance().api!.users.getUserByName(
-              leaderboardUser.Username
-            );
-
-          if (user) {
-            console.log(
-              `ID for user ${leaderboardUser.Username} is ${user.id}`
-            );
-
-            await leaderboardManager.updateScore(
-              [
-                {
-                  Username: leaderboardUser.Username,
-                  UserId: user.id,
-                  Platform: leaderboardUser.Platform,
-                  Score: leaderboardUser.Score,
-                },
-              ],
-              0
-            );
-          }
-        } catch (error) {
-          console.error(
-            `Failed to update ID for ${leaderboardUser.Username}: ${error}`
-          );
-        }
-      }
-    }
-
-    await PublishLeaderboards();
-  } catch (error) {
-    console.error(`Failed to update leaderboards with IDs: ${error}`);
-  }
-}

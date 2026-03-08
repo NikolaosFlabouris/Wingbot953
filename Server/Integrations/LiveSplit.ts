@@ -8,6 +8,14 @@ import {
 } from "./HaloRuns";
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage";
 import { sendChatMessage, Wingbot953Message } from "../MessageHandling";
+import {
+  type SplitDetails,
+  odstSplitNames,
+  gameToSplitMapping,
+  findCharacterForSegment,
+  determineVirgilMood,
+  formatTimeDisplay,
+} from "./LiveSplitData";
 
 interface SplitData {
   name: string;
@@ -28,126 +36,6 @@ interface SplitInfo {
   currentSplit: SplitData;
   nextSplit?: SplitData;
 }
-
-interface SplitDetails {
-  name: string;
-  character: string;
-}
-
-const h1SplitNames: { [key: number]: SplitDetails } = {
-  0: { name: "The Pillar of Autumn", character: "Master Chief" },
-  1: { name: "Halo", character: "Master Chief" },
-  2: { name: "The Truth and Reconciliation", character: "Master Chief" },
-  3: { name: "The Silent Cartographer", character: "Master Chief" },
-  4: { name: "Assault on the Control Room", character: "Master Chief" },
-  5: { name: "343 Guilty Spark", character: "Master Chief" },
-  6: { name: "The Library", character: "Master Chief" },
-  7: { name: "Two Betrayals", character: "Master Chief" },
-  8: { name: "Keyes", character: "Master Chief" },
-  9: { name: "The Maw", character: "Master Chief" },
-};
-
-const h2SplitNames: { [key: number]: SplitDetails } = {
-  0: { name: "Cairo Station", character: "Master Chief" },
-  1: { name: "Outskirts", character: "Master Chief" },
-  2: { name: "Metropolis", character: "Master Chief" },
-  3: { name: "The Arbiter", character: "Arbiter" },
-  4: { name: "The Oracle", character: "Arbiter" },
-  5: { name: "Delta Halo", character: "Master Chief" },
-  6: { name: "Regret", character: "Master Chief" },
-  7: { name: "Sacred Icon", character: "Arbiter" },
-  8: { name: "Quarantine Zone", character: "Arbiter" },
-  9: { name: "Gravemind", character: "Master Chief" },
-  10: { name: "Uprising", character: "Arbiter" },
-  11: { name: "High Charity", character: "Master Chief" },
-  12: { name: "The Great Journey", character: "Arbiter" },
-};
-
-const h3SplitNames: { [key: number]: SplitDetails } = {
-  0: { name: "Sierra 117", character: "Master Chief" },
-  1: { name: "Crow's Nest", character: "Master Chief" },
-  2: { name: "Tsavo Highway", character: "Master Chief" },
-  3: { name: "The Storm", character: "Master Chief" },
-  4: { name: "Floodgate", character: "Master Chief" },
-  5: { name: "The Ark", character: "Master Chief" },
-  6: { name: "The Covenant", character: "Master Chief" },
-  7: { name: "Cortana", character: "Master Chief" },
-  8: { name: "Halo", character: "Master Chief" },
-};
-
-const odstSplitNames: { [key: number]: SplitDetails } = {
-  0: { name: "Prepare to Drop", character: "Rookie" },
-  1: { name: "Tayari Plaza", character: "Buck" },
-  2: { name: "Streets: Drone Optic", character: "Rookie" },
-  3: { name: "Uplift Reserve", character: "Dutch" },
-  4: { name: "Streets: Gauss Turret", character: "Rookie" },
-  5: { name: "ONI Alpha Site", character: "Dutch" },
-  6: { name: "Mombasa Streets 3", character: "Rookie" },
-  7: { name: "Kizingo Blvd.", character: "Mickey" },
-  8: { name: "Mombasa Streets 4", character: "Rookie" },
-  9: { name: "NMPD HQ", character: "Romeo" },
-  10: { name: "Mombasa Streets 5", character: "Rookie" },
-  11: { name: "Kikowani Station", character: "Buck" },
-  12: { name: "Mombasa Streets 6", character: "Rookie" },
-  13: { name: "Data Hive", character: "Rookie" },
-  14: { name: "Coastal Highway", character: "Rookie" },
-};
-
-const reachSplitNames: { [key: number]: SplitDetails } = {
-  0: { name: "Winter Contingency", character: "Noble 6" },
-  1: { name: "ONI: Sword Base", character: "Noble 6" },
-  2: { name: "Nightfall", character: "Noble 6" },
-  3: { name: "Tip of the Spear", character: "Noble 6" },
-  4: { name: "Long Night of Solace", character: "Noble 6" },
-  5: { name: "Exodus", character: "Noble 6" },
-  6: { name: "New Alexandria", character: "Noble 6" },
-  7: { name: "The Package", character: "Noble 6" },
-  8: { name: "The Pillar of Autumn", character: "Noble 6" },
-};
-
-const h4SplitNames: { [key: number]: SplitDetails } = {
-  0: { name: "Dawn", character: "Master Chief" },
-  1: { name: "Requiem", character: "Master Chief" },
-  2: { name: "Forerunner", character: "Master Chief" },
-  3: { name: "Infinity", character: "Master Chief" },
-  4: { name: "Reclaimer", character: "Master Chief" },
-  5: { name: "Shutdown", character: "Master Chief" },
-  6: { name: "Composer", character: "Master Chief" },
-  7: { name: "Midnight", character: "Master Chief" },
-};
-
-const h5SplitNames: { [key: number]: SplitDetails } = {
-  0: { name: "Osiris", character: "Locke" },
-  1: { name: "Blue Team", character: "Master Chief" },
-  2: { name: "Glassed", character: "Locke" },
-  3: { name: "Meridian Station", character: "Locke" },
-  4: { name: "Unconfirmed", character: "Locke" },
-  5: { name: "Evacuation", character: "Locke" },
-  6: { name: "Reunion", character: "Master Chief" },
-  7: { name: "Swords of Sanghelios", character: "Locke" },
-  8: { name: "Alliance", character: "Locke" },
-  9: { name: "Enemy Lines", character: "Locke" },
-  10: { name: "Before the Storm", character: "Locke" },
-  11: { name: "Battle of Sunaion", character: "Locke" },
-  12: { name: "Genesis", character: "Locke" },
-  13: { name: "The Breaking", character: "Master Chief" },
-  14: { name: "Guardians", character: "Locke" },
-};
-
-const infiniteSplitNames: { [key: number]: SplitDetails } = {};
-
-const gameToSplitMapping: { [key: string]: { [key: number]: SplitDetails } } = {
-  "Halo CE": h1SplitNames,
-  "Halo CE Classic": h1SplitNames,
-  "Halo 2": h2SplitNames,
-  "Halo 2 MCC": h2SplitNames,
-  "Halo 3": h3SplitNames,
-  "Halo 3: ODST": odstSplitNames,
-  "Halo: Reach": reachSplitNames,
-  "Halo 4": h4SplitNames,
-  "Halo 5": h5SplitNames,
-  "Halo Infinite": infiniteSplitNames,
-};
 
 // Time formats: [-][[[d.]hh:]mm:]ss[.fffffff]
 // https://github.com/livesplit/livesplit?tab=readme-ov-file#the-livesplit-server
@@ -245,10 +133,10 @@ export class LiveSplitClient {
       LiveSplitClient.getInstance();
     }
 
-    let msgSplitArray = msg.message.text.toLowerCase().split(" ");
+    const msgSplitArray = msg.message.text.toLowerCase().split(" ");
 
     if (msgSplitArray.length != 5) {
-      let hrMessage = structuredClone(Wingbot953Message);
+      const hrMessage = structuredClone(Wingbot953Message);
       hrMessage.platform = msg.platform;
       hrMessage.message.text = `Incorrect number of parameters for command`;
       sendChatMessage(hrMessage);
@@ -274,7 +162,7 @@ export class LiveSplitClient {
     )
       .then((wr) => {
         this.currentWr = wr.Time;
-        let hrPb = GetHaloRunsPb(
+        const hrPb = GetHaloRunsPb(
           this.game,
           this.category,
           this.runnableSegment,
@@ -282,9 +170,9 @@ export class LiveSplitClient {
         );
         this.currentPersonalBest = hrPb.Time;
         this.currentPbRank = hrPb.Rank;
-        this.updateTableInfo();
+        void this.updateTableInfo();
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         console.error("Error fetching world record:", error);
       });
   }
@@ -314,7 +202,7 @@ export class LiveSplitClient {
 
     this.client.connect(this.port, this.host, () => {
       console.log(`Connected to LiveSplit server at ${this.host}:${this.port}`);
-      this.startPolling();
+      void this.startPolling();
 
       // Clear reconnect timer on successful connection
       if (this.reconnectTimer) {
@@ -396,7 +284,7 @@ export class LiveSplitClient {
   private async getCurrentSplitIndex(): Promise<number> {
     try {
       const response = await this.sendCommand("getsplitindex");
-      let index = parseInt(response);
+      const index = parseInt(response);
       if (Number.isNaN(index)) {
         throw new Error("LiveSplit index is NaN");
       }
@@ -514,26 +402,18 @@ export class LiveSplitClient {
       };
     }
 
-    let name = "";
-    if (this.runnableSegment === "Full Game") {
-      name = this.getCurrentSplitName();
-    } else {
-      name = this.runnableSegment;
-    }
+    const name = this.runnableSegment === "Full Game"
+      ? this.getCurrentSplitName()
+      : this.runnableSegment;
     const bestSplit = await this.getCurrentBestSplit();
     const currentComparison = await this.getCurrentComparison();
     const worldRecord = await this.getWorldRecord(name);
     const personalBest = this.getPersonalBest(name);
 
-    const worldRecordTime =
-      worldRecord.string === "00:00" ? "" : worldRecord.string;
-    const personalBestTime =
-      personalBest.time.string === "00:00" ? "" : personalBest.time.string;
-
     return {
       name,
-      worldRecord: worldRecordTime,
-      personalBest: personalBestTime,
+      worldRecord: formatTimeDisplay(worldRecord.string),
+      personalBest: formatTimeDisplay(personalBest.time.string),
       pbRank: personalBest.pbRank,
       bestSplit: bestSplit.string,
       currentComparison: currentComparison.string,
@@ -559,17 +439,12 @@ export class LiveSplitClient {
 
     const nextSplitName = this.getNextSplitName();
     const worldRecord = await this.getWorldRecord(nextSplitName);
-    const personalBest = await this.getPersonalBest(nextSplitName);
-
-    const worldRecordTime =
-      worldRecord.string === "00:00" ? "" : worldRecord.string;
-    const personalBestTime =
-      personalBest.time.string === "00:00" ? "" : personalBest.time.string;
+    const personalBest = this.getPersonalBest(nextSplitName);
 
     return {
       name: nextSplitName,
-      worldRecord: worldRecordTime,
-      personalBest: personalBestTime,
+      worldRecord: formatTimeDisplay(worldRecord.string),
+      personalBest: formatTimeDisplay(personalBest.time.string),
       pbRank: personalBest.pbRank,
       bestSplit: "",
       currentComparison: "",
@@ -589,20 +464,12 @@ export class LiveSplitClient {
   private async getVirgilMood(): Promise<string> {
     try {
       if (this.currentSplitIndex < 0) return "Neutral";
-      // Logic to determine Virgil's mood based on run progress
       const delta = await this.getDelta();
-      if (delta.totalMilliseconds < 0) {
-        return "Happy";
-      } else if (
-        this.previousBestSplit.totalMilliseconds >
+      return determineVirgilMood(
+        delta.totalMilliseconds,
+        this.previousBestSplit.totalMilliseconds,
         this.previousComparisonSplit.totalMilliseconds
-      ) {
-        return "Happy";
-      } else if (delta.totalMilliseconds > 0) {
-        return "Disappointed";
-      }
-
-      return "Neutral";
+      );
     } catch (error) {
       console.error("Error determining Virgil's mood:", error);
       return "Neutral";
@@ -628,14 +495,7 @@ export class LiveSplitClient {
         worldRecord: this.currentWr.string,
         personalBest: this.currentPersonalBest.string,
         pbRank: this.currentPbRank,
-        character: (() => {
-          for (const [key, value] of Object.entries(this.activeSplitNames)) {
-            if (value.name === this.runnableSegment) {
-              return value.character;
-            }
-          }
-          return "";
-        })(),
+        character: findCharacterForSegment(this.activeSplitNames, this.runnableSegment),
       },
     };
 
@@ -667,7 +527,7 @@ export class LiveSplitClient {
     });
   }
 
-  private async clearTable() {
+  private clearTable() {
     this.currentSplitIndex = -1;
     this.previousSplitData = {
       name: "",
@@ -705,14 +565,15 @@ export class LiveSplitClient {
     try {
       if (this.currentSplitIndex < 0) {
         this.clearTable();
-      } else {
-        this.previousSplitData = this.currentSplitData;
-        this.previousSplitData.currentComparison = (
-          await this.getPreviousSplitTime()
-        ).string;
-        this.currentSplitData = await this.getCurrentSplitData();
-        this.nextSplitData = await this.getNextSplitData();
+        return;
       }
+
+      this.previousSplitData = this.currentSplitData;
+      this.previousSplitData.currentComparison = (
+        await this.getPreviousSplitTime()
+      ).string;
+      this.currentSplitData = await this.getCurrentSplitData();
+      this.nextSplitData = await this.getNextSplitData();
 
       this.sendTableInfo();
 
@@ -730,20 +591,21 @@ export class LiveSplitClient {
     }
   }
 
-  private async startPolling() {
-    this.liveSplitPollInterval = setInterval(async () => {
-      try {
-        const currentIndex = await this.getCurrentSplitIndex();
+  private startPolling() {
+    this.liveSplitPollInterval = setInterval(() => {
+      void (async () => {
+        try {
+          const currentIndex = await this.getCurrentSplitIndex();
 
-        if (this.currentSplitIndex !== currentIndex) {
-          this.currentSplitIndex = currentIndex;
-          console.log(`Current split index: ${this.currentSplitIndex}`);
-          await this.updateTableInfo();
+          if (this.currentSplitIndex !== currentIndex) {
+            this.currentSplitIndex = currentIndex;
+            console.log(`Current split index: ${this.currentSplitIndex}`);
+            await this.updateTableInfo();
+          }
+        } catch (error: unknown) {
+          console.error(`LiveSplit poll failed: ${error instanceof Error ? error.message : String(error)}`);
         }
-      } catch (error: any) {
-        // Handle polling failure
-        console.error(`LiveSplit poll failed: ${error.message}`);
-      }
+      })();
     }, 2000);
 
     this.splitTableInterval = setInterval(() => {

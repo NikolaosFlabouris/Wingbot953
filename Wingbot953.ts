@@ -20,15 +20,15 @@ async function main() {
 
   createWebSocket();
 
-  await DiscordSetup();
+  DiscordSetup();
 
-  await SpotifyManager.getInstance().initialise(server);
+  SpotifyManager.getInstance().initialise(server);
 
   await TwitchManager.getInstance().initialise(server);
 
   await YouTubeManager.getInstance().initialise(server);
 
-  await QuizManager.getInstance().initialise();
+  QuizManager.getInstance().initialise();
 
   await HaloRunsSetup();
 
@@ -48,4 +48,4 @@ async function main() {
   });
 }
 
-main();
+void main();

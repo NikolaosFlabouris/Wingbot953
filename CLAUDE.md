@@ -11,10 +11,24 @@ npm run build      # Same as compile - builds the project
 npm start          # Runs the compiled bot from Build/Wingbot953.js
 ```
 
+### Testing
+```bash
+npm test              # Run all unit tests (Vitest)
+npm run test:watch    # Run tests in watch mode
+```
+
+### Simulation
+```bash
+npm run simulate           # Normal chat simulation (Express + WebSocket servers active)
+npm run simulate:commands  # Command-heavy simulation
+npm run simulate:quiz      # Quiz-focused simulation with answer attempts
+npm run simulate:quiet     # Slower-paced simulation
+```
+
 ### Linting
 The project uses ESLint with TypeScript support. While no npm script is defined, you can run:
 ```bash
-npx eslint . --ext .ts
+npx eslint "**/*.ts"
 ```
 
 ## Architecture Overview
@@ -58,6 +72,8 @@ The quiz system is a central feature with:
 - **Common/**: Shared TypeScript interfaces
 - **Data/**: Configuration and content files (JSON)
 - **Server/**: Main bot logic and integrations
+- **Server/Simulation/**: Simulation mode for testing with fake data
+- **Tests/**: Unit tests (Vitest)
 
 ### External Integrations
 
@@ -69,7 +85,7 @@ The quiz system is a central feature with:
 
 ## Development Notes
 
-- The bot uses TypeScript with Node.js 23.x
+- The bot uses TypeScript with Node.js 24.x
 - Environment variables required for platform tokens and API keys
 - WebSocket server runs on port 8080 for real-time monitoring
 - Express server on port 3000 for OAuth callbacks and web interfaces
