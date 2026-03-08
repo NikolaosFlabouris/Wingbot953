@@ -345,6 +345,8 @@ abstract class BaseQuiz {
 class FirstToAnswerQuiz extends BaseQuiz {
   /** The user who answered correctly first, null if no winner yet */
   private winner: QuizUser | null = null;
+  /** Guard flag to prevent double-processing of correct answers */
+  private processingAnswer: boolean = false;
 
   /**
    * Gets the message explaining how first-to-answer quiz works
@@ -357,13 +359,19 @@ class FirstToAnswerQuiz extends BaseQuiz {
   /**
    * Handles answer attempts for first-to-answer quiz. Only accepts the first correct answer.
    * Immediately ends the quiz when the first correct answer is received.
+   * Uses a processingAnswer guard to prevent race conditions where multiple correct
+   * answers could be processed before the state transition takes effect.
    * @param msg - The chat message containing the user's answer
    * @returns Promise resolving to true if this was the first correct answer, false otherwise
    */
   handleAnswer(msg: UnifiedChatMessage): boolean {
-    if (this.state !== QuizState.ACTIVE || this.winner) return false;
+    if (this.state !== QuizState.ACTIVE || this.winner || this.processingAnswer)
+      return false;
 
     if (this.isValidAnswer(msg.message.text)) {
+      // Set guard immediately to prevent any concurrent processing
+      this.processingAnswer = true;
+
       this.winner = {
         Username: msg.author.displayName,
         UserId: msg.author.id,
@@ -394,12 +402,13 @@ class FirstToAnswerQuiz extends BaseQuiz {
   }
 
   /**
-   * Performs cleanup and resets the winner state
+   * Performs cleanup and resets the winner and processing state
    * @returns Promise that resolves when cleanup is complete
    */
   cleanup(): void {
     super.cleanup();
     this.winner = null;
+    this.processingAnswer = false;
   }
 
   /**
@@ -442,7 +451,8 @@ class AllCorrectAnswersQuiz extends BaseQuiz {
 
   /**
    * Handles answer attempts for all-correct-answers quiz. Accepts multiple correct answers.
-   * Prevents duplicate entries from the same user.
+   * Prevents duplicate entries from the same user. Re-checks quiz state before adding
+   * to guard against timing issues where the quiz transitions out of ACTIVE state.
    * @param msg - The chat message containing the user's answer
    * @returns Promise resolving to true if this was a new correct answer, false otherwise
    */
@@ -450,6 +460,10 @@ class AllCorrectAnswersQuiz extends BaseQuiz {
     if (this.state !== QuizState.ACTIVE) return false;
 
     if (this.isValidAnswer(msg.message.text)) {
+      // Re-check state to guard against race condition where quiz ended
+      // between the initial check and answer validation
+      if (this.state !== QuizState.ACTIVE) return false;
+
       const user = {
         Username: msg.author.displayName,
         UserId: msg.author.id,
@@ -848,6 +862,10 @@ export class QuizManager {
   private quizQueue: number = 0;
   /** Flag to prevent concurrent quiz operations */
   private isBlocked: boolean = false;
+  /** Safety timeout handle that auto-resets isBlocked if quiz doesn't complete normally */
+  private blockSafetyTimeout: NodeJS.Timeout | null = null;
+  /** Maximum time in ms that isBlocked can stay true before auto-reset (120 seconds) */
+  private static readonly BLOCK_TIMEOUT_MS: number = 120000;
   /** Timer for checking and processing the quiz queue */
   private queueCheckInterval: NodeJS.Timeout | null = null;
 
@@ -944,13 +962,68 @@ export class QuizManager {
       await this.startQuiz(isFirstToAnswer);
     } catch (error) {
       console.error(`Failed to start quiz: ${String(error)}`);
-      this.isBlocked = false;
+      this.clearBlocked();
+    }
+  }
+
+  /**
+   * Sets the isBlocked flag and starts a safety timeout that will auto-reset it.
+   * This prevents the quiz system from being permanently blocked if an exception
+   * occurs and the normal reset in the finally block somehow fails.
+   *
+   * @private
+   */
+  private setBlocked(): void {
+    this.isBlocked = true;
+    this.clearBlockSafetyTimeout();
+    this.blockSafetyTimeout = setTimeout(() => {
+      if (this.isBlocked) {
+        console.error(
+          "Quiz block safety timeout triggered - auto-resetting isBlocked after " +
+            `${QuizManager.BLOCK_TIMEOUT_MS / 1000}s`
+        );
+        this.isBlocked = false;
+        if (this.activeQuiz) {
+          try {
+            this.activeQuiz.cleanup();
+          } catch (error) {
+            console.error(
+              `Error during safety timeout cleanup: ${String(error)}`
+            );
+          }
+          this.activeQuiz = null;
+        }
+      }
+    }, QuizManager.BLOCK_TIMEOUT_MS);
+  }
+
+  /**
+   * Clears the isBlocked flag and cancels the safety timeout.
+   *
+   * @private
+   */
+  private clearBlocked(): void {
+    this.isBlocked = false;
+    this.clearBlockSafetyTimeout();
+  }
+
+  /**
+   * Clears the block safety timeout if one is active.
+   *
+   * @private
+   */
+  private clearBlockSafetyTimeout(): void {
+    if (this.blockSafetyTimeout) {
+      clearTimeout(this.blockSafetyTimeout);
+      this.blockSafetyTimeout = null;
     }
   }
 
   /**
    * Starts a new quiz with the specified type.
    * Prevents concurrent quiz execution and handles the complete quiz lifecycle.
+   * Uses setBlocked/clearBlocked with a safety timeout to ensure isBlocked is
+   * always reset even if an unexpected error prevents normal cleanup.
    *
    * @param isFirstToAnswer - True for FirstToAnswerQuiz, false for AllCorrectAnswersQuiz. Defaults to random selection.
    * @returns Promise that resolves when the quiz is complete
@@ -963,7 +1036,7 @@ export class QuizManager {
       return;
     }
 
-    this.isBlocked = true;
+    this.setBlocked();
 
     try {
       const questionData = this.questionSelector.selectRandomQuestion();
@@ -990,7 +1063,7 @@ export class QuizManager {
       }
     } finally {
       this.activeQuiz = null;
-      this.isBlocked = false;
+      this.clearBlocked();
     }
   }
 
@@ -1122,6 +1195,8 @@ export class QuizManager {
       this.queueCheckInterval = null;
     }
 
+    this.clearBlockSafetyTimeout();
+
     if (this.activeQuiz) {
       try {
         this.activeQuiz.cleanup();
@@ -1130,6 +1205,8 @@ export class QuizManager {
       }
       this.activeQuiz = null;
     }
+
+    this.isBlocked = false;
   }
 }
 
