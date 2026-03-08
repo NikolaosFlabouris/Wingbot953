@@ -18,6 +18,7 @@
         "@twurple/api": "^8.0.3",
         "@twurple/auth": "^8.0.3",
         "@twurple/chat": "^8.0.3",
+        "@twurple/eventsub-ws": "^8.0.3",
         "discord.js": "^14.25.1",
         "dotenv": "^17.3.1",
         "googleapis": "^171.4.0",

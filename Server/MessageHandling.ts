@@ -147,7 +147,7 @@ export function sendChatMessage(
   }
 }
 
-function sendToWebSocketClients(msg: UnifiedChatMessage) {
+export function sendToWebSocketClients(msg: UnifiedChatMessage) {
   if (!msg.timestamp) {
     msg.timestamp = new Date();
   }

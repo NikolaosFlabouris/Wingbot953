@@ -81,6 +81,8 @@ const TWITCH_SCOPES = [
   "moderator:manage:automod_settings",
   "moderator:read:chat_settings",
   "moderator:manage:chat_settings",
+  "moderator:read:followers",
+  "moderator:read:shoutouts",
   "user:edit",
   "user:edit:follows",
   "user:manage:blocked_users",
@@ -215,6 +217,14 @@ export class TwitchManager {
    */
   public get streamer(): HelixUser | undefined {
     return this.streamerUser;
+  }
+
+  /**
+   * Gets the streamer auth provider for use by EventSub and other integrations
+   * @returns The streamer RefreshingAuthProvider
+   */
+  public get streamerAuth(): RefreshingAuthProvider | undefined {
+    return this.streamerAuthProvider;
   }
 
   /**
