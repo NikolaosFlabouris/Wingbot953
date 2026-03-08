@@ -14,10 +14,9 @@ import {
 import {
   ApiClient,
   CommercialLength,
-  HelixCustomReward,
-  HelixCustomRewardRedemption,
   HelixUser,
 } from "@twurple/api";
+import { EventSubWsListener } from "@twurple/eventsub-ws";
 import open from "open";
 import * as http from "node:http";
 import * as fs from "fs";
@@ -29,6 +28,7 @@ import {
   handleChatMessage,
   PeriodicTwitchMessages,
   sendChatMessage,
+  sendToWebSocketClients,
   Wingbot953Message,
 } from "../MessageHandling";
 import { QuizManager } from "../Commands/Quiz";
@@ -41,6 +41,14 @@ import {
   buildResubMessage,
   buildSubGiftMessage,
   buildRaidMessage,
+  buildFollowMessage,
+  buildHypeTrainBeginMessage,
+  buildHypeTrainEndMessage,
+  buildPollBeginMessage,
+  buildPollEndMessage,
+  buildPredictionBeginMessage,
+  buildPredictionEndMessage,
+  buildShoutoutReceiveMessage,
   parseEmotePosition,
   extractEmoteName,
   buildEmoteUrl,
@@ -95,15 +103,6 @@ const TWITCH_SCOPES = [
   "whispers:edit",
   "chat:edit",
 ];
-
-/**
- * Interface for Twitch reward handler configuration
- */
-interface TwitchRewardHandler {
-  reward: HelixCustomReward;
-  lastRedemptionTime: number;
-  handler: (reward: HelixCustomRewardRedemption) => void | Promise<void>;
-}
 
 /**
  * Interface for stored token data
@@ -162,12 +161,11 @@ export class TwitchManager {
   // Intervals and timers
   private quizInterval?: NodeJS.Timeout;
   private periodicMessagesInterval?: NodeJS.Timeout;
-  private twitchApiPollingInterval?: NodeJS.Timeout;
   private streamNameAndGameInterval?: NodeJS.Timeout;
 
-  // Reward handling
-  private twitchRewards: TwitchRewardHandler[] = [];
-  private latestRedemptionDate: number = Date.now();
+  // EventSub
+  private eventSubListener?: EventSubWsListener;
+  private isEventSubInitialised: boolean = false;
 
   // Subscriber tracking
   private subscriberFirstMessageReceived: string[] = [];
@@ -217,14 +215,6 @@ export class TwitchManager {
    */
   public get streamer(): HelixUser | undefined {
     return this.streamerUser;
-  }
-
-  /**
-   * Gets the streamer auth provider for use by EventSub and other integrations
-   * @returns The streamer RefreshingAuthProvider
-   */
-  public get streamerAuth(): RefreshingAuthProvider | undefined {
-    return this.streamerAuthProvider;
   }
 
   /**
@@ -698,7 +688,6 @@ export class TwitchManager {
         throw new Error("Failed to find streamer user");
       }
 
-      await this.setupRewards();
       this.setupEventHandlers();
 
       // Initialize badge cache
@@ -707,71 +696,16 @@ export class TwitchManager {
       // Connect to chat
       this.chatClient.connect();
 
-      // Start API polling
-      this.startApiPolling();
+      // Initialize EventSub for real-time event notifications
+      await this.initialiseEventSub();
+
+      // Check if stream is already live (EventSub only fires on transitions)
+      await this.checkInitialStreamState();
 
       this.isAuthenticated = true;
       console.log("Twitch setup completed successfully");
     } catch (error) {
       console.error("Error during Twitch setup:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Sets up channel point rewards and their handlers
-   * @private
-   */
-  private async setupRewards(): Promise<void> {
-    if (!this.apiClient || !this.streamerUser) {
-      throw new Error("API client or streamer user not initialized");
-    }
-
-    try {
-      // Find reward info
-      const rewardsWingman953 =
-        await this.apiClient.channelPoints.getCustomRewards(
-          this.streamerUser.id,
-          false
-        );
-
-      // Setup reward handlers
-      for (const reward of rewardsWingman953) {
-        switch (reward.title) {
-          case "Start a Quiz Round":
-            this.twitchRewards.push({
-              reward: reward,
-              lastRedemptionTime: Date.now(),
-              handler: this.handleQuizStartRedemption.bind(this),
-            });
-            break;
-          case "G'Day Streamer":
-            this.twitchRewards.push({
-              reward: reward,
-              lastRedemptionTime: Date.now(),
-              handler: this.handleGDayRedemption.bind(this),
-            });
-            break;
-          case "G'Night Streamer":
-            this.twitchRewards.push({
-              reward: reward,
-              lastRedemptionTime: Date.now(),
-              handler: this.handleGNightRedemption.bind(this),
-            });
-            break;
-          case "Add Custom Greeting":
-            this.twitchRewards.push({
-              reward: reward,
-              lastRedemptionTime: Date.now(),
-              handler: this.handleAddCustomGreetingRedemption.bind(this),
-            });
-            break;
-        }
-      }
-
-      console.log(`Set up ${this.twitchRewards.length} reward handlers`);
-    } catch (error) {
-      console.error("Error setting up rewards:", error);
       throw error;
     }
   }
@@ -947,114 +881,679 @@ export class TwitchManager {
     );
   }
 
-  /**
-   * Starts API polling for stream status and reward redemptions
-   * @private
-   */
-  private startApiPolling(): void {
-    // Start polling immediately
-    void this.twitchApiPolling();
-
-    // Set up interval for polling
-    this.twitchApiPollingInterval = setInterval(() => {
-      void this.twitchApiPolling();
-    }, 5000); // 5 seconds
-  }
+  // ---------------------------------------------------------------------------
+  // EventSub WebSocket Integration
+  // ---------------------------------------------------------------------------
 
   /**
-   * Polls the Twitch API for stream status and reward redemptions
+   * Initializes the EventSub WebSocket listener and subscribes to events.
+   * EventSub provides push-based notifications that replace the polling approach.
    * @private
    */
-  private async twitchApiPolling(): Promise<void> {
-    if (!this.apiClient || !this.streamerUser) {
+  private async initialiseEventSub(): Promise<void> {
+    if (this.isEventSubInitialised || !this.apiClient || !this.streamerUser) {
       return;
     }
 
+    console.log("TwitchEventSub: Initialising EventSub WebSocket listener...");
+
     try {
-      const streamWingman953 = await this.apiClient.streams.getStreamByUserId(
+      this.eventSubListener = new EventSubWsListener({
+        apiClient: this.apiClient,
+      });
+
+      const broadcasterId = this.streamerUser.id;
+
+      try { this.subscribeToFollowEvents(broadcasterId); }
+      catch (error) { console.error("TwitchEventSub: Failed to subscribe to follow events:", error); }
+
+      try { this.subscribeToHypeTrainEvents(broadcasterId); }
+      catch (error) { console.error("TwitchEventSub: Failed to subscribe to hype train events:", error); }
+
+      try { this.subscribeToChannelPointRedemptions(broadcasterId); }
+      catch (error) { console.error("TwitchEventSub: Failed to subscribe to channel point events:", error); }
+
+      try { this.subscribeToStreamEvents(broadcasterId); }
+      catch (error) { console.error("TwitchEventSub: Failed to subscribe to stream events:", error); }
+
+      try { this.subscribeToPredictionEvents(broadcasterId); }
+      catch (error) { console.error("TwitchEventSub: Failed to subscribe to prediction events:", error); }
+
+      try { this.subscribeToPollEvents(broadcasterId); }
+      catch (error) { console.error("TwitchEventSub: Failed to subscribe to poll events:", error); }
+
+      try { this.subscribeToShoutoutEvents(broadcasterId); }
+      catch (error) { console.error("TwitchEventSub: Failed to subscribe to shoutout events:", error); }
+
+      try { this.subscribeToSubscriptionEvents(broadcasterId); }
+      catch (error) { console.error("TwitchEventSub: Failed to subscribe to subscription events:", error); }
+
+      this.eventSubListener.start();
+      this.isEventSubInitialised = true;
+      console.log("TwitchEventSub: EventSub WebSocket listener started successfully.");
+    } catch (error) {
+      console.error("TwitchEventSub: Failed to initialise EventSub:", error);
+    }
+  }
+
+  /**
+   * Checks the initial stream state on startup via API.
+   * EventSub only fires on transitions, so we need this for when
+   * the bot starts while the stream is already live.
+   * @private
+   */
+  private async checkInitialStreamState(): Promise<void> {
+    if (!this.apiClient || !this.streamerUser) return;
+
+    try {
+      const stream = await this.apiClient.streams.getStreamByUserId(
         this.streamerUser.id
       );
 
-      // Check if stream status changed
-      if (this.isLiveState && streamWingman953?.startDate == null) {
-        // Stream ended
-        this.isLiveState = false;
-        console.log("Streamer went offline!");
-
-        // Emit stream ended event for other managers
-        this.eventBus.safeEmit(EventTypes.TWITCH_STREAM_ENDED);
-
-        this.clearIntervals();
-        this.resetSubscriberFirstMessageReceived();
-
-        const endstreamMessage: UnifiedChatMessage =
-          structuredClone(Wingbot953Message);
-        endstreamMessage.platform = "twitch";
-        endstreamMessage.message.text = `wingma14Blush Thanks for the stream!`;
-        sendChatMessage(endstreamMessage);
-      } else if (
-        !this.isLiveState &&
-        streamWingman953?.startDate != undefined
-      ) {
-        // Stream started
-        this.isLiveState = true;
-        console.log("Streamer went live!");
-
-        // Emit stream started event for other managers
-        this.eventBus.safeEmit(EventTypes.TWITCH_STREAM_STARTED);
-
-        this.streamName = streamWingman953.title;
-        this.streamGame = streamWingman953.gameName;
-
-        TwitchLivestreamAlert(this.streamName, this.streamGame);
-        LoadWelcomeMessages();
-        QuizManager.getInstance().resetUsedQuestions();
-
-        // Start automatic timers
-        this.quizInterval = setInterval(
-          () => QuizManager.getInstance().queueQuiz(),
-          Between(2100000, 2700000)
-        ); // 35-45mins
-
-        this.periodicMessagesInterval = setInterval(
-          PeriodicTwitchMessages,
-          3300000
-        ); // 55mins
-        this.streamNameAndGameInterval = setInterval(
-          () => void this.pollStreamNameAndGame(),
-          60000
-        ); // 1min
-
-        const startStreamMessage: UnifiedChatMessage =
-          structuredClone(Wingbot953Message);
-        startStreamMessage.platform = "twitch";
-        startStreamMessage.message.text = `wingma14Arrive Good Luck Streamer! wingma14Blush`;
-        sendChatMessage(startStreamMessage);
+      if (stream?.startDate) {
+        console.log("Stream already live - initializing live state.");
+        this.handleStreamOnline(stream.title, stream.gameName);
       }
-
-      // Check for reward redemptions
-      for (const reward of this.twitchRewards) {
-        const redemptions =
-          await this.apiClient.channelPoints.getRedemptionsForBroadcaster(
-            this.streamerUser.id,
-            reward.reward.id,
-            "UNFULFILLED",
-            { newestFirst: true }
-          );
-
-        if (
-          redemptions.data.length > 0 &&
-          redemptions.data[0].redemptionDate.getTime() >
-            this.latestRedemptionDate
-        ) {
-          this.latestRedemptionDate =
-            redemptions.data[0].redemptionDate.getTime();
-          void reward.handler(redemptions.data[0]);
-        }
-      }
-    } catch (error: unknown) {
-      console.log(`* ERROR: Twitch API polling failed: ${error instanceof Error ? error.message : String(error)}`);
+    } catch (error) {
+      console.error("Failed to check initial stream state:", error);
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Stream State Helpers
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Handles stream going online - shared between EventSub handler and initial state check
+   * @private
+   */
+  private handleStreamOnline(title: string, game: string): void {
+    if (this.isLiveState) return; // Already live, avoid duplicate triggers
+
+    this.isLiveState = true;
+    console.log("Streamer went live!");
+
+    this.eventBus.safeEmit(EventTypes.TWITCH_STREAM_STARTED);
+
+    this.streamName = title;
+    this.streamGame = game;
+
+    TwitchLivestreamAlert(this.streamName, this.streamGame);
+    LoadWelcomeMessages();
+    QuizManager.getInstance().resetUsedQuestions();
+
+    // Start automatic timers
+    this.quizInterval = setInterval(
+      () => QuizManager.getInstance().queueQuiz(),
+      Between(2100000, 2700000)
+    ); // 35-45mins
+
+    this.periodicMessagesInterval = setInterval(
+      PeriodicTwitchMessages,
+      3300000
+    ); // 55mins
+    this.streamNameAndGameInterval = setInterval(
+      () => void this.pollStreamNameAndGame(),
+      60000
+    ); // 1min
+
+    const startStreamMessage: UnifiedChatMessage =
+      structuredClone(Wingbot953Message);
+    startStreamMessage.platform = "twitch";
+    startStreamMessage.message.text = `wingma14Arrive Good Luck Streamer! wingma14Blush`;
+    sendChatMessage(startStreamMessage);
+  }
+
+  /**
+   * Handles stream going offline - shared between EventSub handler
+   * @private
+   */
+  private handleStreamOffline(): void {
+    if (!this.isLiveState) return; // Already offline, avoid duplicate triggers
+
+    this.isLiveState = false;
+    console.log("Streamer went offline!");
+
+    this.eventBus.safeEmit(EventTypes.TWITCH_STREAM_ENDED);
+
+    this.clearIntervals();
+    this.resetSubscriberFirstMessageReceived();
+
+    const endstreamMessage: UnifiedChatMessage =
+      structuredClone(Wingbot953Message);
+    endstreamMessage.platform = "twitch";
+    endstreamMessage.message.text = `wingma14Blush Thanks for the stream!`;
+    sendChatMessage(endstreamMessage);
+  }
+
+  // ---------------------------------------------------------------------------
+  // EventSub Subscriptions
+  // ---------------------------------------------------------------------------
+
+  private subscribeToFollowEvents(broadcasterId: string): void {
+    if (!this.eventSubListener) return;
+
+    this.eventSubListener.onChannelFollow(broadcasterId, broadcasterId, (event) => {
+      console.log(`TwitchEventSub: New follower - ${event.userDisplayName}`);
+
+      const followMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+      followMessage.platform = "twitch";
+      followMessage.message.text = buildFollowMessage(event.userDisplayName);
+      followMessage.twitchSpecific = {
+        isHighlighted: true,
+        messageType: "follow",
+      };
+
+      sendChatMessage(followMessage, true, false);
+
+      this.eventBus.safeEmit(EventTypes.TWITCH_FOLLOW, {
+        userName: event.userName,
+        userDisplayName: event.userDisplayName,
+        followDate: event.followDate.toISOString(),
+      });
+
+      this.broadcastEventToWebSocket("follow", {
+        userName: event.userName,
+        userDisplayName: event.userDisplayName,
+        followDate: event.followDate.toISOString(),
+      });
+    });
+  }
+
+  private subscribeToHypeTrainEvents(broadcasterId: string): void {
+    if (!this.eventSubListener) return;
+
+    this.eventSubListener.onChannelHypeTrainBegin(broadcasterId, (event) => {
+      console.log(`TwitchEventSub: Hype Train started! Level ${event.level}, Goal: ${event.goal}`);
+
+      const hypeMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+      hypeMessage.platform = "twitch";
+      hypeMessage.message.text = buildHypeTrainBeginMessage(event.level);
+      hypeMessage.twitchSpecific = {
+        isHighlighted: true,
+        messageType: "hypetrain",
+      };
+
+      sendChatMessage(hypeMessage, true, false);
+
+      this.eventBus.safeEmit(EventTypes.TWITCH_HYPE_TRAIN_BEGIN, {
+        level: event.level,
+        goal: event.goal,
+        total: event.total,
+        startDate: event.startDate.toISOString(),
+      });
+
+      this.broadcastEventToWebSocket("hype_train_begin", {
+        level: event.level,
+        goal: event.goal,
+        total: event.total,
+        startDate: event.startDate.toISOString(),
+      });
+    });
+
+    this.eventSubListener.onChannelHypeTrainProgress(broadcasterId, (event) => {
+      console.log(`TwitchEventSub: Hype Train progress - Level ${event.level}, ${event.total}/${event.goal}`);
+
+      this.broadcastEventToWebSocket("hype_train_progress", {
+        level: event.level,
+        goal: event.goal,
+        total: event.total,
+        lastContribution: {
+          userName: event.lastContribution.userName,
+          type: event.lastContribution.type,
+          total: event.lastContribution.total,
+        },
+        topContributors: event.topContributors.map((c) => ({
+          userName: c.userName,
+          type: c.type,
+          total: c.total,
+        })),
+      });
+    });
+
+    this.eventSubListener.onChannelHypeTrainEnd(broadcasterId, (event) => {
+      console.log(`TwitchEventSub: Hype Train ended at level ${event.level}!`);
+
+      const hypeEndMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+      hypeEndMessage.platform = "twitch";
+      hypeEndMessage.message.text = buildHypeTrainEndMessage(event.level);
+      hypeEndMessage.twitchSpecific = {
+        isHighlighted: true,
+        messageType: "hypetrain",
+      };
+
+      sendChatMessage(hypeEndMessage, true, false);
+
+      this.eventBus.safeEmit(EventTypes.TWITCH_HYPE_TRAIN_END, {
+        level: event.level,
+        total: event.total,
+        topContributors: event.topContributors.map((c) => ({
+          userName: c.userName,
+          type: c.type,
+          total: c.total,
+        })),
+        endDate: event.endDate.toISOString(),
+      });
+
+      this.broadcastEventToWebSocket("hype_train_end", {
+        level: event.level,
+        total: event.total,
+        topContributors: event.topContributors.map((c) => ({
+          userName: c.userName,
+          type: c.type,
+          total: c.total,
+        })),
+        endDate: event.endDate.toISOString(),
+      });
+    });
+  }
+
+  /**
+   * Subscribes to channel point custom reward redemption events.
+   * Replaces the previous polling-based redemption detection.
+   */
+  private subscribeToChannelPointRedemptions(broadcasterId: string): void {
+    if (!this.eventSubListener) return;
+
+    this.eventSubListener.onChannelRedemptionAdd(broadcasterId, (event) => {
+      console.log(
+        `TwitchEventSub: Channel point redemption - ${event.userDisplayName} redeemed "${event.rewardTitle}"`
+      );
+
+      // Route to specific reward handlers
+      switch (event.rewardTitle) {
+        case "Start a Quiz Round":
+          this.handleQuizStartRedemption();
+          break;
+        case "G'Day Streamer":
+          this.handleGDayRedemption(event.userDisplayName, event.userId);
+          break;
+        case "G'Night Streamer":
+          this.handleGNightRedemption(event.userDisplayName, event.userId);
+          break;
+        case "Add Custom Greeting":
+          void this.handleAddCustomGreetingRedemption(
+            event.userDisplayName,
+            event.userId,
+            event.input
+          );
+          break;
+      }
+
+      this.eventBus.safeEmit(EventTypes.TWITCH_CHANNEL_POINT_REDEMPTION, {
+        userName: event.userName,
+        userDisplayName: event.userDisplayName,
+        rewardTitle: event.rewardTitle,
+        rewardCost: event.rewardCost,
+        userInput: event.input,
+      });
+
+      this.broadcastEventToWebSocket("channel_point_redemption", {
+        userName: event.userName,
+        userDisplayName: event.userDisplayName,
+        rewardId: event.rewardId,
+        rewardTitle: event.rewardTitle,
+        rewardCost: event.rewardCost,
+        userInput: event.input,
+        redemptionDate: event.redemptionDate.toISOString(),
+      });
+    });
+  }
+
+  /**
+   * Subscribes to stream online and offline events.
+   * Replaces the previous polling-based stream status detection.
+   */
+  private subscribeToStreamEvents(broadcasterId: string): void {
+    if (!this.eventSubListener) return;
+
+    this.eventSubListener.onStreamOnline(broadcasterId, (event) => {
+      console.log(`TwitchEventSub: Stream went online! Type: ${event.type}`);
+
+      // Fetch stream data for title and game (not included in the event)
+      void (async () => {
+        let title = "";
+        let game = "";
+        try {
+          const stream = await this.apiClient!.streams.getStreamByUserId(
+            this.streamerUser!.id
+          );
+          title = stream?.title || "";
+          game = stream?.gameName || "";
+        } catch {
+          console.log("TwitchEventSub: Failed to fetch stream data for title/game.");
+        }
+
+        this.handleStreamOnline(title, game);
+      })();
+
+      this.broadcastEventToWebSocket("stream_online", {
+        broadcasterName: event.broadcasterDisplayName,
+        type: event.type,
+        startDate: event.startDate.toISOString(),
+      });
+    });
+
+    this.eventSubListener.onStreamOffline(broadcasterId, (event) => {
+      console.log("TwitchEventSub: Stream went offline.");
+
+      this.handleStreamOffline();
+
+      this.broadcastEventToWebSocket("stream_offline", {
+        broadcasterName: event.broadcasterDisplayName,
+      });
+    });
+  }
+
+  private subscribeToPredictionEvents(broadcasterId: string): void {
+    if (!this.eventSubListener) return;
+
+    this.eventSubListener.onChannelPredictionBegin(broadcasterId, (event) => {
+      console.log(`TwitchEventSub: Prediction started - "${event.title}"`);
+
+      const outcomes = event.outcomes.map((o) => ({
+        id: o.id,
+        title: o.title,
+        color: o.color,
+      }));
+
+      const predictionMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+      predictionMessage.platform = "twitch";
+      predictionMessage.message.text = buildPredictionBeginMessage(
+        event.title,
+        outcomes.map((o) => o.title)
+      );
+      predictionMessage.twitchSpecific = {
+        isHighlighted: true,
+        messageType: "prediction",
+      };
+
+      sendChatMessage(predictionMessage, true, false);
+
+      this.eventBus.safeEmit(EventTypes.TWITCH_PREDICTION_BEGIN, {
+        id: event.id,
+        title: event.title,
+        outcomes,
+        lockDate: event.lockDate.toISOString(),
+      });
+
+      this.broadcastEventToWebSocket("prediction_begin", {
+        id: event.id,
+        title: event.title,
+        outcomes,
+        lockDate: event.lockDate.toISOString(),
+      });
+    });
+
+    this.eventSubListener.onChannelPredictionLock(broadcasterId, (event) => {
+      console.log(`TwitchEventSub: Prediction locked - "${event.title}"`);
+
+      this.broadcastEventToWebSocket("prediction_lock", {
+        id: event.id,
+        title: event.title,
+        outcomes: event.outcomes.map((o) => ({
+          id: o.id,
+          title: o.title,
+          color: o.color,
+          totalUsers: o.users ?? 0,
+          totalChannelPoints: o.channelPoints ?? 0,
+        })),
+      });
+    });
+
+    this.eventSubListener.onChannelPredictionEnd(broadcasterId, (event) => {
+      console.log(`TwitchEventSub: Prediction ended - "${event.title}", Status: ${event.status}`);
+
+      const winningOutcome = event.winningOutcome;
+
+      if (winningOutcome) {
+        const predEndMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+        predEndMessage.platform = "twitch";
+        predEndMessage.message.text = buildPredictionEndMessage(event.title, winningOutcome.title);
+        predEndMessage.twitchSpecific = {
+          isHighlighted: true,
+          messageType: "prediction",
+        };
+
+        sendChatMessage(predEndMessage, true, false);
+      }
+
+      this.eventBus.safeEmit(EventTypes.TWITCH_PREDICTION_END, {
+        id: event.id,
+        title: event.title,
+        status: event.status,
+        winningOutcomeId: winningOutcome?.id ?? null,
+      });
+
+      this.broadcastEventToWebSocket("prediction_end", {
+        id: event.id,
+        title: event.title,
+        status: event.status,
+        outcomes: event.outcomes.map((o) => ({
+          id: o.id,
+          title: o.title,
+          color: o.color,
+          totalUsers: o.users ?? 0,
+          totalChannelPoints: o.channelPoints ?? 0,
+        })),
+        winningOutcomeId: winningOutcome?.id ?? null,
+      });
+    });
+  }
+
+  private subscribeToPollEvents(broadcasterId: string): void {
+    if (!this.eventSubListener) return;
+
+    this.eventSubListener.onChannelPollBegin(broadcasterId, (event) => {
+      console.log(`TwitchEventSub: Poll started - "${event.title}"`);
+
+      const choices = event.choices.map((c) => ({
+        id: c.id,
+        title: c.title,
+      }));
+
+      const pollMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+      pollMessage.platform = "twitch";
+      pollMessage.message.text = buildPollBeginMessage(
+        event.title,
+        choices.map((c) => c.title)
+      );
+      pollMessage.twitchSpecific = {
+        isHighlighted: true,
+        messageType: "poll",
+      };
+
+      sendChatMessage(pollMessage, true, false);
+
+      this.eventBus.safeEmit(EventTypes.TWITCH_POLL_BEGIN, {
+        id: event.id,
+        title: event.title,
+        choices,
+        startDate: event.startDate.toISOString(),
+        endDate: event.endDate.toISOString(),
+      });
+
+      this.broadcastEventToWebSocket("poll_begin", {
+        id: event.id,
+        title: event.title,
+        choices,
+        isBitsVotingEnabled: event.isBitsVotingEnabled,
+        isChannelPointsVotingEnabled: event.isChannelPointsVotingEnabled,
+        startDate: event.startDate.toISOString(),
+        endDate: event.endDate.toISOString(),
+      });
+    });
+
+    this.eventSubListener.onChannelPollProgress(broadcasterId, (event) => {
+      console.log(`TwitchEventSub: Poll progress - "${event.title}"`);
+
+      this.broadcastEventToWebSocket("poll_progress", {
+        id: event.id,
+        title: event.title,
+        choices: event.choices.map((c) => ({
+          id: c.id,
+          title: c.title,
+          totalVotes: c.totalVotes,
+          channelPointsVotes: c.channelPointsVotes,
+        })),
+      });
+    });
+
+    this.eventSubListener.onChannelPollEnd(broadcasterId, (event) => {
+      console.log(`TwitchEventSub: Poll ended - "${event.title}", Status: ${event.status}`);
+
+      const choices = event.choices.map((c) => ({
+        id: c.id,
+        title: c.title,
+        totalVotes: c.totalVotes,
+        channelPointsVotes: c.channelPointsVotes,
+      }));
+
+      // Find the winning choice (most total votes)
+      const winningChoice = [...choices].sort(
+        (a, b) => b.totalVotes - a.totalVotes
+      )[0];
+
+      if (winningChoice && event.status === "completed") {
+        const pollEndMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+        pollEndMessage.platform = "twitch";
+        pollEndMessage.message.text = buildPollEndMessage(
+          event.title,
+          winningChoice.title,
+          winningChoice.totalVotes
+        );
+        pollEndMessage.twitchSpecific = {
+          isHighlighted: true,
+          messageType: "poll",
+        };
+
+        sendChatMessage(pollEndMessage, true, false);
+      }
+
+      this.eventBus.safeEmit(EventTypes.TWITCH_POLL_END, {
+        id: event.id,
+        title: event.title,
+        status: event.status,
+        choices,
+        winningChoiceId: winningChoice?.id ?? null,
+      });
+
+      this.broadcastEventToWebSocket("poll_end", {
+        id: event.id,
+        title: event.title,
+        status: event.status,
+        choices,
+        winningChoiceId: winningChoice?.id ?? null,
+      });
+    });
+  }
+
+  private subscribeToShoutoutEvents(broadcasterId: string): void {
+    if (!this.eventSubListener) return;
+
+    this.eventSubListener.onChannelShoutoutCreate(broadcasterId, broadcasterId, (event) => {
+      console.log(
+        `TwitchEventSub: Shoutout created for ${event.shoutedOutBroadcasterDisplayName}`
+      );
+
+      this.broadcastEventToWebSocket("shoutout_create", {
+        shoutedOutUserName: event.shoutedOutBroadcasterName,
+        shoutedOutUserDisplayName: event.shoutedOutBroadcasterDisplayName,
+        viewerCount: event.viewerCount,
+        startDate: event.startDate.toISOString(),
+      });
+    });
+
+    this.eventSubListener.onChannelShoutoutReceive(broadcasterId, broadcasterId, (event) => {
+      console.log(
+        `TwitchEventSub: Shoutout received from ${event.shoutingOutBroadcasterDisplayName}`
+      );
+
+      const shoutoutMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+      shoutoutMessage.platform = "twitch";
+      shoutoutMessage.message.text = buildShoutoutReceiveMessage(
+        event.shoutingOutBroadcasterDisplayName
+      );
+      shoutoutMessage.twitchSpecific = {
+        isHighlighted: true,
+        messageType: "shoutout",
+      };
+
+      sendChatMessage(shoutoutMessage, true, false);
+
+      this.eventBus.safeEmit(EventTypes.TWITCH_SHOUTOUT_RECEIVE, {
+        shoutingOutUserName: event.shoutingOutBroadcasterName,
+        shoutingOutUserDisplayName: event.shoutingOutBroadcasterDisplayName,
+        viewerCount: event.viewerCount,
+        startDate: event.startDate.toISOString(),
+      });
+
+      this.broadcastEventToWebSocket("shoutout_receive", {
+        shoutingOutUserName: event.shoutingOutBroadcasterName,
+        shoutingOutUserDisplayName: event.shoutingOutBroadcasterDisplayName,
+        viewerCount: event.viewerCount,
+        startDate: event.startDate.toISOString(),
+      });
+    });
+  }
+
+  /**
+   * Subscribes to subscription and gift subscription events.
+   * These supplement the existing IRC-based subscription handlers.
+   */
+  private subscribeToSubscriptionEvents(broadcasterId: string): void {
+    if (!this.eventSubListener) return;
+
+    this.eventSubListener.onChannelSubscription(broadcasterId, (event) => {
+      console.log(
+        `TwitchEventSub: Subscription - ${event.userDisplayName} (Tier ${event.tier})`
+      );
+
+      this.broadcastEventToWebSocket("subscription", {
+        userName: event.userName,
+        userDisplayName: event.userDisplayName,
+        tier: event.tier,
+        isGift: event.isGift,
+      });
+    });
+
+    this.eventSubListener.onChannelSubscriptionGift(broadcasterId, (event) => {
+      console.log(
+        `TwitchEventSub: Gift Sub - ${event.gifterDisplayName ?? "Anonymous"} gifted ${event.amount} Tier ${event.tier} subs`
+      );
+
+      this.broadcastEventToWebSocket("subscription_gift", {
+        gifterName: event.gifterName,
+        gifterDisplayName: event.gifterDisplayName ?? "Anonymous",
+        amount: event.amount,
+        tier: event.tier,
+        cumulativeAmount: event.cumulativeAmount ?? 0,
+        isAnonymous: event.isAnonymous,
+      });
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // EventSub Helpers
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Broadcasts an EventSub event to connected WebSocket clients.
+   * Events are wrapped in a system UnifiedChatMessage for the frontend.
+   */
+  private broadcastEventToWebSocket(
+    eventType: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data: Record<string, any>
+  ): void {
+    const eventMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+    eventMessage.platform = "system";
+    eventMessage.message.text = JSON.stringify({
+      type: `eventsub:${eventType}`,
+      data,
+    });
+
+    sendToWebSocketClients(eventMessage);
   }
 
   /**
@@ -1397,19 +1896,19 @@ export class TwitchManager {
   /**
    * Handles G'Day Streamer reward redemption
    * @private
-   * @param reward The reward redemption
    */
   private handleGDayRedemption(
-    reward: HelixCustomRewardRedemption
+    userDisplayName: string,
+    userId: string
   ): void {
     if (!this.streamerUser) return;
 
-    console.log(`${reward.userDisplayName} redeemed G'Day Streamer!`);
+    console.log(`${userDisplayName} redeemed G'Day Streamer!`);
 
     const gDayMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
     gDayMessage.platform = "twitch";
-    gDayMessage.author.displayName = reward.userDisplayName;
-    gDayMessage.author.id = reward.userId;
+    gDayMessage.author.displayName = userDisplayName;
+    gDayMessage.author.id = userId;
     gDayMessage.twitchSpecific = {
       isHighlighted: true,
     };
@@ -1421,19 +1920,19 @@ export class TwitchManager {
   /**
    * Handles G'Night Streamer reward redemption
    * @private
-   * @param reward The reward redemption
    */
   private handleGNightRedemption(
-    reward: HelixCustomRewardRedemption
+    userDisplayName: string,
+    userId: string
   ): void {
     if (!this.streamerUser) return;
 
-    console.log(`${reward.userDisplayName} redeemed G'Night Streamer!`);
+    console.log(`${userDisplayName} redeemed G'Night Streamer!`);
 
     const gNightMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
     gNightMessage.platform = "twitch";
-    gNightMessage.author.displayName = reward.userDisplayName;
-    gNightMessage.author.id = reward.userId;
+    gNightMessage.author.displayName = userDisplayName;
+    gNightMessage.author.id = userId;
     gNightMessage.twitchSpecific = {
       isHighlighted: true,
     };
@@ -1445,12 +1944,12 @@ export class TwitchManager {
   /**
    * Handles Add Custom Greeting reward redemption
    * @private
-   * @param reward The reward redemption
    */
   private async handleAddCustomGreetingRedemption(
-    reward: HelixCustomRewardRedemption
+    userDisplayName: string,
+    userId: string,
+    userInput: string
   ): Promise<void> {
-    const userDisplayName = (await reward.getUser()).displayName;
     console.log(`${userDisplayName} redeemed Add Custom Greeting!`);
 
     const customGreetingMessage: UnifiedChatMessage =
@@ -1462,9 +1961,9 @@ export class TwitchManager {
 
     void AddWelcomeMessage(
       userDisplayName,
-      reward.userId,
+      userId,
       "twitch",
-      (reward.userInput) || ""
+      userInput || ""
     );
 
     console.log("Custom Greeting added!");
@@ -1483,13 +1982,15 @@ export class TwitchManager {
    * Clean up resources when manager is no longer needed
    */
   public dispose(): void {
+    // Stop EventSub listener
+    if (this.eventSubListener) {
+      this.eventSubListener.stop();
+      this.eventSubListener = undefined;
+      this.isEventSubInitialised = false;
+    }
+
     // Clear all intervals
     this.clearIntervals();
-
-    if (this.twitchApiPollingInterval) {
-      clearInterval(this.twitchApiPollingInterval);
-      this.twitchApiPollingInterval = undefined;
-    }
 
     // Disconnect chat client
     if (this.chatClient) {

@@ -1,6 +1,5 @@
 import { DiscordSetup } from "./Server/Integrations/Discord";
 import { TwitchManager } from "./Server/Integrations/Twitch";
-import { TwitchEventSubManager } from "./Server/Integrations/TwitchEventSub";
 import { SpotifyManager } from "./Server/Integrations/Spotify";
 import { QuizManager } from "./Server/Commands/Quiz";
 import { HaloRunsSetup } from "./Server/Integrations/HaloRuns";
@@ -29,18 +28,6 @@ async function main() {
 
   await TwitchManager.getInstance().initialise(server);
 
-  // Initialize EventSub after Twitch auth is complete
-  const twitchApi = TwitchManager.getInstance().api;
-  const twitchStreamer = TwitchManager.getInstance().streamer;
-  if (twitchApi && twitchStreamer) {
-    await TwitchEventSubManager.getInstance().initialise(
-      twitchApi,
-      twitchStreamer.id
-    );
-  } else {
-    console.log("Skipping EventSub initialisation - Twitch auth not complete.");
-  }
-
   await YouTubeManager.getInstance().initialise(server);
 
   QuizManager.getInstance().initialise();
@@ -54,7 +41,6 @@ async function main() {
   // Graceful shutdown
   process.on("SIGINT", () => {
     console.log("\nShutting down...");
-    TwitchEventSubManager.getInstance().dispose();
     TwitchManager.getInstance().dispose();
     YouTubeManager.getInstance().dispose();
     SpotifyManager.getInstance().dispose();

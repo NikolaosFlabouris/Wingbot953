@@ -81,22 +81,18 @@ export class EventBus extends EventEmitter {
  * Add new event types here as integrations expand
  */
 export const EventTypes = {
-  // Twitch events (polling-based)
+  // Twitch events
   TWITCH_STREAM_STARTED: 'twitch:stream:started',
   TWITCH_STREAM_ENDED: 'twitch:stream:ended',
-
-  // Twitch EventSub events
-  TWITCH_EVENTSUB_STREAM_ONLINE: 'twitch:eventsub:stream:online',
-  TWITCH_EVENTSUB_STREAM_OFFLINE: 'twitch:eventsub:stream:offline',
-  TWITCH_CHANNEL_POINT_REDEMPTION: 'twitch:eventsub:channel_point_redemption',
-  TWITCH_FOLLOW: 'twitch:eventsub:follow',
-  TWITCH_HYPE_TRAIN_BEGIN: 'twitch:eventsub:hype_train:begin',
-  TWITCH_HYPE_TRAIN_END: 'twitch:eventsub:hype_train:end',
-  TWITCH_PREDICTION_BEGIN: 'twitch:eventsub:prediction:begin',
-  TWITCH_PREDICTION_END: 'twitch:eventsub:prediction:end',
-  TWITCH_POLL_BEGIN: 'twitch:eventsub:poll:begin',
-  TWITCH_POLL_END: 'twitch:eventsub:poll:end',
-  TWITCH_SHOUTOUT_RECEIVE: 'twitch:eventsub:shoutout:receive',
+  TWITCH_CHANNEL_POINT_REDEMPTION: 'twitch:channel_point_redemption',
+  TWITCH_FOLLOW: 'twitch:follow',
+  TWITCH_HYPE_TRAIN_BEGIN: 'twitch:hype_train:begin',
+  TWITCH_HYPE_TRAIN_END: 'twitch:hype_train:end',
+  TWITCH_PREDICTION_BEGIN: 'twitch:prediction:begin',
+  TWITCH_PREDICTION_END: 'twitch:prediction:end',
+  TWITCH_POLL_BEGIN: 'twitch:poll:begin',
+  TWITCH_POLL_END: 'twitch:poll:end',
+  TWITCH_SHOUTOUT_RECEIVE: 'twitch:shoutout:receive',
 
   // YouTube events (for future use)
   YOUTUBE_STREAM_STARTED: 'youtube:stream:started',

@@ -52,7 +52,7 @@ export interface UnifiedChatMessage {
     returningChatter?: boolean;
     badges?: BadgeIcon[];
     isHighlighted?: boolean;
-    messageType?: "sub" | "resub" | "subgift";
+    messageType?: "sub" | "resub" | "subgift" | "follow" | "hypetrain" | "prediction" | "poll" | "shoutout";
   };
   youtubeSpecific?: {
     isSuperChat?: boolean;

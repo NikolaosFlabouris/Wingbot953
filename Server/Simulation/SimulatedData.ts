@@ -1,4 +1,14 @@
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage"
+import {
+    buildFollowMessage,
+    buildHypeTrainBeginMessage,
+    buildHypeTrainEndMessage,
+    buildPollBeginMessage,
+    buildPollEndMessage,
+    buildPredictionBeginMessage,
+    buildPredictionEndMessage,
+    buildShoutoutReceiveMessage,
+} from "../Integrations/TwitchLogic"
 
 /**
  * Simulated usernames for generating fake chat messages
@@ -189,4 +199,86 @@ export function generateSimulatedMessage(
             text: messageText,
         },
     }
+}
+
+/**
+ * Special event types that can be simulated.
+ * Each returns a bot notification message.
+ */
+type SimulatedEvent = () => {
+    botMessage: UnifiedChatMessage
+}
+
+function makeBotMessage(text: string, messageType: string): UnifiedChatMessage {
+    return {
+        id: `sim-event-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        platform: "twitch",
+        timestamp: new Date(),
+        channel: { id: "sim-channel-twitch", name: "Wingman953" },
+        author: { name: "wingbot953", displayName: "Wingbot953" },
+        message: { text },
+        twitchSpecific: { messageType: messageType as UnifiedChatMessage["twitchSpecific"] extends { messageType?: infer T } ? T : never, isHighlighted: true },
+    }
+}
+
+const specialEvents: SimulatedEvent[] = [
+    // Follow
+    () => {
+        const user = randomFrom(twitchUsernames)
+        return { botMessage: makeBotMessage(buildFollowMessage(user), "follow") }
+    },
+    // Hype Train Begin
+    () => {
+        const level = randomFrom([1, 2, 3])
+        return { botMessage: makeBotMessage(buildHypeTrainBeginMessage(level), "hypetrain") }
+    },
+    // Hype Train End
+    () => {
+        const level = randomFrom([2, 3, 4, 5])
+        return { botMessage: makeBotMessage(buildHypeTrainEndMessage(level), "hypetrain") }
+    },
+    // Poll Begin
+    () => {
+        const title = randomFrom(["Best Halo game?", "Next game to play?", "Favourite weapon?"])
+        const choices = title === "Best Halo game?"
+            ? ["Halo 3", "ODST", "Reach", "CE"]
+            : title === "Next game to play?"
+                ? ["Halo CE", "Halo 2", "Halo Infinite"]
+                : ["Energy Sword", "BR", "Sniper", "Rockets"]
+        return { botMessage: makeBotMessage(buildPollBeginMessage(title, choices), "poll") }
+    },
+    // Poll End
+    () => {
+        const title = randomFrom(["Best Halo game?", "Favourite weapon?"])
+        const winner = title === "Best Halo game?" ? "ODST" : "Energy Sword"
+        const votes = randomFrom([42, 87, 156, 203])
+        return { botMessage: makeBotMessage(buildPollEndMessage(title, winner, votes), "poll") }
+    },
+    // Prediction Begin
+    () => {
+        const title = randomFrom(["Will streamer PB?", "Will the run survive?", "Death before boss?"])
+        const outcomes = ["Yes", "No"]
+        return { botMessage: makeBotMessage(buildPredictionBeginMessage(title, outcomes), "prediction") }
+    },
+    // Prediction End
+    () => {
+        const title = randomFrom(["Will streamer PB?", "Will the run survive?"])
+        const winner = randomFrom(["Yes", "No"])
+        return { botMessage: makeBotMessage(buildPredictionEndMessage(title, winner), "prediction") }
+    },
+    // Shoutout Receive
+    () => {
+        const broadcaster = randomFrom(["SpeedGamerX", "HaloProPlayer", "RetroRunnerTV"])
+        return { botMessage: makeBotMessage(buildShoutoutReceiveMessage(broadcaster), "shoutout") }
+    },
+]
+
+/**
+ * Generates a random simulated special event (follow, hype train, poll, prediction, shoutout).
+ * Returns the bot notification message.
+ */
+export function generateSimulatedSpecialEvent(): {
+    botMessage: UnifiedChatMessage
+} {
+    return randomFrom(specialEvents)()
 }

@@ -8,6 +8,14 @@ import {
     buildResubMessage,
     buildSubGiftMessage,
     buildRaidMessage,
+    buildFollowMessage,
+    buildHypeTrainBeginMessage,
+    buildHypeTrainEndMessage,
+    buildPollBeginMessage,
+    buildPollEndMessage,
+    buildPredictionBeginMessage,
+    buildPredictionEndMessage,
+    buildShoutoutReceiveMessage,
     parseEmotePosition,
     extractEmoteName,
     buildEmoteUrl,
@@ -160,5 +168,73 @@ describe("buildEmoteUrl", () => {
     it("handles alphanumeric emote IDs", () => {
         const url = buildEmoteUrl("emotesv2_abc123")
         expect(url).toContain("emotesv2_abc123")
+    })
+})
+
+describe("buildFollowMessage", () => {
+    it("includes the display name", () => {
+        const msg = buildFollowMessage("NewFollower")
+        expect(msg).toContain("NewFollower")
+        expect(msg).toContain("follow")
+    })
+})
+
+describe("buildHypeTrainBeginMessage", () => {
+    it("includes the level", () => {
+        const msg = buildHypeTrainBeginMessage(2)
+        expect(msg).toContain("Level 2")
+        expect(msg).toContain("Hype Train")
+    })
+})
+
+describe("buildHypeTrainEndMessage", () => {
+    it("includes the level", () => {
+        const msg = buildHypeTrainEndMessage(5)
+        expect(msg).toContain("level 5")
+        expect(msg).toContain("Hype Train")
+    })
+})
+
+describe("buildPollBeginMessage", () => {
+    it("includes title and choices", () => {
+        const msg = buildPollBeginMessage("Best game?", ["Halo 3", "ODST", "Reach"])
+        expect(msg).toContain("Best game?")
+        expect(msg).toContain("Halo 3")
+        expect(msg).toContain("ODST")
+        expect(msg).toContain("Reach")
+    })
+})
+
+describe("buildPollEndMessage", () => {
+    it("includes title, winner, and votes", () => {
+        const msg = buildPollEndMessage("Best game?", "ODST", 42)
+        expect(msg).toContain("Best game?")
+        expect(msg).toContain("ODST")
+        expect(msg).toContain("42")
+    })
+})
+
+describe("buildPredictionBeginMessage", () => {
+    it("includes title and outcomes", () => {
+        const msg = buildPredictionBeginMessage("Will streamer PB?", ["Yes", "No"])
+        expect(msg).toContain("Will streamer PB?")
+        expect(msg).toContain("Yes")
+        expect(msg).toContain("No")
+    })
+})
+
+describe("buildPredictionEndMessage", () => {
+    it("includes title and winner", () => {
+        const msg = buildPredictionEndMessage("Will streamer PB?", "Yes")
+        expect(msg).toContain("Will streamer PB?")
+        expect(msg).toContain("Yes")
+    })
+})
+
+describe("buildShoutoutReceiveMessage", () => {
+    it("includes the broadcaster name", () => {
+        const msg = buildShoutoutReceiveMessage("CoolStreamer")
+        expect(msg).toContain("CoolStreamer")
+        expect(msg).toContain("shoutout")
     })
 })

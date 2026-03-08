@@ -72,6 +72,62 @@ export function buildRaidMessage(
 }
 
 /**
+ * Builds the follow notification message text.
+ */
+export function buildFollowMessage(displayName: string): string {
+  return `wingma14Arrive Welcome ${displayName}! Thanks for the follow!`;
+}
+
+/**
+ * Builds the hype train begin message text.
+ */
+export function buildHypeTrainBeginMessage(level: number): string {
+  return `A Hype Train has started! Level ${level} - Let's go!`;
+}
+
+/**
+ * Builds the hype train end message text.
+ */
+export function buildHypeTrainEndMessage(level: number): string {
+  return `The Hype Train reached level ${level}! Great job everyone!`;
+}
+
+/**
+ * Builds the poll begin message text.
+ */
+export function buildPollBeginMessage(title: string, choices: string[]): string {
+  return `Poll started: ${title} - Options: ${choices.join(", ")}`;
+}
+
+/**
+ * Builds the poll end message text.
+ */
+export function buildPollEndMessage(title: string, winner: string, votes: number): string {
+  return `Poll "${title}" ended! Winner: ${winner} with ${votes} votes!`;
+}
+
+/**
+ * Builds the prediction begin message text.
+ */
+export function buildPredictionBeginMessage(title: string, outcomes: string[]): string {
+  return `Prediction started: ${title} - ${outcomes.join(" vs ")}`;
+}
+
+/**
+ * Builds the prediction end message text.
+ */
+export function buildPredictionEndMessage(title: string, winner: string): string {
+  return `Prediction "${title}" ended! Winner: ${winner}`;
+}
+
+/**
+ * Builds the shoutout receive message text.
+ */
+export function buildShoutoutReceiveMessage(broadcasterDisplayName: string): string {
+  return `We got a shoutout from ${broadcasterDisplayName}! Thanks for the love!`;
+}
+
+/**
  * Parses emote position strings ("start-end") into numeric start/end pairs.
  */
 export function parseEmotePosition(

@@ -13,6 +13,7 @@ vi.mock("../Server/MessageHandling", () => ({
 
 import {
     generateSimulatedMessage,
+    generateSimulatedSpecialEvent,
     simulationProfiles,
 } from "../Server/Simulation/SimulatedData"
 
@@ -147,6 +148,34 @@ describe("SimulatedData", () => {
             if (foundMod) {
                 expect(foundMod).toBe(true)
             }
+        })
+    })
+
+    describe("generateSimulatedSpecialEvent", () => {
+        it("generates a valid special event", () => {
+            const event = generateSimulatedSpecialEvent()
+            expect(event.botMessage).toBeDefined()
+            expect(event.botMessage.platform).toBe("twitch")
+            expect(event.botMessage.message.text.length).toBeGreaterThan(0)
+            expect(event.botMessage.twitchSpecific?.isHighlighted).toBe(true)
+        })
+
+        it("generates events with valid messageType", () => {
+            const validTypes = ["follow", "hypetrain", "poll", "prediction", "shoutout"]
+            for (let i = 0; i < 100; i++) {
+                const event = generateSimulatedSpecialEvent()
+                expect(validTypes).toContain(event.botMessage.twitchSpecific?.messageType)
+            }
+        })
+
+        it("generates varied event types", () => {
+            const types = new Set<string>()
+            for (let i = 0; i < 200; i++) {
+                const event = generateSimulatedSpecialEvent()
+                types.add(event.botMessage.twitchSpecific?.messageType ?? "")
+            }
+            // Should generate at least 3 different event types
+            expect(types.size).toBeGreaterThanOrEqual(3)
         })
     })
 })
