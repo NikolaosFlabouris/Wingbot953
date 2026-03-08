@@ -1,5 +1,41 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 
+// Stable mock instances for integration singletons
+const {
+    mockHandleFollowAge,
+    mockHandleUptime,
+    mockRunAd,
+    mockGetCurrentSong,
+    mockAddSongToQueue,
+    mockGetSongYear,
+    mockIs2013Song,
+    mockSetPollingOverride,
+    mockGetPollingStatus,
+    mockSetGame,
+    mockQueueQuiz,
+    mockHandleHaloRunsWr,
+    mockHandleWingman953Pb,
+} = vi.hoisted(() => ({
+    mockHandleFollowAge: vi.fn(),
+    mockHandleUptime: vi.fn(),
+    mockRunAd: vi.fn(),
+    mockGetCurrentSong: vi.fn(),
+    mockAddSongToQueue: vi.fn(),
+    mockGetSongYear: vi.fn(),
+    mockIs2013Song: vi.fn(),
+    mockSetPollingOverride: vi.fn(),
+    mockGetPollingStatus: vi.fn(() => ({
+        overrideMode: null,
+        isPolling: false,
+        isMonitoring: false,
+        isTwitchLive: false,
+    })),
+    mockSetGame: vi.fn(),
+    mockQueueQuiz: vi.fn(),
+    mockHandleHaloRunsWr: vi.fn(),
+    mockHandleWingman953Pb: vi.fn(),
+}))
+
 // Mock all external dependencies
 vi.mock("../Server/MessageHandling", () => ({
     sendChatMessage: vi.fn(),
@@ -14,9 +50,9 @@ vi.mock("../Server/MessageHandling", () => ({
 vi.mock("../Server/Integrations/Twitch", () => ({
     TwitchManager: {
         getInstance: () => ({
-            handleFollowAge: vi.fn(),
-            handleUptime: vi.fn(),
-            runAd: vi.fn(),
+            handleFollowAge: mockHandleFollowAge,
+            handleUptime: mockHandleUptime,
+            runAd: mockRunAd,
         }),
     },
 }))
@@ -24,10 +60,10 @@ vi.mock("../Server/Integrations/Twitch", () => ({
 vi.mock("../Server/Integrations/Spotify", () => ({
     SpotifyManager: {
         getInstance: () => ({
-            getCurrentSong: vi.fn(),
-            addSongToQueue: vi.fn(),
-            getSongYear: vi.fn(),
-            is2013Song: vi.fn(),
+            getCurrentSong: mockGetCurrentSong,
+            addSongToQueue: mockAddSongToQueue,
+            getSongYear: mockGetSongYear,
+            is2013Song: mockIs2013Song,
         }),
     },
 }))
@@ -35,26 +71,21 @@ vi.mock("../Server/Integrations/Spotify", () => ({
 vi.mock("../Server/Integrations/YouTube", () => ({
     YouTubeManager: {
         getInstance: () => ({
-            setPollingOverride: vi.fn(),
-            getPollingStatus: vi.fn(() => ({
-                overrideMode: null,
-                isPolling: false,
-                isMonitoring: false,
-                isTwitchLive: false,
-            })),
+            setPollingOverride: mockSetPollingOverride,
+            getPollingStatus: mockGetPollingStatus,
         }),
     },
 }))
 
 vi.mock("../Server/Integrations/HaloRuns", () => ({
-    HandleHaloRunsWr: vi.fn(),
-    HandleWingman953Pb: vi.fn(),
+    HandleHaloRunsWr: mockHandleHaloRunsWr,
+    HandleWingman953Pb: mockHandleWingman953Pb,
 }))
 
 vi.mock("../Server/Integrations/LiveSplit", () => ({
     LiveSplitClient: {
         getInstance: () => ({
-            setGame: vi.fn(),
+            setGame: mockSetGame,
         }),
     },
 }))
@@ -62,7 +93,7 @@ vi.mock("../Server/Integrations/LiveSplit", () => ({
 vi.mock("../Server/Commands/Quiz", () => ({
     QuizManager: {
         getInstance: () => ({
-            queueQuiz: vi.fn(),
+            queueQuiz: mockQueueQuiz,
         }),
     },
     GetQuizLeaderboards: vi.fn(),
@@ -205,5 +236,190 @@ describe("HandleRandomNumberGeneration", () => {
 describe("GenerateCommandsList", () => {
     it("runs without error", () => {
         expect(() => GenerateCommandsList()).not.toThrow()
+    })
+})
+
+describe("HandleCommandsList", () => {
+    const mockSend = vi.mocked(sendChatMessage)
+
+    beforeEach(() => {
+        mockSend.mockClear()
+        GenerateCommandsList()
+    })
+
+    it("sends two messages (split commands list)", () => {
+        const entry = functionMap.find(e => e.Command.includes("!commands"))
+        expect(entry).toBeDefined()
+
+        entry!.Function(makeMessage("!commands"))
+        expect(mockSend).toHaveBeenCalledTimes(2)
+    })
+
+    it("preserves requesting platform", () => {
+        const entry = functionMap.find(e => e.Command.includes("!commands"))!
+        entry.Function(makeMessage("!commands", "youtube"))
+
+        expect(mockSend.mock.calls[0][0].platform).toBe("youtube")
+        expect(mockSend.mock.calls[1][0].platform).toBe("youtube")
+    })
+})
+
+describe("YouTube toggle commands", () => {
+    const mockSend = vi.mocked(sendChatMessage)
+
+    beforeEach(() => {
+        mockSend.mockClear()
+        mockSetPollingOverride.mockClear()
+        mockGetPollingStatus.mockClear()
+    })
+
+    it("HandleYouTubeToggleOn calls setPollingOverride('force_on')", () => {
+        const entry = functionMap.find(e => e.Command.includes("!youtube_toggle_on"))!
+        entry.Function(makeMessage("!youtube_toggle_on"))
+
+        expect(mockSetPollingOverride).toHaveBeenCalledWith("force_on")
+        expect(mockSend).toHaveBeenCalledOnce()
+        expect(mockSend.mock.calls[0][0].message.text).toContain("forced ON")
+    })
+
+    it("HandleYouTubeToggleOff calls setPollingOverride('force_off')", () => {
+        const entry = functionMap.find(e => e.Command.includes("!youtube_toggle_off"))!
+        entry.Function(makeMessage("!youtube_toggle_off"))
+
+        expect(mockSetPollingOverride).toHaveBeenCalledWith("force_off")
+        expect(mockSend.mock.calls[0][0].message.text).toContain("forced OFF")
+    })
+
+    it("HandleYouTubeToggleAuto calls setPollingOverride(null)", () => {
+        const entry = functionMap.find(e => e.Command.includes("!youtube_toggle_auto"))!
+        entry.Function(makeMessage("!youtube_toggle_auto"))
+
+        expect(mockSetPollingOverride).toHaveBeenCalledWith(null)
+        expect(mockSend.mock.calls[0][0].message.text).toContain("AUTO")
+    })
+
+    it("HandleYouTubeStatus shows auto mode by default", () => {
+        const entry = functionMap.find(e => e.Command.includes("!youtube_status"))!
+        entry.Function(makeMessage("!youtube_status"))
+
+        expect(mockGetPollingStatus).toHaveBeenCalled()
+        const text = mockSend.mock.calls[0][0].message.text
+        expect(text).toContain("AUTO")
+        expect(text).toContain("Polling:")
+        expect(text).toContain("Monitoring:")
+    })
+
+    it("HandleYouTubeStatus shows FORCED ON mode", () => {
+        mockGetPollingStatus.mockReturnValueOnce({
+            overrideMode: "force_on",
+            isPolling: true,
+            isMonitoring: true,
+            isTwitchLive: false,
+        })
+
+        const entry = functionMap.find(e => e.Command.includes("!youtube_status"))!
+        entry.Function(makeMessage("!youtube_status"))
+
+        const text = mockSend.mock.calls[0][0].message.text
+        expect(text).toContain("FORCED ON")
+        expect(text).toContain("Polling: YES")
+    })
+
+    it("HandleYouTubeStatus shows FORCED OFF mode", () => {
+        mockGetPollingStatus.mockReturnValueOnce({
+            overrideMode: "force_off",
+            isPolling: false,
+            isMonitoring: false,
+            isTwitchLive: true,
+        })
+
+        const entry = functionMap.find(e => e.Command.includes("!youtube_status"))!
+        entry.Function(makeMessage("!youtube_status"))
+
+        const text = mockSend.mock.calls[0][0].message.text
+        expect(text).toContain("FORCED OFF")
+        expect(text).toContain("Twitch Live: YES")
+    })
+})
+
+describe("Integration routing - functionMap entry functions", () => {
+    beforeEach(() => {
+        mockHandleFollowAge.mockClear()
+        mockHandleUptime.mockClear()
+        mockRunAd.mockClear()
+        mockGetCurrentSong.mockClear()
+        mockAddSongToQueue.mockClear()
+        mockGetSongYear.mockClear()
+        mockIs2013Song.mockClear()
+        mockHandleHaloRunsWr.mockClear()
+        mockHandleWingman953Pb.mockClear()
+        mockSetGame.mockClear()
+        mockQueueQuiz.mockClear()
+    })
+
+    it("!followage routes to TwitchManager.handleFollowAge", () => {
+        const entry = functionMap.find(e => e.Command.includes("!followage"))!
+        entry.Function(makeMessage("!followage"))
+        expect(mockHandleFollowAge).toHaveBeenCalledOnce()
+    })
+
+    it("!uptime routes to TwitchManager.handleUptime", () => {
+        const entry = functionMap.find(e => e.Command.includes("!uptime"))!
+        entry.Function(makeMessage("!uptime"))
+        expect(mockHandleUptime).toHaveBeenCalledOnce()
+    })
+
+    it("!runad routes to TwitchManager.runAd", () => {
+        const entry = functionMap.find(e => e.Command.includes("!runad"))!
+        entry.Function(makeMessage("!runad"))
+        expect(mockRunAd).toHaveBeenCalledOnce()
+    })
+
+    it("!song routes to SpotifyManager.getCurrentSong", () => {
+        const entry = functionMap.find(e => e.Command.includes("!song"))!
+        entry.Function(makeMessage("!song"))
+        expect(mockGetCurrentSong).toHaveBeenCalledOnce()
+    })
+
+    it("!sr routes to SpotifyManager.addSongToQueue", () => {
+        const entry = functionMap.find(e => e.Command.includes("!sr"))!
+        entry.Function(makeMessage("!sr songname"))
+        expect(mockAddSongToQueue).toHaveBeenCalledOnce()
+    })
+
+    it("!songyear routes to SpotifyManager.getSongYear", () => {
+        const entry = functionMap.find(e => e.Command.includes("!songyear"))!
+        entry.Function(makeMessage("!songyear"))
+        expect(mockGetSongYear).toHaveBeenCalledOnce()
+    })
+
+    it("!2013 routes to SpotifyManager.is2013Song", () => {
+        const entry = functionMap.find(e => e.Command.includes("!2013"))!
+        entry.Function(makeMessage("!2013"))
+        expect(mockIs2013Song).toHaveBeenCalledOnce()
+    })
+
+    it("!wr routes to HandleHaloRunsWr", () => {
+        const entry = functionMap.find(e => e.Command.includes("!wr"))!
+        entry.Function(makeMessage("!wr"))
+        expect(mockHandleHaloRunsWr).toHaveBeenCalledOnce()
+    })
+
+    it("!pb routes to HandleWingman953Pb", () => {
+        const entry = functionMap.find(e => e.Command.includes("!pb"))!
+        entry.Function(makeMessage("!pb"))
+        expect(mockHandleWingman953Pb).toHaveBeenCalledOnce()
+    })
+
+    it("!quizstart routes to QuizManager.queueQuiz", () => {
+        const entry = functionMap.find(e => e.Command.includes("!quizstart"))!
+        entry.Function(makeMessage("!quizstart"))
+        expect(mockQueueQuiz).toHaveBeenCalledOnce()
+    })
+
+    it("!setsplittable routes to LiveSplitClient.setGame", () => {
+        const entry = functionMap.find(e => e.Command.includes("!setsplittable"))!
+        entry.Function(makeMessage("!setsplittable Halo CE"))
+        expect(mockSetGame).toHaveBeenCalledOnce()
     })
 })

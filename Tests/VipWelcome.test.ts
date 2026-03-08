@@ -20,13 +20,14 @@ vi.mock("../Server/Commands/Utils", async (importOriginal) => {
     }
 })
 
-// Mock Twitch
+// Stable mock for Twitch so we can override getUserByName per-test
+const mockGetUserByName = vi.fn().mockResolvedValue({ id: "new-user-id" })
 vi.mock("../Server/Integrations/Twitch", () => ({
     TwitchManager: {
         getInstance: () => ({
             api: {
                 users: {
-                    getUserByName: vi.fn().mockResolvedValue({ id: "new-user-id" }),
+                    getUserByName: mockGetUserByName,
                 },
             },
         }),
@@ -89,6 +90,8 @@ describe("VipWelcome", () => {
         mockSend.mockClear()
         mockReadFileSync.mockClear()
         mockWriteFile.mockClear()
+        mockGetUserByName.mockClear()
+        mockGetUserByName.mockResolvedValue({ id: "new-user-id" })
     })
 
     describe("LoadWelcomeMessages", () => {
@@ -197,6 +200,48 @@ describe("VipWelcome", () => {
         it("creates new entry for unknown user via Twitch API", async () => {
             await AddWelcomeMessage("NewUser", "new-id", "twitch", "Welcome new user!")
             expect(mockWriteFile).toHaveBeenCalled()
+        })
+
+        it("handles Twitch API returning null user", async () => {
+            mockGetUserByName.mockResolvedValueOnce(null)
+
+            const logSpy = vi.spyOn(console, "log").mockImplementation(() => {})
+            await AddWelcomeMessage("NonexistentUser", "no-id", "twitch", "Hello!")
+            expect(logSpy).toHaveBeenCalledWith(
+                expect.stringContaining("not found")
+            )
+            logSpy.mockRestore()
+        })
+    })
+
+    describe("SaveWelcomeMessages error handling", () => {
+        beforeEach(() => {
+            mockReadFileSync.mockReturnValue(JSON.stringify(sampleWelcomeData))
+            LoadWelcomeMessages()
+            mockWriteFile.mockClear()
+        })
+
+        it("logs error when writeFile callback receives error", async () => {
+            // Make writeFile invoke callback with error
+            mockWriteFile.mockImplementation((_path: string, _data: string, cb: (err: Error | null) => void) => {
+                cb(new Error("disk full"))
+            })
+
+            const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+            await AddWelcomeMessage("VIPUser1", "vip-user-1", "twitch", "test greeting")
+            expect(errorSpy).toHaveBeenCalledWith("Error writing to file:", expect.any(Error))
+            errorSpy.mockRestore()
+        })
+
+        it("logs success when writeFile callback succeeds", async () => {
+            mockWriteFile.mockImplementation((_path: string, _data: string, cb: (err: Error | null) => void) => {
+                cb(null)
+            })
+
+            const logSpy = vi.spyOn(console, "log").mockImplementation(() => {})
+            await AddWelcomeMessage("VIPUser1", "vip-user-1", "twitch", "test greeting")
+            expect(logSpy).toHaveBeenCalledWith("Welcome messages updated successfully.")
+            logSpy.mockRestore()
         })
     })
 })

@@ -295,4 +295,48 @@ describe("TimeSpan - fromString parsing", () => {
         const ts = TimeSpan.fromString("-1:00:00")
         expect(ts.totalMilliseconds).toBeLessThan(0)
     })
+
+    it("parses hours:minutes:seconds with fractional seconds", () => {
+        const ts = TimeSpan.fromString("1:05:30.250")
+        expect(ts.hours).toBe(1)
+        expect(ts.minutes).toBe(5)
+        expect(ts.seconds).toBe(30)
+        expect(ts.milliseconds).toBe(250)
+    })
+
+    it("parses 4+ parts with day.hour separator", () => {
+        // "2.03:04:05:06" → 4 parts, first has "." → days=2, hours=3
+        const ts = TimeSpan.fromString("2.03:04:05:06")
+        // days=2, hours=3, minutes=4, seconds=6 (last part)
+        // Then adds fromDays(2) again since days > 0
+        expect(ts.days).toBeGreaterThanOrEqual(2)
+    })
+
+    it("parses 4+ parts without day separator as hours:mm:ss:extra", () => {
+        // "1:30:45:00" → 4 parts, first has no "." → hours from parts[0]
+        const ts = TimeSpan.fromString("1:30:45:00")
+        expect(ts.hours).toBeGreaterThanOrEqual(1)
+        expect(ts.minutes).toBe(30)
+    })
+
+    it("parses 4+ parts with fractional seconds on last part", () => {
+        const ts = TimeSpan.fromString("1.02:03:04:05.500")
+        expect(ts.milliseconds).toBe(500)
+    })
+})
+
+describe("TimeSpan - Overflow / Edge Cases", () => {
+    it("throws TimeSpanTooLong for fromTimeStartingFromDays overflow", () => {
+        // Very large days value should overflow
+        expect(() => TimeSpan.fromTime(1e12, 0, 0, 0, 0)).toThrow("TimeSpanTooLong")
+    })
+
+    it("throws TimeSpanTooLong for timeToMilliseconds overflow", () => {
+        // Very large hours should overflow
+        expect(() => TimeSpan.fromTime(1e12, 0, 0)).toThrow("TimeSpanTooLong")
+    })
+
+    it("throws TimeSpanTooLong for interval overflow", () => {
+        expect(() => TimeSpan.fromDays(1e12)).toThrow("TimeSpanTooLong")
+    })
 })

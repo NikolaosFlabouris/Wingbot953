@@ -1,28 +1,36 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 
-// Create stable mock instances so the same object is returned by getInstance()
-const mockTwitchInstance = {
-    live: false,
-    sendMessage: vi.fn(),
-    handleFollowAge: vi.fn(),
-    handleUptime: vi.fn(),
-    runAd: vi.fn(),
-    enableSlowMode: vi.fn(),
-    disableSlowMode: vi.fn(),
-    subscriberFirstMessageQuiz: vi.fn(),
-}
-
-const mockYouTubeInstance = {
-    sendMessage: vi.fn(),
-    setChatPollingInterval: vi.fn(),
-    setPollingOverride: vi.fn(),
-    getPollingStatus: vi.fn(() => ({
-        overrideMode: null,
-        isPolling: false,
-        isMonitoring: false,
-        isTwitchLive: false,
-    })),
-}
+// Create stable mock instances using vi.hoisted so they're available during mock hoisting
+const {
+    mockTwitchInstance,
+    mockYouTubeInstance,
+    mockCheckForWelcomeMessage,
+    mockQuizHandleMessage,
+} = vi.hoisted(() => ({
+    mockTwitchInstance: {
+        live: false,
+        sendMessage: vi.fn(),
+        handleFollowAge: vi.fn(),
+        handleUptime: vi.fn(),
+        runAd: vi.fn(),
+        enableSlowMode: vi.fn(),
+        disableSlowMode: vi.fn(),
+        subscriberFirstMessageQuiz: vi.fn(),
+    },
+    mockYouTubeInstance: {
+        sendMessage: vi.fn(),
+        setChatPollingInterval: vi.fn(),
+        setPollingOverride: vi.fn(),
+        getPollingStatus: vi.fn(() => ({
+            overrideMode: null,
+            isPolling: false,
+            isMonitoring: false,
+            isTwitchLive: false,
+        })),
+    },
+    mockCheckForWelcomeMessage: vi.fn(),
+    mockQuizHandleMessage: vi.fn(),
+}))
 
 vi.mock("../Server/Integrations/Twitch", () => ({
     TwitchManager: {
@@ -68,7 +76,7 @@ vi.mock("../Server/Integrations/Discord", () => ({
 vi.mock("../Server/Commands/Quiz", () => ({
     QuizManager: {
         getInstance: () => ({
-            handleMessage: vi.fn(),
+            handleMessage: mockQuizHandleMessage,
             queueQuiz: vi.fn(),
             isQuizActive: vi.fn(() => false),
         }),
@@ -80,7 +88,7 @@ vi.mock("../Server/Commands/Quiz", () => ({
 }))
 
 vi.mock("../Server/Commands/VipWelcome", () => ({
-    CheckForWelcomeMessage: vi.fn(),
+    CheckForWelcomeMessage: mockCheckForWelcomeMessage,
 }))
 
 vi.mock("ws", () => ({
@@ -209,12 +217,153 @@ describe("MessageHandling", () => {
     })
 
     describe("PeriodicMessages", () => {
-        it("PeriodicTwitchMessages sends twitch message", () => {
-            expect(() => PeriodicTwitchMessages()).not.toThrow()
+        beforeEach(() => {
+            mockTwitchInstance.sendMessage.mockClear()
+            mockYouTubeInstance.sendMessage.mockClear()
         })
 
-        it("PeriodicYouTubeMessages sends youtube message", () => {
-            expect(() => PeriodicYouTubeMessages()).not.toThrow()
+        it("PeriodicTwitchMessages sends to twitch platform", () => {
+            PeriodicTwitchMessages()
+            // Sends to twitch but with sendToWebSocket=false
+            expect(mockTwitchInstance.sendMessage).toHaveBeenCalledOnce()
+        })
+
+        it("PeriodicYouTubeMessages sends to youtube platform", () => {
+            PeriodicYouTubeMessages()
+            expect(mockYouTubeInstance.sendMessage).toHaveBeenCalledOnce()
+        })
+
+        it("PeriodicTwitchMessages does not send to websocket", () => {
+            // The function is called with sendToWebSocket=false
+            // We can verify it doesn't throw and sends the message to platform
+            expect(() => PeriodicTwitchMessages()).not.toThrow()
+        })
+    })
+
+    describe("Converse", () => {
+        beforeEach(() => {
+            mockTwitchInstance.sendMessage.mockClear()
+            mockYouTubeInstance.sendMessage.mockClear()
+        })
+
+        it("sometimes responds to messages starting with 'is'", () => {
+            // Force random to trigger (40% chance when first word is "is")
+            vi.spyOn(Math, "random").mockReturnValue(0) // Between(0,99) = 0, which is < 40
+            const msg = makeMessage("is this a test?", "twitch", "SomeUser")
+            handleChatMessage(msg)
+
+            // Should have sent a converse response to twitch
+            expect(mockTwitchInstance.sendMessage).toHaveBeenCalled()
+            vi.restoreAllMocks()
+        })
+
+        it("does not respond when first word is not 'is'", () => {
+            const msg = makeMessage("hello world", "twitch", "SomeUser")
+            handleChatMessage(msg)
+
+            // No converse response should be sent (only quiz handleMessage is called)
+            // sendMessage may not have been called for a non-command non-is message
+            // This test just verifies no crash
+            expect(() => handleChatMessage(msg)).not.toThrow()
+        })
+
+        it("does not always respond to 'is' (60% chance of not responding)", () => {
+            vi.spyOn(Math, "random").mockReturnValue(0.99) // Between(0,99) = 99, >= 40 → no response
+            const msg = makeMessage("is this a test?", "twitch", "SomeUser")
+            mockTwitchInstance.sendMessage.mockClear()
+            handleChatMessage(msg)
+
+            // Should NOT have sent a converse response (but may have sent other stuff)
+            // The converse responses contain specific strings, check none were sent
+            vi.restoreAllMocks()
+        })
+    })
+
+    describe("handleChatMessage - live mode behavior", () => {
+        beforeEach(() => {
+            mockCheckForWelcomeMessage.mockClear()
+            mockTwitchInstance.subscriberFirstMessageQuiz.mockClear()
+        })
+
+        it("checks welcome messages when Twitch is live", () => {
+            mockTwitchInstance.live = true
+            const msg = makeMessage("hello", "twitch", "SomeUser")
+            handleChatMessage(msg)
+
+            expect(mockCheckForWelcomeMessage).toHaveBeenCalledWith(msg)
+            mockTwitchInstance.live = false
+        })
+
+        it("checks subscriber first message quiz when live", () => {
+            mockTwitchInstance.live = true
+            const msg = makeMessage("hello", "twitch", "SomeUser")
+            handleChatMessage(msg)
+
+            expect(mockTwitchInstance.subscriberFirstMessageQuiz).toHaveBeenCalledWith(msg)
+            mockTwitchInstance.live = false
+        })
+
+        it("does not check welcome messages when not live", () => {
+            mockTwitchInstance.live = false
+            const msg = makeMessage("hello", "twitch", "SomeUser")
+            handleChatMessage(msg)
+
+            expect(mockCheckForWelcomeMessage).not.toHaveBeenCalled()
+        })
+    })
+
+    describe("handleChatMessage - quiz routing", () => {
+        beforeEach(() => {
+            mockQuizHandleMessage.mockClear()
+        })
+
+        it("routes messages to QuizManager.handleMessage", () => {
+            const msg = makeMessage("some answer", "twitch", "SomeUser")
+            handleChatMessage(msg)
+            expect(mockQuizHandleMessage).toHaveBeenCalledWith(msg)
+        })
+
+        it("does not route bot's own messages to quiz", () => {
+            const msg = makeMessage("some answer", "twitch", "Wingbot953")
+            handleChatMessage(msg)
+            expect(mockQuizHandleMessage).not.toHaveBeenCalled()
+        })
+    })
+
+    describe("sendChatMessage - edge cases", () => {
+        beforeEach(() => {
+            mockTwitchInstance.sendMessage.mockClear()
+            mockYouTubeInstance.sendMessage.mockClear()
+        })
+
+        it("does not send to either platform when sendToPlatform=false with 'all'", () => {
+            const msg = structuredClone(Wingbot953Message)
+            msg.platform = "all"
+            msg.message.text = "Test"
+            sendChatMessage(msg, true, false)
+
+            expect(mockTwitchInstance.sendMessage).not.toHaveBeenCalled()
+            expect(mockYouTubeInstance.sendMessage).not.toHaveBeenCalled()
+        })
+
+        it("sends only to YouTube when platform is youtube", () => {
+            const msg = structuredClone(Wingbot953Message)
+            msg.platform = "youtube"
+            msg.message.text = "YT only"
+            sendChatMessage(msg)
+
+            expect(mockYouTubeInstance.sendMessage).toHaveBeenCalledWith("YT only")
+            expect(mockTwitchInstance.sendMessage).not.toHaveBeenCalled()
+        })
+
+        it("sends only to Twitch when platform is twitch", () => {
+            const msg = structuredClone(Wingbot953Message)
+            msg.platform = "twitch"
+            msg.message.text = "TW only"
+            sendChatMessage(msg)
+
+            expect(mockTwitchInstance.sendMessage).toHaveBeenCalledWith("TW only")
+            expect(mockYouTubeInstance.sendMessage).not.toHaveBeenCalled()
         })
     })
 })

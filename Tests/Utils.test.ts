@@ -202,10 +202,7 @@ describe("SelectFromList", () => {
 
         expect(mockSendChatMessage).toHaveBeenCalledOnce()
         const sent = mockSendChatMessage.mock.calls[0][0]
-        // The code sets out-of-range message but then overwrites it with the indexed value.
-        // This is a known behavior in the current code - the last assignment wins.
-        // The result will be "[100] undefined" because list[99] is undefined.
-        expect(mockSendChatMessage).toHaveBeenCalled()
+        expect(sent.message.text).toBe("Value out of range: 1 to 4")
     })
 
     it("matches keyword search", () => {
@@ -251,5 +248,52 @@ describe("SelectFromList", () => {
         expect(mockSendChatMessage).toHaveBeenCalledOnce()
         const sent = mockSendChatMessage.mock.calls[0][0]
         expect(sent.platform).toBe("youtube")
+    })
+
+    it("handles out-of-range index (too high)", () => {
+        const msg = makeMessage("!quote 100")
+        SelectFromList(testList, msg)
+
+        expect(mockSendChatMessage).toHaveBeenCalledOnce()
+        const sent = mockSendChatMessage.mock.calls[0][0]
+        expect(sent.message.text).toBe("Value out of range: 1 to 4")
+    })
+
+    it("handles out-of-range index (zero/negative)", () => {
+        const msg = makeMessage("!quote 0")
+        SelectFromList(testList, msg)
+
+        expect(mockSendChatMessage).toHaveBeenCalledOnce()
+        const sent = mockSendChatMessage.mock.calls[0][0]
+        // index = 0 - 1 = -1, which is < 0, triggering out-of-range
+        expect(sent.message.text).toBe("Value out of range: 1 to 4")
+    })
+
+    it("selects first item by index", () => {
+        const msg = makeMessage("!quote 1")
+        SelectFromList(testList, msg)
+
+        expect(mockSendChatMessage).toHaveBeenCalledOnce()
+        const sent = mockSendChatMessage.mock.calls[0][0]
+        expect(sent.message.text).toBe("[1] Alpha item")
+    })
+
+    it("selects last item by index", () => {
+        const msg = makeMessage("!quote 4")
+        SelectFromList(testList, msg)
+
+        expect(mockSendChatMessage).toHaveBeenCalledOnce()
+        const sent = mockSendChatMessage.mock.calls[0][0]
+        expect(sent.message.text).toBe("[4] Delta item")
+    })
+
+    it("matches when multiple items contain keyword", () => {
+        // All items contain "item", so random selection among all
+        const msg = makeMessage("!quote item")
+        SelectFromList(testList, msg)
+
+        expect(mockSendChatMessage).toHaveBeenCalledOnce()
+        const sent = mockSendChatMessage.mock.calls[0][0]
+        expect(sent.message.text).toMatch(/^\[\d+\] .+ item$/)
     })
 })
