@@ -1,4 +1,15 @@
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage"
+import {
+    buildSubMessage,
+    buildResubMessage,
+    buildSubGiftMessage,
+    buildRaidMessage,
+    buildCommunitySubMessage,
+    buildGiftPaidUpgradeMessage,
+    buildPrimePaidUpgradeMessage,
+    buildStandardPayForwardMessage,
+    buildCommunityPayForwardMessage,
+} from "../Integrations/TwitchLogic"
 
 /**
  * Simulated usernames for generating fake chat messages
@@ -189,4 +200,249 @@ export function generateSimulatedMessage(
             text: messageText,
         },
     }
+}
+
+/**
+ * Special event types that can be simulated.
+ * Each returns a bot notification message and an optional user message.
+ */
+type SimulatedEvent = () => {
+    botMessage: UnifiedChatMessage
+    userMessage?: UnifiedChatMessage
+}
+
+function makeBotMessage(text: string, messageType: string, extra?: Partial<UnifiedChatMessage["twitchSpecific"]>): UnifiedChatMessage {
+    return {
+        id: `sim-event-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        platform: "twitch",
+        timestamp: new Date(),
+        channel: { id: "sim-channel-twitch", name: "Wingman953" },
+        author: { name: "wingbot953", displayName: "Wingbot953" },
+        message: { text },
+        twitchSpecific: { messageType: messageType as UnifiedChatMessage["twitchSpecific"] extends { messageType?: infer T } ? T : never, isHighlighted: true, ...extra },
+    }
+}
+
+function makeUserEventMessage(displayName: string, text: string): UnifiedChatMessage {
+    return {
+        id: `sim-event-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        platform: "twitch",
+        timestamp: new Date(),
+        channel: { id: "sim-channel-twitch", name: "Wingman953" },
+        author: {
+            id: `sim-twitch-${displayName.toLowerCase()}`,
+            name: displayName.toLowerCase(),
+            displayName,
+            isSubscriber: true,
+        },
+        message: { text },
+    }
+}
+
+const specialEvents: SimulatedEvent[] = [
+    // New subscription
+    () => {
+        const user = randomFrom(twitchUsernames)
+        const months = randomFrom([1, 1, 1, 3, 6])
+        return {
+            botMessage: makeBotMessage(buildSubMessage(user, months), "sub"),
+            userMessage: Math.random() < 0.5 ? makeUserEventMessage(user, "Glad to support the channel!") : undefined,
+        }
+    },
+    // Resubscription
+    () => {
+        const user = randomFrom(twitchUsernames)
+        const months = randomFrom([2, 3, 6, 12, 24])
+        return {
+            botMessage: makeBotMessage(buildResubMessage(user, months), "resub"),
+            userMessage: makeUserEventMessage(user, `Been here for ${months} months now, love the streams!`),
+        }
+    },
+    // Gift sub
+    () => {
+        const gifter = randomFrom(twitchUsernames)
+        const recipient = randomFrom(twitchUsernames.filter(u => u !== gifter))
+        return {
+            botMessage: makeBotMessage(buildSubGiftMessage(gifter, recipient), "subgift"),
+        }
+    },
+    // Community sub bomb
+    () => {
+        const gifter = randomFrom(twitchUsernames)
+        const count = randomFrom([5, 10, 20, 50])
+        return {
+            botMessage: makeBotMessage(buildCommunitySubMessage(gifter, count), "communitysub", { giftCount: count }),
+            userMessage: Math.random() < 0.3 ? makeUserEventMessage(gifter, "Subs for everyone!") : undefined,
+        }
+    },
+    // Raid
+    () => {
+        const raider = randomFrom(["SpeedGamerX", "HaloProPlayer", "RetroRunnerTV", "CasualStreamer42"])
+        const viewers = randomFrom([5, 15, 50, 150, 500])
+        return {
+            botMessage: makeBotMessage(buildRaidMessage(raider, viewers), "sub"),
+        }
+    },
+    // Gift paid upgrade
+    () => {
+        const user = randomFrom(twitchUsernames)
+        const gifter = randomFrom(twitchUsernames.filter(u => u !== user))
+        return {
+            botMessage: makeBotMessage(buildGiftPaidUpgradeMessage(user, gifter), "giftpaidupgrade", { originalGifter: gifter }),
+            userMessage: Math.random() < 0.5 ? makeUserEventMessage(user, "Time to pay it forward!") : undefined,
+        }
+    },
+    // Prime paid upgrade
+    () => {
+        const user = randomFrom(twitchUsernames)
+        return {
+            botMessage: makeBotMessage(buildPrimePaidUpgradeMessage(user), "primepaidupgrade"),
+        }
+    },
+    // Standard pay forward
+    () => {
+        const forwarder = randomFrom(twitchUsernames)
+        const recipient = randomFrom(twitchUsernames.filter(u => u !== forwarder))
+        const originalGifter = randomFrom(twitchUsernames.filter(u => u !== forwarder && u !== recipient))
+        return {
+            botMessage: makeBotMessage(
+                buildStandardPayForwardMessage(forwarder, recipient, originalGifter),
+                "payforward", { originalGifter }
+            ),
+        }
+    },
+    // Community pay forward
+    () => {
+        const forwarder = randomFrom(twitchUsernames)
+        const originalGifter = randomFrom(twitchUsernames.filter(u => u !== forwarder))
+        return {
+            botMessage: makeBotMessage(
+                buildCommunityPayForwardMessage(forwarder, originalGifter),
+                "payforward", { originalGifter }
+            ),
+        }
+    },
+    // Announcement
+    () => ({
+        botMessage: {
+            id: `sim-event-${Date.now()}`,
+            platform: "twitch" as const,
+            timestamp: new Date(),
+            channel: { id: "sim-channel-twitch", name: "Wingman953" },
+            author: {
+                id: "sim-twitch-modsimuser",
+                name: "modsimuser",
+                displayName: "ModSimUser",
+                isModerator: true,
+            },
+            message: { text: randomFrom([
+                "Remember to follow and turn on notifications!",
+                "Check out the Discord server - link in the description!",
+                "Raids incoming, stay tuned!",
+                "New PB attempt starting soon!",
+            ]) },
+            twitchSpecific: {
+                messageType: "announcement" as const,
+                announcementColor: randomFrom(["PRIMARY", "BLUE", "GREEN", "ORANGE", "PURPLE"]),
+                isHighlighted: true,
+            },
+        },
+    }),
+    // Ban (admin-only)
+    () => {
+        const user = "TroubleMaker" + Math.floor(Math.random() * 100)
+        return {
+            botMessage: {
+                id: `sim-event-${Date.now()}`,
+                platform: "twitch" as const,
+                timestamp: new Date(),
+                channel: { id: "sim-channel-twitch", name: "Admin" },
+                author: { name: user, displayName: user },
+                message: { text: `${user} has been banned.` },
+                twitchSpecific: { messageType: "ban" as const },
+            },
+        }
+    },
+    // Timeout (admin-only)
+    () => {
+        const user = randomFrom(twitchUsernames)
+        const duration = randomFrom([60, 300, 600])
+        return {
+            botMessage: {
+                id: `sim-event-${Date.now()}`,
+                platform: "twitch" as const,
+                timestamp: new Date(),
+                channel: { id: "sim-channel-twitch", name: "Admin" },
+                author: { name: user.toLowerCase(), displayName: user },
+                message: { text: `${user} has been timed out for ${duration} seconds.` },
+                twitchSpecific: { messageType: "timeout" as const, timeoutDuration: duration },
+            },
+        }
+    },
+    // Action (/me)
+    () => {
+        const user = randomFrom(twitchUsernames)
+        const action = randomFrom([
+            "is cheering for the PB!",
+            "waves at chat",
+            "is hyped for the next run",
+            "dances in excitement",
+        ])
+        return {
+            botMessage: {
+                id: `sim-event-${Date.now()}`,
+                platform: "twitch" as const,
+                timestamp: new Date(),
+                channel: { id: "sim-channel-twitch", name: "Wingman953" },
+                author: {
+                    id: `sim-twitch-${user.toLowerCase()}`,
+                    name: user.toLowerCase(),
+                    displayName: user,
+                },
+                message: { text: action },
+                twitchSpecific: { messageType: "action" as const },
+            },
+        }
+    },
+    // Raid cancel (admin-only)
+    () => {
+        const raider = randomFrom(["SpeedGamerX", "HaloProPlayer", "RetroRunnerTV"])
+        return {
+            botMessage: {
+                id: `sim-event-${Date.now()}`,
+                platform: "twitch" as const,
+                timestamp: new Date(),
+                channel: { name: "Admin" },
+                author: { name: raider.toLowerCase(), displayName: raider },
+                message: { text: `Raid from ${raider} was cancelled.` },
+                twitchSpecific: { messageType: "raidcancel" as const },
+            },
+        }
+    },
+    // Message remove (admin-only)
+    () => {
+        const user = randomFrom(twitchUsernames)
+        return {
+            botMessage: {
+                id: `sim-deleted-${Date.now()}`,
+                platform: "twitch" as const,
+                timestamp: new Date(),
+                channel: { id: "sim-channel-twitch", name: "Admin" },
+                author: { name: user.toLowerCase(), displayName: user },
+                message: { text: "[message deleted]" },
+                twitchSpecific: { messageType: "messageremove" as const },
+            },
+        }
+    },
+]
+
+/**
+ * Generates a random simulated special event (sub, raid, ban, announcement, etc.)
+ * Returns the bot notification message and an optional user message.
+ */
+export function generateSimulatedSpecialEvent(): {
+    botMessage: UnifiedChatMessage
+    userMessage?: UnifiedChatMessage
+} {
+    return randomFrom(specialEvents)()
 }
