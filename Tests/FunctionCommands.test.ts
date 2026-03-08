@@ -24,7 +24,12 @@ const {
     mockGetSongYear: vi.fn(),
     mockIs2013Song: vi.fn(),
     mockSetPollingOverride: vi.fn(),
-    mockGetPollingStatus: vi.fn(() => ({
+    mockGetPollingStatus: vi.fn((): {
+        overrideMode: null | "force_on" | "force_off";
+        isPolling: boolean;
+        isMonitoring: boolean;
+        isTwitchLive: boolean;
+    } => ({
         overrideMode: null,
         isPolling: false,
         isMonitoring: false,
@@ -311,7 +316,7 @@ describe("YouTube toggle commands", () => {
 
     it("HandleYouTubeStatus shows FORCED ON mode", () => {
         mockGetPollingStatus.mockReturnValueOnce({
-            overrideMode: "force_on",
+            overrideMode: "force_on" as const,
             isPolling: true,
             isMonitoring: true,
             isTwitchLive: false,
@@ -327,7 +332,7 @@ describe("YouTube toggle commands", () => {
 
     it("HandleYouTubeStatus shows FORCED OFF mode", () => {
         mockGetPollingStatus.mockReturnValueOnce({
-            overrideMode: "force_off",
+            overrideMode: "force_off" as const,
             isPolling: false,
             isMonitoring: false,
             isTwitchLive: true,

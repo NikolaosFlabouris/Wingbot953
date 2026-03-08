@@ -7,6 +7,12 @@ import * as http from "node:http";
 
 import { sendChatMessage, Wingbot953Message } from "../MessageHandling.js";
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage";
+import {
+  parseSearchQuery,
+  extractSpotifyTrackId,
+  classifySongYear,
+  canRequestSong,
+} from "./SpotifyLogic";
 
 /**
  * Spotify OAuth scopes required for the application
@@ -29,14 +35,6 @@ interface CurrentTrack {
   albumArt: string | null;
   isPlaying: boolean;
   releaseYear?: number;
-}
-
-/**
- * Represents parsed search query components
- */
-interface ParsedQuery {
-  title: string;
-  artist?: string;
 }
 
 /**
@@ -423,13 +421,14 @@ export class SpotifyManager {
 
     const year = currentTrack.releaseYear;
     const artistsString = currentTrack.artists.join(", ");
+    const classification = classifySongYear(year);
 
-    if (year === 2013) {
+    if (classification.type === "exact") {
       this.sendResponse(
         msg,
         `wingma14Jam ${currentTrack.name} by ${artistsString} is a 2013 song! wingma14Jam`
       );
-    } else if ([2011, 2012, 2014].includes(year)) {
+    } else if (classification.type === "close") {
       this.sendResponse(
         msg,
         `${currentTrack.name} by ${artistsString} is a 2013-ish song! It is from ${year}.  wingma14Jam`
@@ -658,41 +657,6 @@ export class SpotifyManager {
   }
 
   /**
-   * Parses a search query into title and artist components
-   * Handles various formats like:
-   * - "title by artist"
-   * - "artist - title"
-   * - "title (artist)"
-   * @private
-   * @param query The search query to parse
-   * @returns Parsed query with title and optional artist
-   */
-  private parseQuery(query: string): ParsedQuery {
-    // Common separators between title and artist
-    const separators = [
-      { regex: /\s+by\s+/i, artistSecond: true },
-      { regex: /\s*-\s*/, artistSecond: false },
-      { regex: /\s*[([{]/i, artistSecond: true },
-    ];
-
-    for (const { regex, artistSecond } of separators) {
-      const parts = query.split(regex);
-      if (parts.length === 2) {
-        const title = parts[artistSecond ? 0 : 1].trim();
-        let artist = parts[artistSecond ? 1 : 0].trim();
-
-        // Remove closing brackets if present
-        artist = artist.replace(/[)\]}]$/, "").trim();
-
-        return { title, artist };
-      }
-    }
-
-    // If no separator is found, assume the entire query is the title
-    return { title: query.trim() };
-  }
-
-  /**
    * Adds a song to the Spotify queue based on search query or URL
    * @param msg The unified chat message containing the song request
    */
@@ -707,11 +671,7 @@ export class SpotifyManager {
       return;
     }
 
-    if (
-      !msg.author.isSubscriber &&
-      !msg.author.isModerator &&
-      !msg.author.isOwner
-    ) {
+    if (!canRequestSong(msg.author)) {
       this.sendResponse(
         msg,
         "Only subscribers, and moderators can add songs to the queue."
@@ -733,7 +693,7 @@ export class SpotifyManager {
     const query = originalMessage.substring(indexOfSpace + 1);
 
     // Check if the query is a Spotify URL
-    const trackId = this.extractTrackIdFromUrl(query);
+    const trackId = extractSpotifyTrackId(query);
     if (trackId) {
       try {
         const response = (await this.spotifyApi.getTrack(trackId)).body;
@@ -782,7 +742,7 @@ export class SpotifyManager {
     console.log("Fuzzy search query:", query);
 
     try {
-      const parsedQuery = this.parseQuery(query);
+      const parsedQuery = parseSearchQuery(query);
       console.log("Parsed query:", parsedQuery);
 
       // Construct Spotify search query
@@ -808,30 +768,4 @@ export class SpotifyManager {
     }
   }
 
-  /**
-   * Extracts the track ID from a Spotify URL
-   * @private
-   * @param url Spotify URL (web player, open.spotify.com, or URI format)
-   * @returns The extracted track ID or null if not a valid track URL
-   */
-  private extractTrackIdFromUrl(url: string): string | null {
-    // Handle different Spotify URL formats
-
-    // Format: https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT?si=...
-    const webUrlPattern = /open\.spotify\.com\/track\/([a-zA-Z0-9]+)/;
-
-    // Format: spotify:track:4cOdK2wGLETKBW3PvgPWqT
-    const uriPattern = /spotify:track:([a-zA-Z0-9]+)/;
-
-    // Format: https://play.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT
-    const oldWebUrlPattern = /play\.spotify\.com\/track\/([a-zA-Z0-9]+)/;
-
-    // Try each pattern
-    const match =
-      url.match(webUrlPattern) ||
-      url.match(uriPattern) ||
-      url.match(oldWebUrlPattern);
-
-    return match ? match[1] : null;
-  }
 }

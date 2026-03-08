@@ -35,6 +35,16 @@ import { QuizManager } from "../Commands/Quiz";
 import { EmoteInfo, UnifiedChatMessage } from "../../Common/UnifiedChatMessage";
 import { BadgeCache } from "./TwitchBadgeCache";
 import { EventBus, EventTypes } from "./EventBus";
+import {
+  getSubQuizRollThreshold,
+  buildSubMessage,
+  buildResubMessage,
+  buildSubGiftMessage,
+  buildRaidMessage,
+  parseEmotePosition,
+  extractEmoteName,
+  buildEmoteUrl,
+} from "./TwitchLogic";
 
 /**
  * Twitch OAuth scopes required for the application
@@ -818,13 +828,8 @@ export class TwitchManager {
         subInfo: ChatSubInfo,
         msg: UserNotice
       ) => {
-        const monthsSubbed =
-          subInfo.months > 1
-            ? `${subInfo.months} months`
-            : `${subInfo.months} month`;
-
         const subMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
-        subMessage.message.text = `wingma14Blush Thank you @${msg.userInfo.displayName} for subscribing to the channel for ${monthsSubbed}! wingma14Blush Let's celebrate with a Quiz!`;
+        subMessage.message.text = buildSubMessage(msg.userInfo.displayName, subInfo.months);
         subMessage.platform = "twitch";
         subMessage.twitchSpecific = {
           messageType: "sub",
@@ -856,13 +861,8 @@ export class TwitchManager {
         subInfo: ChatSubInfo,
         msg: UserNotice
       ) => {
-        const monthsSubbed =
-          subInfo.months > 1
-            ? `${subInfo.months} months`
-            : `${subInfo.months} month`;
-
         const subMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
-        subMessage.message.text = `wingma14Blush Thank you @${user} for subscribing to the channel for ${monthsSubbed}! wingma14Blush Let's celebrate with a Quiz!`;
+        subMessage.message.text = buildResubMessage(user, subInfo.months);
         subMessage.platform = "twitch";
         subMessage.twitchSpecific = {
           messageType: "resub",
@@ -895,7 +895,7 @@ export class TwitchManager {
       ) => {
         const subGiftMessage: UnifiedChatMessage =
           structuredClone(Wingbot953Message);
-        subGiftMessage.message.text = `wingma14Blush Thank you ${subInfo.gifter} for gifting a subscription to ${user}! wingma14Blush Let's celebrate with a Quiz!`;
+        subGiftMessage.message.text = buildSubGiftMessage(subInfo.gifter || "Anonymous", user);
         subGiftMessage.platform = "twitch";
         subGiftMessage.twitchSpecific = {
           messageType: "subgift",
@@ -918,14 +918,9 @@ export class TwitchManager {
         user: string,
         raidInfo: ChatRaidInfo
       ) => {
-        const viewCount =
-          raidInfo.viewerCount > 1
-            ? `${raidInfo.viewerCount} viewers`
-            : `${raidInfo.viewerCount} viewer`;
-
         const raidMessage: UnifiedChatMessage =
           structuredClone(Wingbot953Message);
-        raidMessage.message.text = `wingma14Blush Thank you ${raidInfo.displayName} for the raid with ${viewCount}! wingma14Blush Let's celebrate with a Quiz!`;
+        raidMessage.message.text = buildRaidMessage(raidInfo.displayName, raidInfo.viewerCount);
         raidMessage.platform = "twitch";
         raidMessage.twitchSpecific = {
           isHighlighted: true,
@@ -1164,15 +1159,7 @@ export class TwitchManager {
         );
       }
 
-      let rollThreshold = 14; // Tier 1
-
-      if (subTier === "2000") {
-        // Tier 2
-        rollThreshold = 50;
-      } else if (subTier === "3000") {
-        // Tier 3
-        rollThreshold = 100;
-      }
+      const rollThreshold = getSubQuizRollThreshold(subTier);
 
       const roll = Between(0, 99);
 
@@ -1370,15 +1357,14 @@ export class TwitchManager {
     // Process emotes from the emoteOffsets Map provided by Twurple
     for (const [emoteId, positions] of msg.emoteOffsets.entries()) {
       for (const position of positions) {
-        const [start, end] = position.split("-").map(Number);
-        const emoteName = message.substring(start, end + 1);
+        const { start, end } = parseEmotePosition(position);
 
         emotes.push({
           id: emoteId,
-          name: emoteName,
+          name: extractEmoteName(message, start, end),
           startIndex: start,
           endIndex: end,
-          url: `https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default/dark/1.0`,
+          url: buildEmoteUrl(emoteId),
         });
       }
     }

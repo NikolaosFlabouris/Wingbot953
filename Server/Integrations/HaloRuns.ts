@@ -1,10 +1,30 @@
 import https from "node:https";
 
-import { CommandNaming } from "../../Data/Naming/CommandNaming";
 import { sendChatMessage, Wingbot953Message } from "../MessageHandling";
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage";
 import { TimeSpan } from "../TimeSpan";
 import { numberToOrdinal } from "../Commands/Utils";
+import {
+  resolveHaloRunsNames,
+  parseLeaderboardEntries,
+  searchProfileForPb,
+  type HrGlobalData,
+  type HrProfileData,
+  type HrLeaderboardData,
+  type HaloRunsTime,
+} from "./HaloRunsLogic";
+
+export type {
+  HrNamedEntity,
+  HrGame,
+  HrGlobalData,
+  HrParticipant,
+  HrRun,
+  HrProfileData,
+  HrLeaderboardEntry,
+  HrLeaderboardData,
+  HaloRunsTime,
+} from "./HaloRunsLogic";
 
 const hrApiHostName = "https://api.haloruns.com/";
 
@@ -13,65 +33,8 @@ const Wingman953HrId = "c6f4a6e2-b5b8-4012-acb5-53bbf9dc54f9";
 const hrGeneralUrl = "/content/metadata/global.json";
 const wingman953ProfileUrl = `/content/users/${Wingman953HrId}/career.json`;
 
-interface HrNamedEntity {
-  Name: string;
-  Id: string;
-}
-
-interface HrGame {
-  Name: string;
-  Id: string;
-  Categories: HrNamedEntity[];
-  RunnableSegments: HrNamedEntity[];
-  Difficulties: HrNamedEntity[];
-}
-
-interface HrGlobalData {
-  Games: HrGame[];
-}
-
-interface HrParticipant {
-  Username: string;
-  UserId: string;
-  EvidenceLink: string;
-}
-
-interface HrRun {
-  GameId: string;
-  RunnableSegmentId: string;
-  DifficultyId: string;
-  Duration: string;
-  Participants: HrParticipant[];
-  RankInfo: { Rank: number };
-}
-
-interface HrProfileData {
-  RunsByCategory: Record<string, HrRun[]>;
-}
-
-interface HrLeaderboardEntry {
-  Points: number;
-  Duration: string;
-  Participants: HrParticipant[];
-}
-
-interface HrLeaderboardData {
-  Entries: HrLeaderboardEntry[];
-}
-
 let hrGeneralJson: HrGlobalData;
 let wingman953ProfileJson: HrProfileData;
-
-export interface HaloRunsTime {
-  GameName: string;
-  Category: string;
-  RunnableSegment: string;
-  Difficulty: string;
-  Time: TimeSpan;
-  Usernames: string;
-  Video: string;
-  Rank: number;
-}
 
 export async function HaloRunsSetup() {
   try {
@@ -264,60 +227,16 @@ export async function GetHaloRunsWr(
         res.on("end", function () {
           try {
             const leaderboardJson = JSON.parse(data) as HrLeaderboardData;
-
-            if (leaderboardJson.Entries.length === 0) {
-              // hrMessage.message.text = `There is no HaloRuns Record for ${hrGameName} ${hrCategory} ${hrRunnableSegment} ${hrDifficulty}`
-              wrHaloRunsTime.Time = TimeSpan.maxValue;
-              return wrHaloRunsTime;
-            }
-
-            let wrUsernames: string = "";
-            let wrVideo: string = "";
-
-            let stillWrTime = true;
-            let entriesIndex = 0;
-
-            while (
-              stillWrTime &&
-              entriesIndex < leaderboardJson.Entries.length
-            ) {
-              if (
-                leaderboardJson.Entries[entriesIndex].Points ===
-                leaderboardJson.Entries[0].Points
-              ) {
-                if (entriesIndex === 0) {
-                  wrUsernames +=
-                    leaderboardJson.Entries[0].Participants[0].Username;
-
-                  wrVideo =
-                    leaderboardJson.Entries[0].Participants[0].EvidenceLink;
-                } else {
-                  wrUsernames += ` & ${leaderboardJson.Entries[entriesIndex].Participants[0].Username}`;
-                }
-
-                for (
-                  let i = 1;
-                  i < leaderboardJson.Entries[entriesIndex].Participants.length;
-                  i++
-                ) {
-                  wrUsernames += `, ${leaderboardJson.Entries[0].Participants[i].Username}`;
-                }
-
-                entriesIndex++;
-              } else {
-                stillWrTime = false;
-              }
-            }
-
-            wrHaloRunsTime.Time = TimeSpan.fromSeconds(
-              parseInt(leaderboardJson.Entries[0].Duration, 10)
+            resolve(
+              parseLeaderboardEntries(
+                leaderboardJson,
+                hrGameName,
+                hrCategory,
+                hrRunnableSegment,
+                hrDifficulty
+              )
             );
-            wrHaloRunsTime.Usernames = wrUsernames;
-            wrHaloRunsTime.Video = wrVideo;
-
-            resolve(wrHaloRunsTime);
           } catch {
-            // hrMessage.message.text = `Failed to access HaloRuns Leaderboards`
             console.log("Failed to access HaloRuns Leaderboards");
             resolve(wrHaloRunsTime);
           }
@@ -408,139 +327,25 @@ export function GetHaloRunsPb(
   hrRunnableSegment: string,
   hrDifficulty: string
 ): HaloRunsTime {
-  const pbHaloRunsTime: HaloRunsTime = {
-    GameName: hrGameName,
-    Category: hrCategory,
-    RunnableSegment: hrRunnableSegment,
-    Difficulty: hrDifficulty,
-    Time: TimeSpan.zero,
-    Usernames: "",
-    Video: "",
-    Rank: -1,
-  };
-
   console.log(hrGameName, hrCategory, hrRunnableSegment, hrDifficulty);
 
-  const hrGameIndex = hrGeneralJson.Games.findIndex((element) => {
-    return element.Name === hrGameName;
-  });
-
-  if (hrGameIndex < 0) {
-    console.log("Failed to find game on HaloRuns");
-    return pbHaloRunsTime;
-  }
-
-  const hrRunnableSegmentIndex = hrGeneralJson.Games[
-    hrGameIndex
-  ].RunnableSegments.findIndex((element) => {
-    return element.Name === hrRunnableSegment;
-  });
-
-  if (hrRunnableSegmentIndex < 0) {
-    console.log("Failed to find runnable segment on HaloRuns");
-    return pbHaloRunsTime;
-  }
-
-  const hrDifficultyIndex = hrGeneralJson.Games[
-    hrGameIndex
-  ].Difficulties.findIndex((element) => {
-    return element.Name === hrDifficulty;
-  });
-
-  if (hrDifficultyIndex < 0) {
-    // hrMessage.message.text = "Failed to find difficulty on HaloRuns"
-    console.log("Failed to find difficulty on HaloRuns");
-    return pbHaloRunsTime;
-  }
-
-  const hrGameId: string = hrGeneralJson.Games[hrGameIndex].Id;
-
-  const hrRunnableSegmentId: string =
-    hrGeneralJson.Games[hrGameIndex].RunnableSegments[hrRunnableSegmentIndex]
-      .Id;
-
-  const hrDifficultyId: string =
-    hrGeneralJson.Games[hrGameIndex].Difficulties[hrDifficultyIndex].Id;
-
-  let pbRuns: HrRun[];
-
-  if (!hrCategory.includes("Coop")) {
-    pbRuns = wingman953ProfileJson.RunsByCategory[hrCategory];
-
-    for (let runIndex = 0; runIndex < pbRuns.length; runIndex++) {
-      if (
-        pbRuns[runIndex].GameId === hrGameId &&
-        pbRuns[runIndex].RunnableSegmentId === hrRunnableSegmentId &&
-        pbRuns[runIndex].DifficultyId === hrDifficultyId
-      ) {
-        pbHaloRunsTime.Video = pbRuns[runIndex].Participants[0].EvidenceLink;
-
-        pbHaloRunsTime.Time = TimeSpan.fromSeconds(
-          parseInt(pbRuns[runIndex].Duration, 10)
-        );
-        pbHaloRunsTime.Usernames = pbRuns[runIndex].Participants[0].Username;
-
-        pbHaloRunsTime.Rank = pbRuns[runIndex].RankInfo.Rank;
-
-        return pbHaloRunsTime;
-      }
-    }
-  }
-
-  if (hrCategory.includes("Coop")) {
-    pbRuns = wingman953ProfileJson.RunsByCategory[hrCategory];
-
-    let pbTimeSecs: number = 99999999;
-    let pbTime: number = -1;
-    let coopUsernames: string = "";
-    let pbVideo: string = "";
-    let pbRank: number = -1;
-
-    for (let runIndex = 0; runIndex < pbRuns.length; runIndex++) {
-      if (
-        pbRuns[runIndex].GameId === hrGameId &&
-        pbRuns[runIndex].RunnableSegmentId === hrRunnableSegmentId &&
-        pbRuns[runIndex].DifficultyId === hrDifficultyId
-      ) {
-        if (parseInt(pbRuns[runIndex].Duration, 10) < pbTimeSecs) {
-          pbTimeSecs = parseInt(pbRuns[runIndex].Duration, 10);
-          pbTime = parseInt(pbRuns[runIndex].Duration, 10);
-
-          pbVideo = pbRuns[runIndex].Participants[0].EvidenceLink;
-          pbRank = pbRuns[runIndex].RankInfo.Rank;
-
-          coopUsernames = " with ";
-
-          for (let i = 0; i < pbRuns[runIndex].Participants.length; i++) {
-            if (pbRuns[runIndex].Participants[i].UserId === Wingman953HrId) {
-              continue;
-            }
-
-            coopUsernames += `${pbRuns[runIndex].Participants[i].Username}, `;
-          }
-
-          coopUsernames = coopUsernames.substring(0, coopUsernames.length - 2);
-        }
-      }
-    }
-
-    if (pbTime > 0) {
-      // hrMessage.message.text = `Wingman953's PB for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty} is ${pbTime}${coopUsernames} | ${pbVideo}`
-
-      pbHaloRunsTime.Time = TimeSpan.fromSeconds(pbTime);
-      pbHaloRunsTime.Usernames = coopUsernames;
-      pbHaloRunsTime.Video = pbVideo;
-      pbHaloRunsTime.Rank = pbRank;
-
-      return pbHaloRunsTime;
-    }
-  }
-
-  // hrMessage.message.text = `Wingman953 does not have a submitted time for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty}`
-  console.log(
-    `Wingman953 does not have a submitted time for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty}`
+  const result = searchProfileForPb(
+    hrGeneralJson,
+    wingman953ProfileJson,
+    hrGameName,
+    hrCategory,
+    hrRunnableSegment,
+    hrDifficulty,
+    Wingman953HrId
   );
-  return pbHaloRunsTime;
+
+  if (result.Time === TimeSpan.zero) {
+    console.log(
+      `Wingman953 does not have a submitted time for ${hrGameName}, ${hrCategory}, ${hrRunnableSegment}, ${hrDifficulty}`
+    );
+  }
+
+  return result;
 }
 
 export function FindHaloRunsCompatibleNames(
@@ -550,70 +355,20 @@ export function FindHaloRunsCompatibleNames(
   difficulty: string,
   msg: UnifiedChatMessage
 ) {
-  const hrGameName = FindCommandMatch(CommandNaming.Games, gameName);
+  const result = resolveHaloRunsNames(
+    gameName,
+    category,
+    runnableSegment,
+    difficulty
+  );
 
-  const hrMessage = structuredClone(Wingbot953Message);
-  hrMessage.platform = msg.platform;
-
-  if (hrGameName === "") {
-    hrMessage.message.text = "Failed to parse game";
+  if (!result.success) {
+    const hrMessage = structuredClone(Wingbot953Message);
+    hrMessage.platform = msg.platform;
+    hrMessage.message.text = result.error;
     sendChatMessage(hrMessage);
     return [];
   }
 
-  const hrCategory = FindCommandMatch(CommandNaming.Categories, category);
-
-  if (hrCategory === "") {
-    hrMessage.message.text = "Failed to parse category";
-    sendChatMessage(hrMessage);
-    return [];
-  }
-
-  let hrRunnableSegment = "";
-
-  for (const propertyGame in CommandNaming.Levels) {
-    if (
-      CommandNaming.Levels[propertyGame].Game.findIndex((element: string) => {
-        return element === hrGameName;
-      }) >= 0
-    ) {
-      hrRunnableSegment = FindCommandMatch(
-        CommandNaming.Levels[propertyGame],
-        runnableSegment
-      );
-    }
-  }
-
-  if (hrRunnableSegment === "") {
-    hrMessage.message.text = "Failed to parse runnable segment";
-    sendChatMessage(hrMessage);
-    return [];
-  }
-
-  const hrDifficulty = FindCommandMatch(CommandNaming.Difficulty, difficulty);
-
-  if (hrDifficulty === "") {
-    hrMessage.message.text = "Failed to parse difficulty";
-    sendChatMessage(hrMessage);
-    return [];
-  }
-
-  return [hrGameName, hrCategory, hrRunnableSegment, hrDifficulty];
-}
-
-function FindCommandMatch(
-  commandList: { [key: string]: string[] },
-  command: string
-) {
-  for (const property in commandList) {
-    if (
-      commandList[property].findIndex((element: string) => {
-        return element.toLowerCase() === command;
-      }) >= 0
-    ) {
-      return commandList[property][0];
-    }
-  }
-
-  return "";
+  return result.names;
 }

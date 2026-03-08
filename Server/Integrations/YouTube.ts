@@ -12,6 +12,13 @@ import open from "open";
 import * as http from "node:http";
 import { YoutubeLivestreamAlert } from "./Discord";
 import { EventBus, EventTypes } from "./EventBus";
+import {
+  shouldStartPolling as shouldStartPollingLogic,
+  shouldSkipApiPolling as shouldSkipApiPollingLogic,
+  shouldUpdatePollingInterval,
+  microsToAmount,
+  stripAtPrefix,
+} from "./YouTubeLogic";
 
 // Load environment variables
 dotenv.config({ quiet: true });
@@ -150,7 +157,7 @@ export class YouTubeManager {
    */
   public async initialise(
     server: http.Server,
-    testMode: boolean = false
+    testMode: boolean = false,
   ): Promise<void> {
     this.server = server;
     this.isTestMode = testMode;
@@ -159,12 +166,12 @@ export class YouTubeManager {
       process.env.DEBUG = "TRUE";
 
       console.log(
-        "TESTING: Skipping YouTube integration setup, starting test messages..."
+        "TESTING: Skipping YouTube integration setup, starting test messages...",
       );
 
       this.testInterval = setInterval(
         () => this.generateTestYouTubeMessage(),
-        3000
+        3000,
       ); // 3secs
       return;
     }
@@ -175,14 +182,16 @@ export class YouTubeManager {
     this.oAuth2Client = new google.auth.OAuth2(
       process.env.YOUTUBE_CLIENT_ID,
       process.env.YOUTUBE_CLIENT_SECRET,
-      process.env.YOUTUBE_REDIRECT_URI
+      process.env.YOUTUBE_REDIRECT_URI,
     );
 
     try {
       // Check if we have saved tokens
       if (fs.existsSync(this.tokenPath)) {
         console.log("Loading existing tokens...");
-        const tokens = JSON.parse(fs.readFileSync(this.tokenPath, "utf-8")) as Auth.Credentials;
+        const tokens = JSON.parse(
+          fs.readFileSync(this.tokenPath, "utf-8"),
+        ) as Auth.Credentials;
 
         // Set credentials
         this.oAuth2Client.setCredentials(tokens);
@@ -201,7 +210,7 @@ export class YouTubeManager {
           this.isAuthenticated = true;
         } catch {
           console.log(
-            "Existing tokens are invalid. Starting new authentication flow..."
+            "Existing tokens are invalid. Starting new authentication flow...",
           );
           // Continue with new auth flow
           await this.startAuthFlow();
@@ -235,7 +244,7 @@ export class YouTubeManager {
       // Create our request handler
       const youtubeHandler = async (
         req: http.IncomingMessage,
-        res: http.ServerResponse
+        res: http.ServerResponse,
       ) => {
         try {
           const parsedUrl = new URL(req.url || "/", `http://localhost:3000`);
@@ -401,7 +410,11 @@ export class YouTubeManager {
                   </body>
                 </html>
               `);
-              reject(tokenError instanceof Error ? tokenError : new Error(String(tokenError)));
+              reject(
+                tokenError instanceof Error
+                  ? tokenError
+                  : new Error(String(tokenError)),
+              );
             }
             return; // We handled this request
           }
@@ -436,7 +449,11 @@ export class YouTubeManager {
 
       // Remove all existing listeners and add our handler
       this.server!.removeAllListeners("request");
-      this.server!.on("request", (...args: Parameters<typeof youtubeHandler>) => void youtubeHandler(...args));
+      this.server!.on(
+        "request",
+        (...args: Parameters<typeof youtubeHandler>) =>
+          void youtubeHandler(...args),
+      );
 
       // Generate the auth URL
       const authUrl = this.oAuth2Client!.generateAuthUrl({
@@ -502,36 +519,36 @@ export class YouTubeManager {
       this.youTubeApiPollingInterval = undefined;
     }
 
-    // Check if we should start polling based on override or Twitch state
-    let shouldStartPolling = false;
+    const shouldStart = shouldStartPollingLogic(
+      this.youtubePollingOverride,
+      this.isTwitchLive,
+      this.isMonitoring,
+    );
 
     if (this.youtubePollingOverride === "force_on") {
-      shouldStartPolling = true;
       console.log("YouTube: Polling forced ON by override");
     } else if (this.youtubePollingOverride === "force_off") {
       console.log("YouTube: Polling forced OFF by override");
     } else {
-      // Auto mode - follow Twitch stream status
-      shouldStartPolling = this.isTwitchLive;
       console.log(
         `YouTube: Auto mode - Twitch is ${
           this.isTwitchLive ? "live" : "not live"
-        }`
+        }`,
       );
     }
 
     // Only start polling if not monitoring a livestream AND should start polling
-    if (!this.isMonitoring && shouldStartPolling) {
+    if (shouldStart) {
       this.youTubeApiPollingInterval = setInterval(
         () => void this.youTubeApiPolling(),
-        120000
+        120000,
       ); // 120secs
       console.log("YouTube: Started API polling interval");
-    } else if (!this.isMonitoring && !shouldStartPolling) {
+    } else if (!this.isMonitoring && !shouldStart) {
       console.log("YouTube: Skipping API polling - conditions not met");
     } else {
       console.log(
-        "YouTube: Skipping API polling - already monitoring livestream"
+        "YouTube: Skipping API polling - already monitoring livestream",
       );
     }
   }
@@ -546,31 +563,29 @@ export class YouTubeManager {
       // Skip polling if already monitoring a livestream
       if (this.isMonitoring) {
         console.log(
-          "YouTube: Skipping API polling - already monitoring livestream"
+          "YouTube: Skipping API polling - already monitoring livestream",
         );
         return;
       }
 
-      // Check if we should skip polling based on override or Twitch state
-      let shouldSkipPolling = false;
+      const shouldSkip = shouldSkipApiPollingLogic(
+        this.youtubePollingOverride,
+        this.isTwitchLive,
+        this.isMonitoring,
+        !!this.youTubeApiPollingInterval,
+      );
 
-      if (this.youtubePollingOverride === "force_off") {
-        shouldSkipPolling = true;
-        console.log("YouTube: Skipping API polling - forced OFF by override");
-      } else if (this.youtubePollingOverride === "force_on") {
-        shouldSkipPolling = false;
-        // Continue with polling regardless of Twitch state
-      } else {
-        // Auto mode - skip if Twitch is not live (unless this is the initial check during setup)
-        if (!this.isTwitchLive && this.youTubeApiPollingInterval) {
-          shouldSkipPolling = true;
+      if (shouldSkip) {
+        if (this.youtubePollingOverride === "force_off") {
+          console.log("YouTube: Skipping API polling - forced OFF by override");
+        } else if (!this.isTwitchLive) {
           console.log(
-            "YouTube: Skipping API polling - Twitch stream is not live (auto mode)"
+            "YouTube: Skipping API polling - Twitch stream is not live (auto mode)",
           );
         }
       }
 
-      if (shouldSkipPolling) {
+      if (shouldSkip) {
         return;
       }
 
@@ -595,13 +610,13 @@ export class YouTubeManager {
           ) {
             this.channelId = searchResponse.data.items[0].id?.channelId || null;
             console.log(
-              `Found channel ID for handle ${this.channelHandle}: ${this.channelId}`
+              `Found channel ID for handle ${this.channelHandle}: ${this.channelId}`,
             );
           }
 
           if (!this.channelId) {
             console.error(
-              `Channel ID not found for handle: ${this.channelHandle}`
+              `Channel ID not found for handle: ${this.channelHandle}`,
             );
             return;
           }
@@ -621,7 +636,7 @@ export class YouTubeManager {
 
         // Connect to YouTube livestream and start monitoring
         const connected = await this.connectAndStartMonitoring(
-          streamInfo.videoId
+          streamInfo.videoId,
         );
 
         if (!connected) {
@@ -632,14 +647,20 @@ export class YouTubeManager {
       }
     } catch (error: unknown) {
       console.log(
-        "YouTube: CATCH: Failed to reach YouTube API. Trying to refresh token."
+        "YouTube: CATCH: Failed to reach YouTube API. Trying to refresh token.",
       );
-      console.error("YouTube API Polling Error:", error instanceof Error ? error.message : error);
+      console.error(
+        "YouTube API Polling Error:",
+        error instanceof Error ? error.message : error,
+      );
 
       try {
         await this.refreshToken();
       } catch (refreshError: unknown) {
-        console.error("YouTube token refresh failed:", refreshError instanceof Error ? refreshError.message : refreshError);
+        console.error(
+          "YouTube token refresh failed:",
+          refreshError instanceof Error ? refreshError.message : refreshError,
+        );
         this.isAuthenticated = false;
       }
     }
@@ -759,14 +780,14 @@ export class YouTubeManager {
       }
       this.periodicMessagesInterval = setInterval(
         PeriodicYouTubeMessages,
-        3300000
+        3300000,
       ); // 55mins
 
       // Send Discord notification
       YoutubeLivestreamAlert(
         video.snippet?.title || "Livestream",
         "",
-        `https://www.youtube.com/watch?v=${videoId}`
+        `https://www.youtube.com/watch?v=${videoId}`,
       );
 
       const startStreamMessage: UnifiedChatMessage =
@@ -796,7 +817,7 @@ export class YouTubeManager {
     }
     this.youTubeChatPollingInterval = setInterval(
       () => void this.pollLiveChatMessages(),
-      interval_ms
+      interval_ms,
     );
   }
 
@@ -847,20 +868,17 @@ export class YouTubeManager {
       const recommendedPollingInterval: number | null | undefined =
         data.pollingIntervalMillis;
 
-      // Update polling interval if
-      // - suggested by the API (range of 5 - 30secs)
-      // - interval isn't set to custom value below 5secs (e.g during quiz)
-      // - recommended interval is significantly different from current setting
+      // Update polling interval if recommended differs significantly from current
       if (
-        recommendedPollingInterval &&
-        this.pollingInterval_ms > 5000 &&
-        recommendedPollingInterval > this.pollingInterval_ms + 2000 &&
-        recommendedPollingInterval < this.pollingInterval_ms - 2000
+        shouldUpdatePollingInterval(
+          recommendedPollingInterval,
+          this.pollingInterval_ms,
+        )
       ) {
         console.log(
-          `Updating polling interval to ${recommendedPollingInterval}ms (suggested by API)`
+          `Updating polling interval to ${recommendedPollingInterval}ms (suggested by API)`,
         );
-        this.setChatPollingInterval(recommendedPollingInterval);
+        this.setChatPollingInterval(recommendedPollingInterval!);
       }
 
       // Save the next page token for subsequent requests
@@ -908,7 +926,7 @@ export class YouTubeManager {
       },
       author: {
         id: authorDetails.channelId || "",
-        name: (authorDetails.displayName || "").replace(/^@/, ""),
+        name: stripAtPrefix(authorDetails.displayName || ""),
         displayName: authorDetails.displayName || "",
         isModerator: authorDetails.isChatModerator || false,
         isSubscriber: authorDetails.isChatSponsor || false,
@@ -928,8 +946,7 @@ export class YouTubeManager {
       unifiedMessage.youtubeSpecific = {
         isSuperChat: true,
         superChatDetails: {
-          amount:
-            parseFloat(snippet.superChatDetails.amountMicros || "0") / 1000000,
+          amount: microsToAmount(snippet.superChatDetails.amountMicros || "0"),
           currency: snippet.superChatDetails.currency || "USD",
           color: snippet.superChatDetails.tier?.toString() || "", // YouTube uses tiers instead of color directly
         },
@@ -1007,7 +1024,9 @@ export class YouTubeManager {
       console.error("Error sending chat message:", error);
 
       // Check for specific error types
-      const errResponse = (error as { response?: { status: number; data: unknown } }).response;
+      const errResponse = (
+        error as { response?: { status: number; data: unknown } }
+      ).response;
       if (errResponse) {
         console.error("Response status:", errResponse.status);
         console.error("Response data:", errResponse.data);
@@ -1015,7 +1034,7 @@ export class YouTubeManager {
         // Handle rate limiting
         if (errResponse.status === 403) {
           console.error(
-            "Rate limited or permission denied. Check your quota and permissions."
+            "Rate limited or permission denied. Check your quota and permissions.",
           );
         }
       }

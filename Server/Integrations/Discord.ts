@@ -1,19 +1,12 @@
 // Require the necessary discord.js classes
 import {
-    bold,
     Client,
     EmbedBuilder,
     Events,
     GatewayIntentBits,
     TextChannel,
 } from "discord.js"
-
-interface LeaderboardUser {
-    Username: string
-    UserId?: string
-    Platform: string
-    Score?: number
-}
+import { type LeaderboardUser, buildLeaderboardMessage } from "./DiscordLogic"
 
 // Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds] })
@@ -90,30 +83,11 @@ export function YoutubeLivestreamAlert(
 
 export function PublishTwitchAllTimeLeaderboard(leaderboard: LeaderboardUser[]) {
     void twitchAllTimeLeaderboardChannel.messages?.fetch().then((messages) => {
-        let leaderboardMessage = ""
-
-        // Filter for Twitch users only, then sort by score in descending order
-        const twitchUsers = leaderboard
-            .filter((user) => user.Platform === "twitch")
-            .sort(
-                (firstItem, secondItem) =>
-                    (secondItem.Score ?? 0) - (firstItem.Score ?? 0)
-            )
-
-        // Get the top 50 users (or fewer if there aren't 50 Twitch users)
-        const userCount = Math.min(twitchUsers.length, 50)
-
-        // Build the leaderboard message
-        for (let i = 0; i < userCount; i++) {
-            leaderboardMessage += `${i + 1} - ${twitchUsers[i].Username}: ${
-                twitchUsers[i].Score
-            }pts\n`
-        }
-
-        leaderboardMessage =
-            bold("Twitch All-Time Quiz Leaderboards - Top 50!") +
-            `\n\n` +
-            leaderboardMessage.replace(/(\*|_|`|~|\\)/g, "\\$1")
+        const leaderboardMessage = buildLeaderboardMessage(
+            leaderboard,
+            "twitch",
+            "Twitch All-Time Quiz Leaderboards - Top 50!"
+        )
 
         if (messages.size > 0) {
             void messages.first()?.edit(leaderboardMessage)
@@ -125,30 +99,11 @@ export function PublishTwitchAllTimeLeaderboard(leaderboard: LeaderboardUser[]) 
 
 export function PublishYouTubeAllTimeLeaderboard(leaderboard: LeaderboardUser[]) {
     void youtubeAllTimeLeaderboardChannel.messages?.fetch().then((messages) => {
-        let leaderboardMessage = ""
-
-        // Filter for YouTube users only, then sort by score in descending order
-        const youtubeUsers = leaderboard
-            .filter((user) => user.Platform === "youtube")
-            .sort(
-                (firstItem, secondItem) =>
-                    (secondItem.Score ?? 0) - (firstItem.Score ?? 0)
-            )
-
-        // Get the top 50 users (or fewer if there aren't 50 YouTube users)
-        const userCount = Math.min(youtubeUsers.length, 50)
-
-        // Build the leaderboard message
-        for (let i = 0; i < userCount; i++) {
-            leaderboardMessage += `${i + 1} - ${youtubeUsers[i].Username}: ${
-                youtubeUsers[i].Score
-            }pts\n`
-        }
-
-        leaderboardMessage =
-            bold("YouTube All-Time Quiz Leaderboards - Top 50!") +
-            `\n\n` +
-            leaderboardMessage.replace(/(\*|_|`|~|\\)/g, "\\$1")
+        const leaderboardMessage = buildLeaderboardMessage(
+            leaderboard,
+            "youtube",
+            "YouTube All-Time Quiz Leaderboards - Top 50!"
+        )
 
         if (messages.size > 0) {
             void messages.first()?.edit(leaderboardMessage)
