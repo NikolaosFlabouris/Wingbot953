@@ -42,5 +42,7 @@ node_modules/
 # Token/secret files
 Data/Tokens/
 
-# Claude Code local settings
-.claude/
+# Claude Code local settings (allow skills and project settings, ignore the rest)
+.claude/*
+!.claude/skills/
+!.claude/settings.json
