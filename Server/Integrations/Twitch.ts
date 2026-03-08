@@ -12,15 +12,12 @@ import {
   UserNotice,
   ClearChat,
   ClearMsg,
-  Whisper,
-} from "@twurple/chat";
-import type {
-  ChatCommunitySubInfo,
-  ChatAnnouncementInfo,
-  ChatSubUpgradeInfo,
-  ChatSubGiftUpgradeInfo,
-  ChatStandardPayForwardInfo,
-  ChatCommunityPayForwardInfo,
+  type ChatCommunitySubInfo,
+  type ChatAnnouncementInfo,
+  type ChatSubUpgradeInfo,
+  type ChatSubGiftUpgradeInfo,
+  type ChatStandardPayForwardInfo,
+  type ChatCommunityPayForwardInfo,
 } from "@twurple/chat";
 import {
   ApiClient,
@@ -979,6 +976,13 @@ export class TwitchManager {
 
         void sleep(1000).then(() => {
           sendChatMessage(communitySubMessage);
+
+          if (msg.text) {
+            communitySubMessage.message.text = `${msg.text}`;
+            communitySubMessage.author.displayName =
+              subInfo.gifterDisplayName || subInfo.gifter || "Anonymous";
+            sendChatMessage(communitySubMessage);
+          }
         });
 
         setTimeout(() => {
@@ -1121,6 +1125,12 @@ export class TwitchManager {
 
         void sleep(1000).then(() => {
           sendChatMessage(upgradeMessage);
+
+          if (msg.text) {
+            upgradeMessage.message.text = `${msg.text}`;
+            upgradeMessage.author.displayName = msg.userInfo.displayName;
+            sendChatMessage(upgradeMessage);
+          }
         });
       }
     );
@@ -1150,37 +1160,21 @@ export class TwitchManager {
 
         void sleep(1000).then(() => {
           sendChatMessage(upgradeMessage);
+
+          if (msg.text) {
+            upgradeMessage.message.text = `${msg.text}`;
+            upgradeMessage.author.displayName = msg.userInfo.displayName;
+            sendChatMessage(upgradeMessage);
+          }
         });
       }
     );
 
-    // Whisper handler
-    this.chatClient.onWhisper(
-      (user: string, text: string, msg: Whisper) => {
-        console.log(`Whisper from ${user}: ${text}`);
-
-        const whisperMessage: UnifiedChatMessage = {
-          platform: "twitch",
-          timestamp: new Date(),
-          channel: {
-            name: "whisper",
-          },
-          author: {
-            name: user,
-            displayName: user,
-          },
-          message: {
-            text: text,
-          },
-          twitchSpecific: {
-            messageType: "whisper",
-          },
-        };
-
-        // Broadcast to WebSocket for admin monitoring (don't send to chat)
-        sendChatMessage(whisperMessage, true, false);
-      }
-    );
+    // Whisper handler - registered for future processing (see task 18)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    this.chatClient.onWhisper((user, text, msg) => {
+      // TODO: Implement whisper processing with dedicated interface (task 18)
+    });
 
     // Standard pay forward handler (user pays forward a gift to a specific user)
     this.chatClient.onStandardPayForward(
@@ -1210,6 +1204,12 @@ export class TwitchManager {
 
         void sleep(1000).then(() => {
           sendChatMessage(payForwardMessage);
+
+          if (msg.text) {
+            payForwardMessage.message.text = `${msg.text}`;
+            payForwardMessage.author.displayName = forwardInfo.displayName;
+            sendChatMessage(payForwardMessage);
+          }
         });
       }
     );
@@ -1241,6 +1241,12 @@ export class TwitchManager {
 
         void sleep(1000).then(() => {
           sendChatMessage(payForwardMessage);
+
+          if (msg.text) {
+            payForwardMessage.message.text = `${msg.text}`;
+            payForwardMessage.author.displayName = forwardInfo.displayName;
+            sendChatMessage(payForwardMessage);
+          }
         });
       }
     );
