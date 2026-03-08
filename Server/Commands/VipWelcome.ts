@@ -6,7 +6,7 @@ import fs from "fs";
 
 const WelcomeMessageFilePath = "./Data/Users/VIPWelcome.json";
 
-var welcomeMessages: WelcomeMessage[];
+let welcomeMessages: WelcomeMessage[];
 
 interface WelcomeMessage {
   Username: string[];
@@ -19,9 +19,9 @@ interface WelcomeMessage {
 export function LoadWelcomeMessages() {
   try {
     const data = fs.readFileSync(WelcomeMessageFilePath, "utf8");
-    welcomeMessages = JSON.parse(data);
+    welcomeMessages = JSON.parse(data) as WelcomeMessage[];
 
-    for (var i = 0; i < welcomeMessages.length; i++) {
+    for (let i = 0; i < welcomeMessages.length; i++) {
       welcomeMessages[i].Arrived = false;
     }
   } catch (err) {
@@ -45,7 +45,7 @@ function SaveWelcomeMessages() {
 }
 
 export async function CheckForWelcomeMessage(msg: UnifiedChatMessage) {
-  for (var i = 0; i < welcomeMessages.length; i++) {
+  for (let i = 0; i < welcomeMessages.length; i++) {
     // Check for welcome message either by UserId or by Username
     if (
       (!welcomeMessages[i].Arrived &&
@@ -63,11 +63,11 @@ export async function CheckForWelcomeMessage(msg: UnifiedChatMessage) {
       //   `\nFULL MESSAGE: ${JSON.stringify(msg)}`
       // );
 
-      var greetingIndex = Between(0, welcomeMessages[i].Message.length - 1);
+      const greetingIndex = Between(0, welcomeMessages[i].Message.length - 1);
 
       welcomeMessages[i].Arrived = true;
 
-      let welcome = structuredClone(Wingbot953Message);
+      const welcome = structuredClone(Wingbot953Message);
       welcome.platform = "twitch";
       welcome.message.text = welcomeMessages[i].Message[greetingIndex];
 
@@ -87,7 +87,7 @@ export async function AddWelcomeMessage(
   let userFound: boolean = false;
 
   // Match by userId first
-  for (var i = 0; i < welcomeMessages.length; i++) {
+  for (let i = 0; i < welcomeMessages.length; i++) {
     if (
       welcomeMessages[i].UserId === userId &&
       welcomeMessages[i].Platform === platform
@@ -102,7 +102,7 @@ export async function AddWelcomeMessage(
 
   // If not found by userId, match by username
   if (!userFound) {
-    for (var i = 0; i < welcomeMessages.length; i++) {
+    for (let i = 0; i < welcomeMessages.length; i++) {
       if (
         welcomeMessages[i].Username.findIndex((element: string) => {
           return element.toLowerCase() === username.toLowerCase();
@@ -124,7 +124,7 @@ export async function AddWelcomeMessage(
 
   // If not found by username, add a new entry
   if (!userFound) {
-    let user = await TwitchManager.getInstance().api!.users.getUserByName(
+    const user = await TwitchManager.getInstance().api!.users.getUserByName(
       username
     );
     if (!user) {
@@ -134,7 +134,7 @@ export async function AddWelcomeMessage(
       return;
     }
 
-    let newUser: WelcomeMessage = {
+    const newUser: WelcomeMessage = {
       Username: [username],
       UserId: user.id,
       Platform: platform,
@@ -148,11 +148,3 @@ export async function AddWelcomeMessage(
   }
 }
 
-async function UpdateGreetingsWithIDs() {
-  LoadWelcomeMessages();
-  console.log("Updating welcome messages with IDs...");
-  for (let i = 0; i < welcomeMessages.length; i++) {
-    welcomeMessages[i].Platform = "twitch";
-  }
-  SaveWelcomeMessages();
-}

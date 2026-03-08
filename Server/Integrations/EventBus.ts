@@ -56,8 +56,10 @@ export class EventBus extends EventEmitter {
    * @param args Additional arguments to pass to listeners
    * @returns True if the event had listeners, false otherwise
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public safeEmit(event: string | symbol, ...args: any[]): boolean {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       return this.emit(event, ...args);
     } catch (error) {
       console.error(`Error emitting event '${event.toString()}':`, error);

@@ -13,8 +13,54 @@ const Wingman953HrId = "c6f4a6e2-b5b8-4012-acb5-53bbf9dc54f9";
 const hrGeneralUrl = "/content/metadata/global.json";
 const wingman953ProfileUrl = `/content/users/${Wingman953HrId}/career.json`;
 
-let hrGeneralJson: any;
-let wingman953ProfileJson: any;
+interface HrNamedEntity {
+  Name: string;
+  Id: string;
+}
+
+interface HrGame {
+  Name: string;
+  Id: string;
+  Categories: HrNamedEntity[];
+  RunnableSegments: HrNamedEntity[];
+  Difficulties: HrNamedEntity[];
+}
+
+interface HrGlobalData {
+  Games: HrGame[];
+}
+
+interface HrParticipant {
+  Username: string;
+  UserId: string;
+  EvidenceLink: string;
+}
+
+interface HrRun {
+  GameId: string;
+  RunnableSegmentId: string;
+  DifficultyId: string;
+  Duration: string;
+  Participants: HrParticipant[];
+  RankInfo: { Rank: number };
+}
+
+interface HrProfileData {
+  RunsByCategory: Record<string, HrRun[]>;
+}
+
+interface HrLeaderboardEntry {
+  Points: number;
+  Duration: string;
+  Participants: HrParticipant[];
+}
+
+interface HrLeaderboardData {
+  Entries: HrLeaderboardEntry[];
+}
+
+let hrGeneralJson: HrGlobalData;
+let wingman953ProfileJson: HrProfileData;
 
 export interface HaloRunsTime {
   GameName: string;
@@ -38,7 +84,7 @@ export async function HaloRunsSetup() {
       });
       req.on("error", reject);
     });
-    hrGeneralJson = JSON.parse(generalResponse as string);
+    hrGeneralJson = JSON.parse(generalResponse as string) as HrGlobalData;
 
     // Read Wingman953 HR Profile data
     const profileResponse = await new Promise((resolve, reject) => {
@@ -49,17 +95,17 @@ export async function HaloRunsSetup() {
       });
       req.on("error", reject);
     });
-    wingman953ProfileJson = JSON.parse(profileResponse as string);
-  } catch (error: any) {
-    console.log("Error fetching data:", error.message);
+    wingman953ProfileJson = JSON.parse(profileResponse as string) as HrProfileData;
+  } catch (error: unknown) {
+    console.log("Error fetching data:", error instanceof Error ? error.message : error);
   }
 }
 
 export async function HandleHaloRunsWr(msg: UnifiedChatMessage) {
-  let msgSplitArray = msg.message.text.toLowerCase().split(" ");
+  const msgSplitArray = msg.message.text.toLowerCase().split(" ");
 
   if (msgSplitArray.length === 1 && msg.message.text.toLowerCase() === "!wr") {
-    let hrMessage = structuredClone(Wingbot953Message);
+    const hrMessage = structuredClone(Wingbot953Message);
     hrMessage.platform = msg.platform;
 
     let haloRunsTime = await GetHaloRunsWr(
@@ -82,14 +128,14 @@ export async function HandleHaloRunsWr(msg: UnifiedChatMessage) {
     sendChatMessage(hrMessage);
     return;
   } else if (msgSplitArray.length != 5) {
-    let hrMessage = structuredClone(Wingbot953Message);
+    const hrMessage = structuredClone(Wingbot953Message);
     hrMessage.platform = msg.platform;
     hrMessage.message.text = `Incorrect number of parameters for !wr command`;
     sendChatMessage(hrMessage);
     return;
   }
 
-  let hrNames: string[] = FindHaloRunsCompatibleNames(
+  const hrNames: string[] = FindHaloRunsCompatibleNames(
     msgSplitArray[1].trim().toLowerCase(), //gameName
     msgSplitArray[2].trim().toLowerCase(), //category
     msgSplitArray[3].trim().toLowerCase(), //runnableSegment
@@ -105,7 +151,7 @@ export async function HandleHaloRunsWr(msg: UnifiedChatMessage) {
       hrNames[3]
     );
 
-    let hrMessage = structuredClone(Wingbot953Message);
+    const hrMessage = structuredClone(Wingbot953Message);
     hrMessage.platform = msg.platform;
 
     if (haloRunsTime.Time === TimeSpan.zero) {
@@ -127,7 +173,7 @@ export async function GetHaloRunsWr(
 ): Promise<HaloRunsTime> {
   // Search HaloRuns global.json for Game, Category and Runnable Segment IDs
 
-  let wrHaloRunsTime: HaloRunsTime = {
+  const wrHaloRunsTime: HaloRunsTime = {
     GameName: hrGameName,
     Category: hrCategory,
     RunnableSegment: hrRunnableSegment,
@@ -140,42 +186,39 @@ export async function GetHaloRunsWr(
 
   console.log(hrGameName, hrCategory, hrRunnableSegment, hrDifficulty);
 
-  let hrGameIndex = hrGeneralJson.Games.findIndex((element: any) => {
+  const hrGameIndex = hrGeneralJson.Games.findIndex((element) => {
     return element.Name === hrGameName;
   });
 
   if (hrGameIndex < 0) {
-    // hrMessage.message.text = "Failed to find game on HaloRuns"
     return wrHaloRunsTime;
   }
 
-  let hrCategoryIndex = hrGeneralJson.Games[hrGameIndex].Categories.findIndex(
-    (element: any) => {
+  const hrCategoryIndex = hrGeneralJson.Games[hrGameIndex].Categories.findIndex(
+    (element) => {
       return element.Name === hrCategory;
     }
   );
 
   if (hrCategoryIndex < 0) {
-    // hrMessage.message.text = "Failed to find category on HaloRuns"
     console.log("Failed to find category on HaloRuns");
     return wrHaloRunsTime;
   }
 
-  let hrRunnableSegmentIndex = hrGeneralJson.Games[
+  const hrRunnableSegmentIndex = hrGeneralJson.Games[
     hrGameIndex
-  ].RunnableSegments.findIndex((element: any) => {
+  ].RunnableSegments.findIndex((element) => {
     return element.Name === hrRunnableSegment;
   });
 
   if (hrRunnableSegmentIndex < 0) {
-    // hrMessage.message.text = "Failed to find runnable segment on HaloRuns"
     console.log("Failed to find runnable segment on HaloRuns");
     return wrHaloRunsTime;
   }
 
-  let hrDifficultyIndex = hrGeneralJson.Games[
+  const hrDifficultyIndex = hrGeneralJson.Games[
     hrGameIndex
-  ].Difficulties.findIndex((element: any) => {
+  ].Difficulties.findIndex((element) => {
     return element.Name === hrDifficulty;
   });
 
@@ -185,48 +228,42 @@ export async function GetHaloRunsWr(
     return wrHaloRunsTime;
   }
 
-  let hrGameId: string = hrGeneralJson.Games[hrGameIndex].Id;
+  const hrGameId: string = hrGeneralJson.Games[hrGameIndex].Id;
 
-  let hrCategoryId: string =
+  const hrCategoryId: string =
     hrGeneralJson.Games[hrGameIndex].Categories[hrCategoryIndex].Id;
 
-  let hrRunnableSegmentId: string =
+  const hrRunnableSegmentId: string =
     hrGeneralJson.Games[hrGameIndex].RunnableSegments[hrRunnableSegmentIndex]
       .Id;
 
-  let hrDifficultyId: string =
+  const hrDifficultyId: string =
     hrGeneralJson.Games[hrGameIndex].Difficulties[hrDifficultyIndex].Id;
 
   // Perform HaloRuns API request
-  let apiUrl =
+  const apiUrl =
     hrApiHostName +
     `/content/boards/${hrGameId}/${hrCategoryId}/leaderboard/${hrRunnableSegmentId}/${hrDifficultyId}.json`;
 
-  let leaderboardJson: any;
-
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const req = https.get(
       apiUrl,
-      function (res: {
-        on: (arg0: string, arg1: { (stream: string): void }) => void;
-      }) {
+      function (res) {
         let data = "";
 
         res.on("data", function (stream: string) {
           data += stream;
         });
 
-        req.on("error", function (e: { message: any }) {
+        req.on("error", function (e: Error) {
           console.log(e.message);
           resolve(wrHaloRunsTime);
           return;
         });
 
         res.on("end", function () {
-          // Parse leaderboard for WR info
-
           try {
-            leaderboardJson = JSON.parse(data);
+            const leaderboardJson = JSON.parse(data) as HrLeaderboardData;
 
             if (leaderboardJson.Entries.length === 0) {
               // hrMessage.message.text = `There is no HaloRuns Record for ${hrGameName} ${hrCategory} ${hrRunnableSegment} ${hrDifficulty}`
@@ -291,10 +328,10 @@ export async function GetHaloRunsWr(
 }
 
 export function HandleWingman953Pb(msg: UnifiedChatMessage) {
-  let msgSplitArray = msg.message.text.toLowerCase().split(" ");
+  const msgSplitArray = msg.message.text.toLowerCase().split(" ");
 
   if (msgSplitArray.length === 1 && msg.message.text.toLowerCase() === "!pb") {
-    let pbMessage = structuredClone(Wingbot953Message);
+    const pbMessage = structuredClone(Wingbot953Message);
     pbMessage.platform = msg.platform;
 
     let haloRunsTime = GetHaloRunsPb(
@@ -324,14 +361,14 @@ export function HandleWingman953Pb(msg: UnifiedChatMessage) {
     sendChatMessage(pbMessage);
     return;
   } else if (msgSplitArray.length != 5) {
-    let hrMessage = structuredClone(Wingbot953Message);
+    const hrMessage = structuredClone(Wingbot953Message);
     hrMessage.platform = msg.platform;
     hrMessage.message.text = `Incorrect number of parameters for !pb command`;
     sendChatMessage(hrMessage);
     return;
   }
 
-  let hrNames: string[] = FindHaloRunsCompatibleNames(
+  const hrNames: string[] = FindHaloRunsCompatibleNames(
     msgSplitArray[1].trim().toLowerCase(), //gameName
     msgSplitArray[2].trim().toLowerCase(), //category
     msgSplitArray[3].trim().toLowerCase(), //runnableSegment
@@ -347,7 +384,7 @@ export function HandleWingman953Pb(msg: UnifiedChatMessage) {
       hrNames[3]
     );
 
-    let pbMessage = structuredClone(Wingbot953Message);
+    const pbMessage = structuredClone(Wingbot953Message);
     pbMessage.platform = msg.platform;
 
     if (haloRunsTime.Time === TimeSpan.zero) {
@@ -371,7 +408,7 @@ export function GetHaloRunsPb(
   hrRunnableSegment: string,
   hrDifficulty: string
 ): HaloRunsTime {
-  let pbHaloRunsTime: HaloRunsTime = {
+  const pbHaloRunsTime: HaloRunsTime = {
     GameName: hrGameName,
     Category: hrCategory,
     RunnableSegment: hrRunnableSegment,
@@ -384,32 +421,29 @@ export function GetHaloRunsPb(
 
   console.log(hrGameName, hrCategory, hrRunnableSegment, hrDifficulty);
 
-  // Search HaloRuns global.json for Game and Runnable Segment IDs
-  let hrGameIndex = hrGeneralJson.Games.findIndex((element: any) => {
+  const hrGameIndex = hrGeneralJson.Games.findIndex((element) => {
     return element.Name === hrGameName;
   });
 
   if (hrGameIndex < 0) {
-    // hrMessage.message.text = "Failed to find game on HaloRuns"
     console.log("Failed to find game on HaloRuns");
     return pbHaloRunsTime;
   }
 
-  let hrRunnableSegmentIndex = hrGeneralJson.Games[
+  const hrRunnableSegmentIndex = hrGeneralJson.Games[
     hrGameIndex
-  ].RunnableSegments.findIndex((element: any) => {
+  ].RunnableSegments.findIndex((element) => {
     return element.Name === hrRunnableSegment;
   });
 
   if (hrRunnableSegmentIndex < 0) {
-    // hrMessage.message.text = "Failed to find runnable segment on HaloRuns"
     console.log("Failed to find runnable segment on HaloRuns");
     return pbHaloRunsTime;
   }
 
-  let hrDifficultyIndex = hrGeneralJson.Games[
+  const hrDifficultyIndex = hrGeneralJson.Games[
     hrGameIndex
-  ].Difficulties.findIndex((element: any) => {
+  ].Difficulties.findIndex((element) => {
     return element.Name === hrDifficulty;
   });
 
@@ -419,16 +453,16 @@ export function GetHaloRunsPb(
     return pbHaloRunsTime;
   }
 
-  let hrGameId: string = hrGeneralJson.Games[hrGameIndex].Id;
+  const hrGameId: string = hrGeneralJson.Games[hrGameIndex].Id;
 
-  let hrRunnableSegmentId: string =
+  const hrRunnableSegmentId: string =
     hrGeneralJson.Games[hrGameIndex].RunnableSegments[hrRunnableSegmentIndex]
       .Id;
 
-  let hrDifficultyId: string =
+  const hrDifficultyId: string =
     hrGeneralJson.Games[hrGameIndex].Difficulties[hrDifficultyIndex].Id;
 
-  let pbRuns = wingman953ProfileJson.RunsByCategory.Solo;
+  let pbRuns: HrRun[];
 
   if (!hrCategory.includes("Coop")) {
     pbRuns = wingman953ProfileJson.RunsByCategory[hrCategory];
@@ -516,9 +550,9 @@ export function FindHaloRunsCompatibleNames(
   difficulty: string,
   msg: UnifiedChatMessage
 ) {
-  let hrGameName = FindCommandMatch(CommandNaming.Games, gameName);
+  const hrGameName = FindCommandMatch(CommandNaming.Games, gameName);
 
-  let hrMessage = structuredClone(Wingbot953Message);
+  const hrMessage = structuredClone(Wingbot953Message);
   hrMessage.platform = msg.platform;
 
   if (hrGameName === "") {
@@ -527,7 +561,7 @@ export function FindHaloRunsCompatibleNames(
     return [];
   }
 
-  let hrCategory = FindCommandMatch(CommandNaming.Categories, category);
+  const hrCategory = FindCommandMatch(CommandNaming.Categories, category);
 
   if (hrCategory === "") {
     hrMessage.message.text = "Failed to parse category";
@@ -556,7 +590,7 @@ export function FindHaloRunsCompatibleNames(
     return [];
   }
 
-  let hrDifficulty = FindCommandMatch(CommandNaming.Difficulty, difficulty);
+  const hrDifficulty = FindCommandMatch(CommandNaming.Difficulty, difficulty);
 
   if (hrDifficulty === "") {
     hrMessage.message.text = "Failed to parse difficulty";

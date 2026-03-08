@@ -68,7 +68,7 @@ export function GenerateCommandsList() {
 
 function HandleCommandsList(msg: UnifiedChatMessage) {
   // Commands list too long, split somehow
-  let commandsListMessage = structuredClone(Wingbot953Message);
+  const commandsListMessage = structuredClone(Wingbot953Message);
   commandsListMessage.platform = msg.platform;
   commandsListMessage.message.text = commandsList[0];
   sendChatMessage(commandsListMessage);
@@ -80,17 +80,16 @@ function HandleCommandsList(msg: UnifiedChatMessage) {
 /// Handles the command to produce random number.
 ///
 export function HandleRandomNumberGeneration(msg: UnifiedChatMessage) {
-  var originalMessage = msg.message.text;
-  var command = originalMessage.split(" ")[0].trim().toLowerCase();
+  const originalMessage = msg.message.text;
 
   // Check if 2 arguments have been given
   if (originalMessage.split(" ").length >= 3) {
     // Parse the numbers
-    var lower = parseInt(originalMessage.split(" ")[1].trim(), 10);
-    var upper = parseInt(originalMessage.split(" ")[2].trim(), 10);
+    const lower = parseInt(originalMessage.split(" ")[1].trim(), 10);
+    const upper = parseInt(originalMessage.split(" ")[2].trim(), 10);
 
     if (!Number.isNaN(lower) && !Number.isNaN(upper)) {
-      var num = Between(lower, upper).toString();
+      let num = Between(lower, upper).toString();
 
       if (num == "15") {
         num = `${num} moment`;
@@ -104,7 +103,7 @@ export function HandleRandomNumberGeneration(msg: UnifiedChatMessage) {
         num = `${num}, the Year of ODST!`;
       }
 
-      let randomNumberMessage = structuredClone(Wingbot953Message);
+      const randomNumberMessage = structuredClone(Wingbot953Message);
       randomNumberMessage.platform = msg.platform;
       randomNumberMessage.message.text = `Your number is: ${num}.`;
       sendChatMessage(randomNumberMessage);
@@ -112,7 +111,7 @@ export function HandleRandomNumberGeneration(msg: UnifiedChatMessage) {
     }
   }
 
-  let randomNumberMessage = structuredClone(Wingbot953Message);
+  const randomNumberMessage = structuredClone(Wingbot953Message);
   randomNumberMessage.platform = msg.platform;
   randomNumberMessage.message.text =
     "Usage: Randomly selects a number between the given numbers (inclusive): !random <number> <number>";
@@ -124,7 +123,7 @@ export function HandleRandomNumberGeneration(msg: UnifiedChatMessage) {
 function HandleYouTubeToggleOn(msg: UnifiedChatMessage) {
   YouTubeManager.getInstance().setPollingOverride('force_on');
 
-  let responseMessage = structuredClone(Wingbot953Message);
+  const responseMessage = structuredClone(Wingbot953Message);
   responseMessage.platform = msg.platform;
   responseMessage.message.text = "YouTube polling forced ON - will search for streams regardless of Twitch status";
   sendChatMessage(responseMessage);
@@ -133,7 +132,7 @@ function HandleYouTubeToggleOn(msg: UnifiedChatMessage) {
 function HandleYouTubeToggleOff(msg: UnifiedChatMessage) {
   YouTubeManager.getInstance().setPollingOverride('force_off');
 
-  let responseMessage = structuredClone(Wingbot953Message);
+  const responseMessage = structuredClone(Wingbot953Message);
   responseMessage.platform = msg.platform;
   responseMessage.message.text = "YouTube polling forced OFF - will not search for streams";
   sendChatMessage(responseMessage);
@@ -142,7 +141,7 @@ function HandleYouTubeToggleOff(msg: UnifiedChatMessage) {
 function HandleYouTubeToggleAuto(msg: UnifiedChatMessage) {
   YouTubeManager.getInstance().setPollingOverride(null);
 
-  let responseMessage = structuredClone(Wingbot953Message);
+  const responseMessage = structuredClone(Wingbot953Message);
   responseMessage.platform = msg.platform;
   responseMessage.message.text = "YouTube polling set to AUTO - will follow Twitch stream status";
   sendChatMessage(responseMessage);
@@ -158,7 +157,7 @@ function HandleYouTubeStatus(msg: UnifiedChatMessage) {
     modeText = "FORCED OFF";
   }
 
-  let responseMessage = structuredClone(Wingbot953Message);
+  const responseMessage = structuredClone(Wingbot953Message);
   responseMessage.platform = msg.platform;
   responseMessage.message.text = `YouTube Status - Mode: ${modeText}, Polling: ${status.isPolling ? 'YES' : 'NO'}, Monitoring: ${status.isMonitoring ? 'YES' : 'NO'}, Twitch Live: ${status.isTwitchLive ? 'YES' : 'NO'}`;
   sendChatMessage(responseMessage);

@@ -1,4 +1,4 @@
-export var commandMap = [
+export const commandMap = [
   // {
   //     Command: ["!asm"],
   //     Message: [

@@ -41,7 +41,7 @@ export function HandleInfiniteQuote(msg: UnifiedChatMessage) {
     SelectFromList(infiniteTranscript, msg)
 }
 
-export var quoteMap = [
+export const quoteMap = [
     {
         Command: ["!quote"],
         Message: [

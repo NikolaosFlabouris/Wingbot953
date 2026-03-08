@@ -245,10 +245,10 @@ export class LiveSplitClient {
       LiveSplitClient.getInstance();
     }
 
-    let msgSplitArray = msg.message.text.toLowerCase().split(" ");
+    const msgSplitArray = msg.message.text.toLowerCase().split(" ");
 
     if (msgSplitArray.length != 5) {
-      let hrMessage = structuredClone(Wingbot953Message);
+      const hrMessage = structuredClone(Wingbot953Message);
       hrMessage.platform = msg.platform;
       hrMessage.message.text = `Incorrect number of parameters for command`;
       sendChatMessage(hrMessage);
@@ -274,7 +274,7 @@ export class LiveSplitClient {
     )
       .then((wr) => {
         this.currentWr = wr.Time;
-        let hrPb = GetHaloRunsPb(
+        const hrPb = GetHaloRunsPb(
           this.game,
           this.category,
           this.runnableSegment,
@@ -282,9 +282,9 @@ export class LiveSplitClient {
         );
         this.currentPersonalBest = hrPb.Time;
         this.currentPbRank = hrPb.Rank;
-        this.updateTableInfo();
+        void this.updateTableInfo();
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         console.error("Error fetching world record:", error);
       });
   }
@@ -314,7 +314,7 @@ export class LiveSplitClient {
 
     this.client.connect(this.port, this.host, () => {
       console.log(`Connected to LiveSplit server at ${this.host}:${this.port}`);
-      this.startPolling();
+      void this.startPolling();
 
       // Clear reconnect timer on successful connection
       if (this.reconnectTimer) {
@@ -396,7 +396,7 @@ export class LiveSplitClient {
   private async getCurrentSplitIndex(): Promise<number> {
     try {
       const response = await this.sendCommand("getsplitindex");
-      let index = parseInt(response);
+      const index = parseInt(response);
       if (Number.isNaN(index)) {
         throw new Error("LiveSplit index is NaN");
       }
@@ -514,12 +514,9 @@ export class LiveSplitClient {
       };
     }
 
-    let name = "";
-    if (this.runnableSegment === "Full Game") {
-      name = this.getCurrentSplitName();
-    } else {
-      name = this.runnableSegment;
-    }
+    const name = this.runnableSegment === "Full Game"
+      ? this.getCurrentSplitName()
+      : this.runnableSegment;
     const bestSplit = await this.getCurrentBestSplit();
     const currentComparison = await this.getCurrentComparison();
     const worldRecord = await this.getWorldRecord(name);
@@ -559,7 +556,7 @@ export class LiveSplitClient {
 
     const nextSplitName = this.getNextSplitName();
     const worldRecord = await this.getWorldRecord(nextSplitName);
-    const personalBest = await this.getPersonalBest(nextSplitName);
+    const personalBest = this.getPersonalBest(nextSplitName);
 
     const worldRecordTime =
       worldRecord.string === "00:00" ? "" : worldRecord.string;
@@ -629,7 +626,7 @@ export class LiveSplitClient {
         personalBest: this.currentPersonalBest.string,
         pbRank: this.currentPbRank,
         character: (() => {
-          for (const [key, value] of Object.entries(this.activeSplitNames)) {
+          for (const [, value] of Object.entries(this.activeSplitNames)) {
             if (value.name === this.runnableSegment) {
               return value.character;
             }
@@ -667,7 +664,7 @@ export class LiveSplitClient {
     });
   }
 
-  private async clearTable() {
+  private clearTable() {
     this.currentSplitIndex = -1;
     this.previousSplitData = {
       name: "",
@@ -705,14 +702,15 @@ export class LiveSplitClient {
     try {
       if (this.currentSplitIndex < 0) {
         this.clearTable();
-      } else {
-        this.previousSplitData = this.currentSplitData;
-        this.previousSplitData.currentComparison = (
-          await this.getPreviousSplitTime()
-        ).string;
-        this.currentSplitData = await this.getCurrentSplitData();
-        this.nextSplitData = await this.getNextSplitData();
+        return;
       }
+
+      this.previousSplitData = this.currentSplitData;
+      this.previousSplitData.currentComparison = (
+        await this.getPreviousSplitTime()
+      ).string;
+      this.currentSplitData = await this.getCurrentSplitData();
+      this.nextSplitData = await this.getNextSplitData();
 
       this.sendTableInfo();
 
@@ -730,20 +728,21 @@ export class LiveSplitClient {
     }
   }
 
-  private async startPolling() {
-    this.liveSplitPollInterval = setInterval(async () => {
-      try {
-        const currentIndex = await this.getCurrentSplitIndex();
+  private startPolling() {
+    this.liveSplitPollInterval = setInterval(() => {
+      void (async () => {
+        try {
+          const currentIndex = await this.getCurrentSplitIndex();
 
-        if (this.currentSplitIndex !== currentIndex) {
-          this.currentSplitIndex = currentIndex;
-          console.log(`Current split index: ${this.currentSplitIndex}`);
-          await this.updateTableInfo();
+          if (this.currentSplitIndex !== currentIndex) {
+            this.currentSplitIndex = currentIndex;
+            console.log(`Current split index: ${this.currentSplitIndex}`);
+            await this.updateTableInfo();
+          }
+        } catch (error: unknown) {
+          console.error(`LiveSplit poll failed: ${error instanceof Error ? error.message : String(error)}`);
         }
-      } catch (error: any) {
-        // Handle polling failure
-        console.error(`LiveSplit poll failed: ${error.message}`);
-      }
+      })();
     }, 2000);
 
     this.splitTableInterval = setInterval(() => {

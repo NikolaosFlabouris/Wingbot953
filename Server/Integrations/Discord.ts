@@ -8,6 +8,13 @@ import {
     TextChannel,
 } from "discord.js"
 
+interface LeaderboardUser {
+    Username: string
+    UserId?: string
+    Platform: string
+    Score?: number
+}
+
 // Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds] })
 const twitchStreamAlertChannelId = "1070944970338488321"
@@ -42,7 +49,7 @@ export function DiscordSetup() {
     })
 
     // Log in to Discord with your client's token
-    client.login(process.env.DISCORD_TOKEN)
+    void client.login(process.env.DISCORD_TOKEN)
 }
 
 export function TwitchLivestreamAlert(streamTitle: string, streamGame: string) {
@@ -58,7 +65,7 @@ export function TwitchLivestreamAlert(streamTitle: string, streamGame: string) {
         .setTimestamp()
     //.setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
 
-    twitchStreamAlertChannel.send({ embeds: [exampleEmbed] })
+    void twitchStreamAlertChannel.send({ embeds: [exampleEmbed] })
 }
 
 export function YoutubeLivestreamAlert(
@@ -78,19 +85,19 @@ export function YoutubeLivestreamAlert(
         .setTimestamp()
     //.setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
 
-    youtubeStreamAlertChannel.send({ embeds: [exampleEmbed] })
+    void youtubeStreamAlertChannel.send({ embeds: [exampleEmbed] })
 }
 
-export function PublishTwitchAllTimeLeaderboard(leaderboard: any) {
-    twitchAllTimeLeaderboardChannel.messages?.fetch().then((messages) => {
+export function PublishTwitchAllTimeLeaderboard(leaderboard: LeaderboardUser[]) {
+    void twitchAllTimeLeaderboardChannel.messages?.fetch().then((messages) => {
         let leaderboardMessage = ""
 
         // Filter for Twitch users only, then sort by score in descending order
         const twitchUsers = leaderboard
-            .filter((user: any) => user.Platform === "twitch")
+            .filter((user) => user.Platform === "twitch")
             .sort(
-                (firstItem: any, secondItem: any) =>
-                    secondItem.Score - firstItem.Score
+                (firstItem, secondItem) =>
+                    (secondItem.Score ?? 0) - (firstItem.Score ?? 0)
             )
 
         // Get the top 50 users (or fewer if there aren't 50 Twitch users)
@@ -109,23 +116,23 @@ export function PublishTwitchAllTimeLeaderboard(leaderboard: any) {
             leaderboardMessage.replace(/(\*|_|`|~|\\)/g, "\\$1")
 
         if (messages.size > 0) {
-            messages.first()?.edit(leaderboardMessage)
+            void messages.first()?.edit(leaderboardMessage)
         } else {
-            twitchAllTimeLeaderboardChannel.send(leaderboardMessage)
+            void twitchAllTimeLeaderboardChannel.send(leaderboardMessage)
         }
     })
 }
 
-export function PublishYouTubeAllTimeLeaderboard(leaderboard: any) {
-    youtubeAllTimeLeaderboardChannel.messages?.fetch().then((messages) => {
+export function PublishYouTubeAllTimeLeaderboard(leaderboard: LeaderboardUser[]) {
+    void youtubeAllTimeLeaderboardChannel.messages?.fetch().then((messages) => {
         let leaderboardMessage = ""
 
         // Filter for YouTube users only, then sort by score in descending order
         const youtubeUsers = leaderboard
-            .filter((user: any) => user.Platform === "youtube")
+            .filter((user) => user.Platform === "youtube")
             .sort(
-                (firstItem: any, secondItem: any) =>
-                    secondItem.Score - firstItem.Score
+                (firstItem, secondItem) =>
+                    (secondItem.Score ?? 0) - (firstItem.Score ?? 0)
             )
 
         // Get the top 50 users (or fewer if there aren't 50 YouTube users)
@@ -144,9 +151,9 @@ export function PublishYouTubeAllTimeLeaderboard(leaderboard: any) {
             leaderboardMessage.replace(/(\*|_|`|~|\\)/g, "\\$1")
 
         if (messages.size > 0) {
-            messages.first()?.edit(leaderboardMessage)
+            void messages.first()?.edit(leaderboardMessage)
         } else {
-            youtubeAllTimeLeaderboardChannel.send(leaderboardMessage)
+            void youtubeAllTimeLeaderboardChannel.send(leaderboardMessage)
         }
     })
 }

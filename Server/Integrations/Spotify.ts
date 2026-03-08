@@ -1,7 +1,8 @@
 import SpotifyWebApi from "spotify-web-api-node";
 import open from "open";
 import { TwitchManager } from "./Twitch.js";
-import "dotenv/config";
+import * as dotenv from "dotenv";
+dotenv.config({ quiet: true });
 import * as http from "node:http";
 
 import { sendChatMessage, Wingbot953Message } from "../MessageHandling.js";
@@ -94,7 +95,7 @@ export class SpotifyManager {
    * Initializes the Spotify service with OAuth authentication
    * @param server HTTP server instance for handling OAuth callback
    */
-  public async initialise(server: http.Server): Promise<void> {
+  public initialise(server: http.Server): void {
     this.spotifyApi = new SpotifyWebApi({
       clientId: process.env.SPOTIFY_CLIENT_ID,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
@@ -140,7 +141,7 @@ export class SpotifyManager {
           }
 
           this.tokenRefreshInterval = setInterval(
-            () => this.refreshToken(),
+            () => void this.refreshToken(),
             data.body["expires_in"] * 1000
           );
 
@@ -234,7 +235,7 @@ export class SpotifyManager {
               </body>
             </html>
           `);
-        } catch (err: any) {
+        } catch (err: unknown) {
           console.log("Something went wrong with authorizationCodeGrant!", err);
           res.writeHead(500, { "Content-Type": "text/html" });
           res.end(`
@@ -286,7 +287,7 @@ export class SpotifyManager {
           try {
             listener.call(server, req, res);
             return; // Successfully handled by original listener
-          } catch (err) {
+          } catch {
             // Continue to next listener if this one fails
             continue;
           }
@@ -302,9 +303,9 @@ export class SpotifyManager {
 
     // Remove all existing listeners and add our handler
     server.removeAllListeners("request");
-    server.on("request", spotifyHandler);
+    server.on("request", (...args: Parameters<typeof spotifyHandler>) => void spotifyHandler(...args));
 
-    open(authorizeURL);
+    void open(authorizeURL);
   }
 
   /**
@@ -671,13 +672,13 @@ export class SpotifyManager {
     const separators = [
       { regex: /\s+by\s+/i, artistSecond: true },
       { regex: /\s*-\s*/, artistSecond: false },
-      { regex: /\s*[(\[{]/i, artistSecond: true },
+      { regex: /\s*[([{]/i, artistSecond: true },
     ];
 
     for (const { regex, artistSecond } of separators) {
       const parts = query.split(regex);
       if (parts.length === 2) {
-        let title = parts[artistSecond ? 0 : 1].trim();
+        const title = parts[artistSecond ? 0 : 1].trim();
         let artist = parts[artistSecond ? 1 : 0].trim();
 
         // Remove closing brackets if present

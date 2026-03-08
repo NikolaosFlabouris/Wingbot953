@@ -5,7 +5,6 @@ import { Between } from "./Commands/Utils";
 import { commandMap } from "./Commands/GeneralCommands";
 import { quoteMap } from "./Commands/Quotes";
 import functionMap from "./Commands/FunctionCommands";
-import util from "util";
 import { YouTubeManager } from "./Integrations/YouTube";
 import WebSocket from "ws";
 import { UnifiedChatMessage } from "../Common/UnifiedChatMessage";
@@ -46,8 +45,8 @@ export function createWebSocket() {
       }
     });
 
-    ws.on("message", (rawData: WebSocket.RawData, isBinary: boolean) => {
-      let msg: UnifiedChatMessage = JSON.parse(rawData.toString());
+    ws.on("message", (rawData: WebSocket.RawData) => {
+      const msg = JSON.parse(Buffer.from(rawData as Buffer).toString("utf8")) as UnifiedChatMessage;
       if (msg.channel.name !== "Admin" && msg.message.text.charAt(0) !== "!") {
         sendChatMessage(msg, false);
       }
@@ -82,13 +81,13 @@ export function handleChatMessage(msg: UnifiedChatMessage) {
 
   sendToWebSocketClients(msg);
 
-  QuizManager.getInstance().handleMessage(msg);
+  void QuizManager.getInstance().handleMessage(msg);
 
   Converse(msg.author.displayName, msg);
 
   if (TwitchManager.getInstance().live) {
-    CheckForWelcomeMessage(msg);
-    TwitchManager.getInstance().subscriberFirstMessageQuiz(msg);
+    void CheckForWelcomeMessage(msg);
+    void TwitchManager.getInstance().subscriberFirstMessageQuiz(msg);
   }
 
   /* COMMAND DICTIONARIES */
@@ -98,7 +97,7 @@ export function handleChatMessage(msg: UnifiedChatMessage) {
     commandExecuted = SearchCommandDictionary(msg, quoteMap);
   }
   if (!commandExecuted) {
-    commandExecuted = SearchCommandDictionary(msg, functionMap);
+    SearchCommandDictionary(msg, functionMap);
   }
 
   // if (!commandExecuted && msg.message.text.charAt(0) == "!") {
@@ -136,7 +135,7 @@ export function sendChatMessage(
     sendToPlatform
   ) {
     // Handle YouTube-specific response logic
-    YouTubeManager.getInstance().sendMessage(msg.message.text);
+    void YouTubeManager.getInstance().sendMessage(msg.message.text);
   }
   if ((msg.platform === "twitch" || msg.platform === "all") && sendToPlatform) {
     // Handle Twitch-specific response logic
@@ -166,48 +165,56 @@ function sendToWebSocketClients(msg: UnifiedChatMessage) {
 /// Searches the given command dictionary and performs the required
 /// actions if a command is found.
 ///
+interface CommandEntry {
+  Command: string[];
+  Message?: string[];
+  Function?: (msg: UnifiedChatMessage) => void;
+  Username?: string[];
+  AllMessages?: boolean;
+}
+
 function SearchCommandDictionary(
   msg: UnifiedChatMessage,
-  commandDictionary: any[]
+  commandDictionary: CommandEntry[]
 ) {
   const command = msg.message.text.split(" ")[0].trim().toLowerCase();
 
-  let commandMessage = structuredClone(Wingbot953Message);
+  const commandMessage = structuredClone(Wingbot953Message);
   commandMessage.platform = msg.platform;
 
-  for (let i = 0; i < commandDictionary.length; i++) {
+  for (const entry of commandDictionary) {
     // Check if the command exists.
-    if (commandDictionary[i].Command.includes(command)) {
+    if (entry.Command.includes(command)) {
       // Check if the user is authorised.
       if (
-        commandDictionary[i].Username &&
-        !commandDictionary[i].Username.includes(msg.author.displayName)
+        entry.Username &&
+        !entry.Username.includes(msg.author.displayName)
       ) {
         continue;
       }
 
-      if (commandDictionary[i].Function) {
-        commandDictionary[i].Function(msg);
-      } else if (commandDictionary[i].AllMessages) {
+      if (entry.Function) {
+        entry.Function(msg);
+      } else if (entry.AllMessages && entry.Message) {
         // Send all messages.
         for (
           let commandMessageIndex = 0;
-          commandMessageIndex < commandDictionary[i].Message.length;
+          commandMessageIndex < entry.Message.length;
           commandMessageIndex++
         ) {
           commandMessage.message.text =
-            commandDictionary[i].Message[commandMessageIndex];
+            entry.Message[commandMessageIndex];
           sendChatMessage(commandMessage);
         }
-      } else {
+      } else if (entry.Message) {
         // Pick a random message from the list and send.
         const commandMessageIndex = Between(
           0,
-          commandDictionary[i].Message.length - 1
+          entry.Message.length - 1
         );
 
         commandMessage.message.text =
-          commandDictionary[i].Message[commandMessageIndex];
+          entry.Message[commandMessageIndex];
         sendChatMessage(commandMessage);
       }
       return true;
@@ -232,7 +239,7 @@ const periodicYouTubeMessages = [
 ];
 
 export function PeriodicTwitchMessages() {
-  let periodicMessage = structuredClone(Wingbot953Message);
+  const periodicMessage = structuredClone(Wingbot953Message);
   periodicMessage.platform = "twitch";
   periodicMessage.message.text =
     periodicTwitchMessages[Between(0, periodicTwitchMessages.length - 1)];
@@ -240,7 +247,7 @@ export function PeriodicTwitchMessages() {
 }
 
 export function PeriodicYouTubeMessages() {
-  let periodicMessage = structuredClone(Wingbot953Message);
+  const periodicMessage = structuredClone(Wingbot953Message);
   periodicMessage.platform = "youtube";
   periodicMessage.message.text =
     periodicYouTubeMessages[Between(0, periodicYouTubeMessages.length - 1)];
@@ -250,7 +257,7 @@ export function PeriodicYouTubeMessages() {
 function Converse(user: string, msg: UnifiedChatMessage) {
   const msgWords = msg.message.text.split(" ")[0].trim().toLowerCase();
   if (msgWords === "is" && Between(0, 99) < 40) {
-    let converseMessage = structuredClone(Wingbot953Message);
+    const converseMessage = structuredClone(Wingbot953Message);
     converseMessage.platform = msg.platform;
     converseMessage.message.text =
       converseResponses[Between(0, converseResponses.length - 1)];

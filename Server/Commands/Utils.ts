@@ -2,12 +2,12 @@ import { sendChatMessage, Wingbot953Message } from "../MessageHandling"
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage"
 
 export function SecondsToDuration(numIn: number) {
-    var d = Math.floor(numIn / 60 / 60 / 24)
-    var h = Math.floor((numIn % (60 * 60 * 24)) / 60 / 60)
-    var m = Math.floor((numIn % (60 * 60)) / 60)
-    var s = Math.floor((numIn % (60 * 60)) % 60)
+    const d = Math.floor(numIn / 60 / 60 / 24)
+    const h = Math.floor((numIn % (60 * 60 * 24)) / 60 / 60)
+    const m = Math.floor((numIn % (60 * 60)) / 60)
+    const s = Math.floor((numIn % (60 * 60)) % 60)
 
-    var result = `${h}hrs ${("0" + m).slice(-2)}mins ${("0" + s).slice(-2)}secs`
+    let result = `${h}hrs ${("0" + m).slice(-2)}mins ${("0" + s).slice(-2)}secs`
 
     if (d > 0) {
         result = `${d}days ` + result
@@ -43,12 +43,11 @@ export function Between(min: number, max: number) {
 /// at the human-readable index given as an argument.
 ///
 export function SelectFromList(list: Array<string>, msg: UnifiedChatMessage) {
-    var originalMessage = msg.message.text
-    var command = originalMessage.split(" ")[0].trim().toLowerCase()
-    var argumentCount = originalMessage.split(" ").length - 1
-    var index = Between(0, list.length - 1)
+    const originalMessage = msg.message.text
+    const argumentCount = originalMessage.split(" ").length - 1
+    let index = Between(0, list.length - 1)
 
-    let itemFromListMessage = structuredClone(Wingbot953Message)
+    const itemFromListMessage = structuredClone(Wingbot953Message)
     itemFromListMessage.platform = msg.platform
 
     if (argumentCount === 0) {
@@ -67,9 +66,9 @@ export function SelectFromList(list: Array<string>, msg: UnifiedChatMessage) {
         itemFromListMessage.message.text = `[${index + 1}] ` + list[index]
     } else if (argumentCount >= 1) {
         // Check if words have been given and match a quote in the list.
-        let matchWords = originalMessage.split(" ").slice(1)
+        const matchWords = originalMessage.split(" ").slice(1)
 
-        let matches: Array<{ quote: string; index: number }> = []
+        const matches: Array<{ quote: string; index: number }> = []
 
         for (let i = 0; i < list.length; i++) {
             let isMatch = true
@@ -92,7 +91,7 @@ export function SelectFromList(list: Array<string>, msg: UnifiedChatMessage) {
         if (matches.length === 0) {
             itemFromListMessage.message.text = `No word match found.`
         } else {
-            var matchIndex = Between(0, matches.length - 1)
+            const matchIndex = Between(0, matches.length - 1)
             itemFromListMessage.message.text =
                 `[${matches[matchIndex].index + 1}] ` +
                 matches[matchIndex].quote
@@ -127,12 +126,12 @@ export function numberToOrdinal(num: number): string {
 /// adiuahfiudhfusdhfisdfghoishoi
 ///
 export function GenerateSeanMessage() {
-    var letters = ["a", "b", "c", "d", "e", "f", "g", "h", "r", "s", "w"]
+    const letters = ["a", "b", "c", "d", "e", "f", "g", "h", "r", "s", "w"]
 
-    var messageLength = Between(6, 14)
-    var message = "asd"
+    const messageLength = Between(6, 14)
+    let message = "asd"
 
-    for (var i = 0; i < messageLength; i++) {
+    for (let i = 0; i < messageLength; i++) {
         message += letters[Between(0, letters.length - 1)]
     }
 
