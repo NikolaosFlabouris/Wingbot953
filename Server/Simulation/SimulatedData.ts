@@ -348,7 +348,7 @@ const specialEvents: SimulatedEvent[] = [
             },
         },
     }),
-    // Ban
+    // Ban (admin-only)
     () => {
         const user = "TroubleMaker" + Math.floor(Math.random() * 100)
         return {
@@ -356,14 +356,14 @@ const specialEvents: SimulatedEvent[] = [
                 id: `sim-event-${Date.now()}`,
                 platform: "twitch" as const,
                 timestamp: new Date(),
-                channel: { id: "sim-channel-twitch", name: "Wingman953" },
+                channel: { id: "sim-channel-twitch", name: "Admin" },
                 author: { name: user, displayName: user },
                 message: { text: `${user} has been banned.` },
                 twitchSpecific: { messageType: "ban" as const },
             },
         }
     },
-    // Timeout
+    // Timeout (admin-only)
     () => {
         const user = randomFrom(twitchUsernames)
         const duration = randomFrom([60, 300, 600])
@@ -372,7 +372,7 @@ const specialEvents: SimulatedEvent[] = [
                 id: `sim-event-${Date.now()}`,
                 platform: "twitch" as const,
                 timestamp: new Date(),
-                channel: { id: "sim-channel-twitch", name: "Wingman953" },
+                channel: { id: "sim-channel-twitch", name: "Admin" },
                 author: { name: user.toLowerCase(), displayName: user },
                 message: { text: `${user} has been timed out for ${duration} seconds.` },
                 twitchSpecific: { messageType: "timeout" as const, timeoutDuration: duration },
@@ -404,7 +404,7 @@ const specialEvents: SimulatedEvent[] = [
             },
         }
     },
-    // Raid cancel
+    // Raid cancel (admin-only)
     () => {
         const raider = randomFrom(["SpeedGamerX", "HaloProPlayer", "RetroRunnerTV"])
         return {
@@ -412,14 +412,14 @@ const specialEvents: SimulatedEvent[] = [
                 id: `sim-event-${Date.now()}`,
                 platform: "twitch" as const,
                 timestamp: new Date(),
-                channel: { name: "Wingman953" },
+                channel: { name: "Admin" },
                 author: { name: raider.toLowerCase(), displayName: raider },
                 message: { text: `Raid from ${raider} was cancelled.` },
                 twitchSpecific: { messageType: "raidcancel" as const },
             },
         }
     },
-    // Message remove
+    // Message remove (admin-only)
     () => {
         const user = randomFrom(twitchUsernames)
         return {
@@ -427,7 +427,7 @@ const specialEvents: SimulatedEvent[] = [
                 id: `sim-deleted-${Date.now()}`,
                 platform: "twitch" as const,
                 timestamp: new Date(),
-                channel: { id: "sim-channel-twitch", name: "Wingman953" },
+                channel: { id: "sim-channel-twitch", name: "Admin" },
                 author: { name: user.toLowerCase(), displayName: user },
                 message: { text: "[message deleted]" },
                 twitchSpecific: { messageType: "messageremove" as const },

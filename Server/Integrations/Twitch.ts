@@ -1045,7 +1045,7 @@ export class TwitchManager {
           timestamp: new Date(),
           channel: {
             id: msg.channelId || undefined,
-            name: channel.replace("#", ""),
+            name: "Admin",
           },
           author: {
             id: msg.targetUserId || undefined,
@@ -1060,7 +1060,7 @@ export class TwitchManager {
           },
         };
 
-        // Broadcast to WebSocket for moderation monitoring (don't send to chat)
+        // Broadcast to WebSocket for admin monitoring only (don't send to chat)
         sendChatMessage(banMessage, true, false);
       }
     );
@@ -1077,7 +1077,7 @@ export class TwitchManager {
           timestamp: new Date(),
           channel: {
             id: msg.channelId || undefined,
-            name: channel.replace("#", ""),
+            name: "Admin",
           },
           author: {
             id: msg.targetUserId || undefined,
@@ -1093,7 +1093,7 @@ export class TwitchManager {
           },
         };
 
-        // Broadcast to WebSocket for moderation monitoring (don't send to chat)
+        // Broadcast to WebSocket for admin monitoring only (don't send to chat)
         sendChatMessage(timeoutMessage, true, false);
       }
     );
@@ -1300,7 +1300,7 @@ export class TwitchManager {
           platform: "twitch",
           timestamp: new Date(),
           channel: {
-            name: channel.replace("#", ""),
+            name: "Admin",
           },
           author: {
             name: msg.userInfo.userName,
@@ -1314,7 +1314,7 @@ export class TwitchManager {
           },
         };
 
-        // Broadcast to WebSocket (don't send to chat)
+        // Broadcast to WebSocket for admin monitoring only (don't send to chat)
         sendChatMessage(raidCancelMessage, true, false);
       }
     );
@@ -1332,7 +1332,7 @@ export class TwitchManager {
           timestamp: new Date(),
           channel: {
             id: msg.channelId || undefined,
-            name: channel.replace("#", ""),
+            name: "Admin",
           },
           author: {
             name: msg.userName,
@@ -1346,7 +1346,7 @@ export class TwitchManager {
           },
         };
 
-        // Broadcast to WebSocket for moderation monitoring (don't send to chat)
+        // Broadcast to WebSocket for admin monitoring only (don't send to chat)
         sendChatMessage(removeMessage, true, false);
       }
     );
