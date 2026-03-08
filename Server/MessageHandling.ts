@@ -46,7 +46,18 @@ export function createWebSocket() {
     });
 
     ws.on("message", (rawData: WebSocket.RawData) => {
-      const msg = JSON.parse(Buffer.from(rawData as Buffer).toString("utf8")) as UnifiedChatMessage;
+      let msg: UnifiedChatMessage;
+      try {
+        msg = JSON.parse(Buffer.from(rawData as Buffer).toString("utf8")) as UnifiedChatMessage;
+      } catch (err) {
+        console.error("Failed to parse incoming WebSocket message:", err);
+        return;
+      }
+
+      if (!msg.message?.text) {
+        return;
+      }
+
       if (msg.channel.name !== "Admin" && msg.message.text.charAt(0) !== "!") {
         sendChatMessage(msg, false);
       }
@@ -67,6 +78,10 @@ export function handleChatMessage(msg: UnifiedChatMessage) {
   //   })
   // );
 
+  if (!msg.message?.text) {
+    return;
+  }
+
   if (msg.author.displayName.includes("Wingbot953")) {
     // console.log(`Message from ${msg.author.displayName}, ignoring.`);
     return;
@@ -81,13 +96,21 @@ export function handleChatMessage(msg: UnifiedChatMessage) {
 
   sendToWebSocketClients(msg);
 
-  void QuizManager.getInstance().handleMessage(msg);
+  try {
+    QuizManager.getInstance().handleMessage(msg);
+  } catch (err) {
+    console.error("QuizManager.handleMessage failed:", err);
+  }
 
   Converse(msg.author.displayName, msg);
 
   if (TwitchManager.getInstance().live) {
-    void CheckForWelcomeMessage(msg);
-    void TwitchManager.getInstance().subscriberFirstMessageQuiz(msg);
+    void CheckForWelcomeMessage(msg).catch((err) =>
+      console.error("CheckForWelcomeMessage failed:", err)
+    );
+    void TwitchManager.getInstance().subscriberFirstMessageQuiz(msg).catch((err) =>
+      console.error("subscriberFirstMessageQuiz failed:", err)
+    );
   }
 
   /* COMMAND DICTIONARIES */
@@ -135,7 +158,9 @@ export function sendChatMessage(
     sendToPlatform
   ) {
     // Handle YouTube-specific response logic
-    void YouTubeManager.getInstance().sendMessage(msg.message.text);
+    void YouTubeManager.getInstance().sendMessage(msg.message.text).catch((err) =>
+      console.error("YouTubeManager.sendMessage failed:", err)
+    );
   }
   if ((msg.platform === "twitch" || msg.platform === "all") && sendToPlatform) {
     // Handle Twitch-specific response logic
