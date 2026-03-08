@@ -345,8 +345,6 @@ abstract class BaseQuiz {
 class FirstToAnswerQuiz extends BaseQuiz {
   /** The user who answered correctly first, null if no winner yet */
   private winner: QuizUser | null = null;
-  /** Guard flag to prevent double-processing of correct answers */
-  private processingAnswer: boolean = false;
 
   /**
    * Gets the message explaining how first-to-answer quiz works
@@ -359,19 +357,13 @@ class FirstToAnswerQuiz extends BaseQuiz {
   /**
    * Handles answer attempts for first-to-answer quiz. Only accepts the first correct answer.
    * Immediately ends the quiz when the first correct answer is received.
-   * Uses a processingAnswer guard to prevent race conditions where multiple correct
-   * answers could be processed before the state transition takes effect.
    * @param msg - The chat message containing the user's answer
    * @returns Promise resolving to true if this was the first correct answer, false otherwise
    */
   handleAnswer(msg: UnifiedChatMessage): boolean {
-    if (this.state !== QuizState.ACTIVE || this.winner || this.processingAnswer)
-      return false;
+    if (this.state !== QuizState.ACTIVE || this.winner) return false;
 
     if (this.isValidAnswer(msg.message.text)) {
-      // Set guard immediately to prevent any concurrent processing
-      this.processingAnswer = true;
-
       this.winner = {
         Username: msg.author.displayName,
         UserId: msg.author.id,
@@ -402,13 +394,12 @@ class FirstToAnswerQuiz extends BaseQuiz {
   }
 
   /**
-   * Performs cleanup and resets the winner and processing state
+   * Performs cleanup and resets the winner state
    * @returns Promise that resolves when cleanup is complete
    */
   cleanup(): void {
     super.cleanup();
     this.winner = null;
-    this.processingAnswer = false;
   }
 
   /**
@@ -451,8 +442,7 @@ class AllCorrectAnswersQuiz extends BaseQuiz {
 
   /**
    * Handles answer attempts for all-correct-answers quiz. Accepts multiple correct answers.
-   * Prevents duplicate entries from the same user. Re-checks quiz state before adding
-   * to guard against timing issues where the quiz transitions out of ACTIVE state.
+   * Prevents duplicate entries from the same user.
    * @param msg - The chat message containing the user's answer
    * @returns Promise resolving to true if this was a new correct answer, false otherwise
    */
@@ -460,10 +450,6 @@ class AllCorrectAnswersQuiz extends BaseQuiz {
     if (this.state !== QuizState.ACTIVE) return false;
 
     if (this.isValidAnswer(msg.message.text)) {
-      // Re-check state to guard against race condition where quiz ended
-      // between the initial check and answer validation
-      if (this.state !== QuizState.ACTIVE) return false;
-
       const user = {
         Username: msg.author.displayName,
         UserId: msg.author.id,
@@ -864,8 +850,8 @@ export class QuizManager {
   private isBlocked: boolean = false;
   /** Safety timeout handle that auto-resets isBlocked if quiz doesn't complete normally */
   private blockSafetyTimeout: NodeJS.Timeout | null = null;
-  /** Maximum time in ms that isBlocked can stay true before auto-reset (120 seconds) */
-  private static readonly BLOCK_TIMEOUT_MS: number = 120000;
+  /** Maximum time in ms that isBlocked can stay true before auto-reset (90 seconds) */
+  private static readonly BLOCK_TIMEOUT_MS: number = 90000;
   /** Timer for checking and processing the quiz queue */
   private queueCheckInterval: NodeJS.Timeout | null = null;
 
