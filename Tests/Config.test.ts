@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from "vitest";
 import { validateEnvironment } from "../Server/Config";
 
 describe("validateEnvironment", () => {
   let originalEnv: NodeJS.ProcessEnv;
-  let exitSpy: ReturnType<typeof vi.spyOn>;
-  let errorSpy: ReturnType<typeof vi.spyOn>;
+  let exitSpy: MockInstance;
+  let errorSpy: MockInstance;
 
   beforeEach(() => {
     originalEnv = { ...process.env };
@@ -45,7 +45,7 @@ describe("validateEnvironment", () => {
 
     validateEnvironment();
 
-    const errorOutput = errorSpy.mock.calls.map((c: unknown[]) => c[0]).join("\n");
+    const errorOutput = (errorSpy.mock.calls as string[][]).map((c) => c[0]).join("\n");
     expect(errorOutput).toContain("TWITCH_CLIENT_ID");
     expect(errorOutput).toContain("DISCORD_TOKEN");
   });

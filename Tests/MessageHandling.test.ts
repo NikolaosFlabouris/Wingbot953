@@ -120,8 +120,6 @@ import {
     PeriodicTwitchMessages,
     PeriodicYouTubeMessages,
 } from "../Server/MessageHandling"
-import { TwitchManager } from "../Server/Integrations/Twitch"
-import { YouTubeManager } from "../Server/Integrations/YouTube"
 import { UnifiedChatMessage } from "../Common/UnifiedChatMessage"
 
 function makeMessage(

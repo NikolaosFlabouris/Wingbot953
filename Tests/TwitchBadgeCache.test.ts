@@ -102,6 +102,7 @@ describe("BadgeCache", () => {
             BadgeCache.initialize(client)
             await BadgeCache.getGlobalBadges()
             await BadgeCache.getGlobalBadges()
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             expect(client.chat.getGlobalBadges).toHaveBeenCalledTimes(1)
         })
 
@@ -111,6 +112,7 @@ describe("BadgeCache", () => {
             BadgeCache.initialize(client)
             await BadgeCache.getChannelBadges("ch1")
             await BadgeCache.getChannelBadges("ch1")
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             expect(client.chat.getChannelBadges).toHaveBeenCalledTimes(1)
         })
 

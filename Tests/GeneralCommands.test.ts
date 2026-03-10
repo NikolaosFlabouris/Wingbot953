@@ -30,7 +30,7 @@ describe("GeneralCommands - commandMap structure", () => {
         for (const entry of commandMap) {
             expect(entry.Message).toBeDefined()
             expect(Array.isArray(entry.Message)).toBe(true)
-            expect(entry.Message!.length).toBeGreaterThan(0)
+            expect(entry.Message?.length).toBeGreaterThan(0)
         }
     })
 
@@ -66,7 +66,7 @@ describe("GeneralCommands - commandMap structure", () => {
             (e) => "AllMessages" in e && e.AllMessages === true
         )
         for (const entry of allMessageEntries) {
-            expect(entry.Message!.length).toBeGreaterThan(0)
+            expect(entry.Message?.length).toBeGreaterThan(0)
         }
     })
 
