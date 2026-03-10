@@ -211,3 +211,142 @@ export function extractEmoteName(
 export function buildEmoteUrl(emoteId: string): string {
   return `https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default/dark/1.0`;
 }
+
+/**
+ * Represents a single part of an EventSub chat message.
+ * Messages arrive pre-parsed into text, emote, cheermote, and mention segments.
+ */
+export interface EventSubMessagePart {
+  type: "text" | "emote" | "cheermote" | "mention";
+  text: string;
+  emote?: { id: string; emote_set_id: string; owner_id: string; format: string[] };
+  cheermote?: { prefix: string; bits: number; tier: number };
+  mention?: { user_id: string; user_name: string; user_login: string };
+}
+
+/**
+ * Parses EventSub structured message parts into the EmoteInfo[] format
+ * used by UnifiedChatMessage.
+ */
+export function parseEventSubEmotes(
+  messageParts: EventSubMessagePart[]
+): import("../../Common/UnifiedChatMessage").EmoteInfo[] {
+  const emotes: import("../../Common/UnifiedChatMessage").EmoteInfo[] = [];
+  let offset = 0;
+
+  for (const part of messageParts) {
+    if (part.type === "emote" && part.emote) {
+      emotes.push({
+        id: part.emote.id,
+        name: part.text,
+        startIndex: offset,
+        endIndex: offset + part.text.length - 1,
+        url: buildEmoteUrl(part.emote.id),
+      });
+    }
+    offset += part.text.length;
+  }
+
+  return emotes;
+}
+
+/**
+ * Extracts author role flags from an EventSub badges record.
+ * EventSub provides badges as Record<string, string> (e.g. { "moderator": "1", "subscriber": "3012" }).
+ */
+export function parseEventSubBadgeRoles(badges: Record<string, string>): {
+  isModerator: boolean;
+  isSubscriber: boolean;
+  isOwner: boolean;
+} {
+  return {
+    isModerator: "moderator" in badges,
+    isSubscriber: "subscriber" in badges || "founder" in badges,
+    isOwner: "broadcaster" in badges,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// EventSub Chat Notification Event Interfaces
+// ---------------------------------------------------------------------------
+// These describe the subset of properties we use from
+// onChannelChatNotification events. The Twurple union type is complex,
+// so we define minimal interfaces for the shapes we actually consume.
+
+interface EventSubNotificationBase {
+  type: string;
+  chatterDisplayName: string;
+  chatterName: string;
+  chatterId: string;
+  messageText?: string;
+  messageId?: string;
+  badges: Record<string, string>;
+  color?: string;
+}
+
+export interface EventSubSubNotification extends EventSubNotificationBase {
+  durationMonths: number;
+}
+
+export interface EventSubResubNotification extends EventSubNotificationBase {
+  cumulativeMonths: number;
+}
+
+export interface EventSubSubGiftNotification extends EventSubNotificationBase {
+  chatterIsAnonymous: boolean;
+  recipientDisplayName: string;
+}
+
+export interface EventSubCommunitySubGiftNotification extends EventSubNotificationBase {
+  chatterIsAnonymous: boolean;
+  total: number;
+}
+
+export interface EventSubRaidNotification extends EventSubNotificationBase {
+  raiderDisplayName: string;
+  viewerCount: number;
+}
+
+export interface EventSubAnnouncementNotification extends EventSubNotificationBase {
+  announcementColor: string;
+}
+
+export interface EventSubGiftPaidUpgradeNotification extends EventSubNotificationBase {
+  gifterDisplayName: string;
+}
+
+export interface EventSubPayItForwardNotification extends EventSubNotificationBase {
+  gifterDisplayName?: string;
+  recipientDisplayName?: string;
+}
+
+// ---------------------------------------------------------------------------
+// EventSub Moderation Event Interfaces
+// ---------------------------------------------------------------------------
+
+interface EventSubModerationBase {
+  moderationAction: string;
+  broadcasterId: string;
+  broadcasterName: string;
+}
+
+export interface EventSubBanModeration extends EventSubModerationBase {
+  userId: string;
+  userName: string;
+  userDisplayName: string;
+}
+
+export interface EventSubTimeoutModeration extends EventSubModerationBase {
+  userId: string;
+  userName: string;
+  userDisplayName: string;
+  expiryDate: Date;
+}
+
+export interface EventSubDeleteModeration extends EventSubModerationBase {
+  userId: string;
+  userName: string;
+  userDisplayName: string;
+  messageId: string;
+  messageText: string;
+}

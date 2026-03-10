@@ -126,7 +126,7 @@ export class BadgeCache {
     }
 
     /**
-     * Get multiple badge icons from a badges Map (like from chat message)
+     * Get multiple badge icons from a badges Map (like from IRC chat message)
      */
     static async getBadgeIcons(
         channelId: string,
@@ -135,6 +135,29 @@ export class BadgeCache {
         const badgeIcons: BadgeIcon[] = []
 
         for (const [badgeName, badgeVersion] of badges) {
+            const badgeIcon = await BadgeCache.getBadgeIcon(
+                channelId,
+                badgeName,
+                badgeVersion
+            )
+            if (badgeIcon) {
+                badgeIcons.push(badgeIcon)
+            }
+        }
+
+        return badgeIcons
+    }
+
+    /**
+     * Get multiple badge icons from a Record (like from EventSub chat events)
+     */
+    static async getBadgeIconsFromRecord(
+        channelId: string,
+        badges: Record<string, string>
+    ): Promise<BadgeIcon[]> {
+        const badgeIcons: BadgeIcon[] = []
+
+        for (const [badgeName, badgeVersion] of Object.entries(badges)) {
             const badgeIcon = await BadgeCache.getBadgeIcon(
                 channelId,
                 badgeName,

@@ -24,6 +24,9 @@ import {
     parseEmotePosition,
     extractEmoteName,
     buildEmoteUrl,
+    parseEventSubEmotes,
+    parseEventSubBadgeRoles,
+    type EventSubMessagePart,
 } from "../Server/Integrations/TwitchLogic"
 
 describe("getSubQuizRollThreshold", () => {
@@ -311,5 +314,154 @@ describe("buildCommunityPayForwardMessage", () => {
         expect(msg).toContain("Forwarder")
         expect(msg).toContain("community")
         expect(msg).not.toContain("undefined")
+    })
+})
+
+describe("parseEventSubEmotes", () => {
+    const makeEmotePart = (text: string, id: string): EventSubMessagePart => ({
+        type: "emote",
+        text,
+        emote: { id, emote_set_id: "0", owner_id: "0", format: ["static"] },
+    })
+
+    const makeTextPart = (text: string): EventSubMessagePart => ({
+        type: "text",
+        text,
+    })
+
+    it("returns empty array for text-only message", () => {
+        const parts: EventSubMessagePart[] = [makeTextPart("Hello world")]
+        expect(parseEventSubEmotes(parts)).toEqual([])
+    })
+
+    it("parses a single emote", () => {
+        const parts: EventSubMessagePart[] = [makeEmotePart("Kappa", "25")]
+        const result = parseEventSubEmotes(parts)
+        expect(result).toHaveLength(1)
+        expect(result[0].id).toBe("25")
+        expect(result[0].name).toBe("Kappa")
+        expect(result[0].startIndex).toBe(0)
+        expect(result[0].endIndex).toBe(4)
+        expect(result[0].url).toContain("25")
+    })
+
+    it("computes correct offsets with text before emote", () => {
+        const parts: EventSubMessagePart[] = [
+            makeTextPart("Hello "),
+            makeEmotePart("Kappa", "25"),
+        ]
+        const result = parseEventSubEmotes(parts)
+        expect(result).toHaveLength(1)
+        expect(result[0].startIndex).toBe(6)
+        expect(result[0].endIndex).toBe(10)
+    })
+
+    it("parses multiple emotes with text between", () => {
+        const parts: EventSubMessagePart[] = [
+            makeEmotePart("PogChamp", "305954156"),
+            makeTextPart(" nice "),
+            makeEmotePart("LUL", "425618"),
+        ]
+        const result = parseEventSubEmotes(parts)
+        expect(result).toHaveLength(2)
+
+        expect(result[0].name).toBe("PogChamp")
+        expect(result[0].startIndex).toBe(0)
+        expect(result[0].endIndex).toBe(7)
+
+        expect(result[1].name).toBe("LUL")
+        expect(result[1].startIndex).toBe(14)
+        expect(result[1].endIndex).toBe(16)
+    })
+
+    it("ignores cheermote and mention parts", () => {
+        const parts: EventSubMessagePart[] = [
+            { type: "cheermote", text: "Cheer100", cheermote: { prefix: "Cheer", bits: 100, tier: 1 } },
+            makeTextPart(" thanks "),
+            { type: "mention", text: "@SomeUser", mention: { user_id: "123", user_name: "SomeUser", user_login: "someuser" } },
+        ]
+        expect(parseEventSubEmotes(parts)).toEqual([])
+    })
+
+    it("handles emote part without emote data", () => {
+        const parts: EventSubMessagePart[] = [
+            { type: "emote", text: "BrokenEmote" },
+        ]
+        expect(parseEventSubEmotes(parts)).toEqual([])
+    })
+
+    it("returns empty array for empty input", () => {
+        expect(parseEventSubEmotes([])).toEqual([])
+    })
+
+    it("builds correct CDN URL for emote", () => {
+        const parts: EventSubMessagePart[] = [makeEmotePart("emotesv2_test", "emotesv2_abc123")]
+        const result = parseEventSubEmotes(parts)
+        expect(result[0].url).toBe(
+            "https://static-cdn.jtvnw.net/emoticons/v2/emotesv2_abc123/default/dark/1.0"
+        )
+    })
+})
+
+describe("parseEventSubBadgeRoles", () => {
+    it("detects moderator badge", () => {
+        const result = parseEventSubBadgeRoles({ moderator: "1" })
+        expect(result.isModerator).toBe(true)
+        expect(result.isSubscriber).toBe(false)
+        expect(result.isOwner).toBe(false)
+    })
+
+    it("detects subscriber badge", () => {
+        const result = parseEventSubBadgeRoles({ subscriber: "3012" })
+        expect(result.isModerator).toBe(false)
+        expect(result.isSubscriber).toBe(true)
+        expect(result.isOwner).toBe(false)
+    })
+
+    it("detects founder badge as subscriber", () => {
+        const result = parseEventSubBadgeRoles({ founder: "0" })
+        expect(result.isSubscriber).toBe(true)
+    })
+
+    it("detects broadcaster badge as owner", () => {
+        const result = parseEventSubBadgeRoles({ broadcaster: "1" })
+        expect(result.isOwner).toBe(true)
+    })
+
+    it("detects multiple roles", () => {
+        const result = parseEventSubBadgeRoles({
+            moderator: "1",
+            subscriber: "24",
+            broadcaster: "1",
+        })
+        expect(result.isModerator).toBe(true)
+        expect(result.isSubscriber).toBe(true)
+        expect(result.isOwner).toBe(true)
+    })
+
+    it("returns all false for empty badges", () => {
+        const result = parseEventSubBadgeRoles({})
+        expect(result.isModerator).toBe(false)
+        expect(result.isSubscriber).toBe(false)
+        expect(result.isOwner).toBe(false)
+    })
+
+    it("ignores unrelated badges", () => {
+        const result = parseEventSubBadgeRoles({
+            premium: "1",
+            bits: "1000",
+            glhf_pledge: "1",
+        })
+        expect(result.isModerator).toBe(false)
+        expect(result.isSubscriber).toBe(false)
+        expect(result.isOwner).toBe(false)
+    })
+
+    it("handles founder and subscriber together (subscriber wins)", () => {
+        const result = parseEventSubBadgeRoles({
+            founder: "0",
+            subscriber: "12",
+        })
+        expect(result.isSubscriber).toBe(true)
     })
 })

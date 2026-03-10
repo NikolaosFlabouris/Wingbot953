@@ -182,18 +182,22 @@ describe("SimulatedData", () => {
             for (let i = 0; i < 500; i++) {
                 const event = generateSimulatedSpecialEvent()
                 const msgType = event.botMessage.twitchSpecific?.messageType
-                if (msgType) types.add(msgType)
+                if (msgType) types.add(msgType.type)
             }
             expect(types.size).toBeGreaterThanOrEqual(5)
         })
 
-        const adminOnlyTypes = ["ban", "timeout", "raidcancel", "messageremove"]
-        const publicTypes = ["sub", "resub", "subgift", "communitysub", "giftpaidupgrade", "primepaidupgrade", "payforward", "announcement", "action", "follow", "hypetrain", "prediction", "poll", "shoutout"]
+        // Types that ONLY appear as admin messages
+        const adminOnlyTypes = ["ban", "timeout", "raidcancel", "messageremove", "redemption"]
+        // Types that ONLY appear as public messages
+        const publicOnlyTypes = ["sub", "resub", "subgift", "communitysub", "giftpaidupgrade", "primepaidupgrade", "payforward", "announcement", "action", "follow", "raid"]
+        // Types that appear as BOTH admin and public messages (e.g. begin/end are public, progress/lock are admin)
+        const mixedTypes = ["hypetrain", "prediction", "poll", "shoutout"]
 
         it("sets channel.name to 'Admin' for admin-only event types", () => {
             for (let i = 0; i < 1000; i++) {
                 const event = generateSimulatedSpecialEvent()
-                const msgType = event.botMessage.twitchSpecific?.messageType
+                const msgType = event.botMessage.twitchSpecific?.messageType?.type
                 if (msgType && adminOnlyTypes.includes(msgType)) {
                     expect(event.botMessage.channel.name,
                         `${msgType} should have channel.name 'Admin'`).toBe("Admin")
@@ -201,13 +205,27 @@ describe("SimulatedData", () => {
             }
         })
 
-        it("sets channel.name to 'Wingman953' for public event types", () => {
+        it("sets channel.name to 'Wingman953' for public-only event types", () => {
             for (let i = 0; i < 1000; i++) {
                 const event = generateSimulatedSpecialEvent()
-                const msgType = event.botMessage.twitchSpecific?.messageType
-                if (msgType && publicTypes.includes(msgType)) {
+                const msgType = event.botMessage.twitchSpecific?.messageType?.type
+                if (msgType && publicOnlyTypes.includes(msgType)) {
                     expect(event.botMessage.channel.name,
                         `${msgType} should have channel.name 'Wingman953'`).toBe("Wingman953")
+                }
+            }
+        })
+
+        it("mixed event types use correct channel for their variant", () => {
+            for (let i = 0; i < 1000; i++) {
+                const event = generateSimulatedSpecialEvent()
+                const msgType = event.botMessage.twitchSpecific?.messageType?.type
+                if (msgType && mixedTypes.includes(msgType)) {
+                    const channel = event.botMessage.channel.name
+                    expect(
+                        channel === "Admin" || channel === "Wingman953",
+                        `${msgType} should have channel.name 'Admin' or 'Wingman953', got '${channel}'`
+                    ).toBe(true)
                 }
             }
         })
@@ -215,7 +233,7 @@ describe("SimulatedData", () => {
         it("admin-only events have no userMessage", () => {
             for (let i = 0; i < 500; i++) {
                 const event = generateSimulatedSpecialEvent()
-                const msgType = event.botMessage.twitchSpecific?.messageType
+                const msgType = event.botMessage.twitchSpecific?.messageType?.type
                 if (msgType && adminOnlyTypes.includes(msgType)) {
                     expect(event.userMessage,
                         `${msgType} should not have a userMessage`).toBeUndefined()
