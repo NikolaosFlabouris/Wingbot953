@@ -121,21 +121,31 @@ export function HandleRandomNumberGeneration(msg: UnifiedChatMessage) {
 
 // YouTube toggle command handlers
 function HandleYouTubeToggleOn(msg: UnifiedChatMessage) {
-  YouTubeManager.getInstance().setPollingOverride('force_on');
+  const yt = YouTubeManager.getInstance();
+  yt.setPollingOverride('force_on');
 
+  const status = yt.getPollingStatus();
   const responseMessage = structuredClone(Wingbot953Message);
   responseMessage.platform = msg.platform;
-  responseMessage.message.text = "YouTube polling forced ON - will search for streams regardless of Twitch status";
-  sendChatMessage(responseMessage);
+  responseMessage.channel.name = "Admin";
+  responseMessage.message.text = status.isMonitoring
+    ? "YouTube polling forced ON - current stream monitoring continues, polling will resume after stream ends"
+    : "YouTube polling forced ON - will search for streams regardless of Twitch status";
+  sendChatMessage(responseMessage, true, false);
 }
 
 function HandleYouTubeToggleOff(msg: UnifiedChatMessage) {
-  YouTubeManager.getInstance().setPollingOverride('force_off');
+  const yt = YouTubeManager.getInstance();
+  yt.setPollingOverride('force_off');
 
+  const status = yt.getPollingStatus();
   const responseMessage = structuredClone(Wingbot953Message);
   responseMessage.platform = msg.platform;
-  responseMessage.message.text = "YouTube polling forced OFF - will not search for streams";
-  sendChatMessage(responseMessage);
+  responseMessage.channel.name = "Admin";
+  responseMessage.message.text = status.isMonitoring
+    ? "YouTube polling forced OFF - current stream monitoring continues, polling will not resume after stream ends"
+    : "YouTube polling forced OFF - will not search for streams";
+  sendChatMessage(responseMessage, true, false);
 }
 
 function HandleYouTubeToggleAuto(msg: UnifiedChatMessage) {
@@ -143,8 +153,9 @@ function HandleYouTubeToggleAuto(msg: UnifiedChatMessage) {
 
   const responseMessage = structuredClone(Wingbot953Message);
   responseMessage.platform = msg.platform;
+  responseMessage.channel.name = "Admin";
   responseMessage.message.text = "YouTube polling set to AUTO - will follow Twitch stream status";
-  sendChatMessage(responseMessage);
+  sendChatMessage(responseMessage, true, false);
 }
 
 function HandleYouTubeStatus(msg: UnifiedChatMessage) {
@@ -159,8 +170,9 @@ function HandleYouTubeStatus(msg: UnifiedChatMessage) {
 
   const responseMessage = structuredClone(Wingbot953Message);
   responseMessage.platform = msg.platform;
+  responseMessage.channel.name = "Admin";
   responseMessage.message.text = `YouTube Status - Mode: ${modeText}, Polling: ${status.isPolling ? 'YES' : 'NO'}, Monitoring: ${status.isMonitoring ? 'YES' : 'NO'}, Twitch Live: ${status.isTwitchLive ? 'YES' : 'NO'}`;
-  sendChatMessage(responseMessage);
+  sendChatMessage(responseMessage, true, false);
 }
 
 const functionMap = [

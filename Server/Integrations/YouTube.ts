@@ -526,9 +526,9 @@ export class YouTubeManager {
     );
 
     if (this.youtubePollingOverride === "force_on") {
-      console.log("YouTube: Polling forced ON by override");
+      console.log("YouTube: Polling override set to ON");
     } else if (this.youtubePollingOverride === "force_off") {
-      console.log("YouTube: Polling forced OFF by override");
+      console.log("YouTube: Polling override set to OFF");
     } else {
       console.log(
         `YouTube: Auto mode - Twitch is ${
@@ -537,19 +537,18 @@ export class YouTubeManager {
       );
     }
 
-    // Only start polling if not monitoring a livestream AND should start polling
     if (shouldStart) {
       this.youTubeApiPollingInterval = setInterval(
         () => void this.youTubeApiPolling(),
         120000,
       ); // 120secs
       console.log("YouTube: Started API polling interval");
-    } else if (!this.isMonitoring && !shouldStart) {
-      console.log("YouTube: Skipping API polling - conditions not met");
-    } else {
+    } else if (this.isMonitoring) {
       console.log(
-        "YouTube: Skipping API polling - already monitoring livestream",
+        "YouTube: Already monitoring a livestream, discovery polling not needed",
       );
+    } else {
+      console.log("YouTube: Stream discovery polling not started");
     }
   }
 
