@@ -33,6 +33,7 @@ interface SplitInfo {
   category?: string;
   runnableSegment?: string;
   difficulty?: string;
+  splitIndex?: number;
   previousSplit?: SplitData;
   currentSplit: SplitData;
   nextSplit?: SplitData;
@@ -490,6 +491,7 @@ export class LiveSplitClient {
       category: this.category,
       difficulty: this.difficulty,
       runnableSegment: this.runnableSegment,
+      splitIndex: this.currentSplitIndex,
       currentSplit: {
         name: this.runnableSegment,
         worldRecord: this.currentWr.string,
@@ -514,6 +516,7 @@ export class LiveSplitClient {
       category: this.category,
       difficulty: this.difficulty,
       runnableSegment: this.runnableSegment,
+      splitIndex: this.currentSplitIndex,
       previousSplit: this.previousSplitData,
       currentSplit: this.currentSplitData,
       nextSplit: this.nextSplitData,
