@@ -21,6 +21,13 @@ export interface BadgeIcon {
   clickUrl: string | null;
 }
 
+export type TwitchMessageType =
+  | { category: "chat"; type: "action" }
+  | { category: "subscription"; type: "sub" | "resub" | "subgift" | "communitysub" | "giftpaidupgrade" | "primepaidupgrade" | "payforward" }
+  | { category: "moderation"; type: "ban" | "timeout" | "messageremove" }
+  | { category: "activity"; type: "prediction" | "poll" | "hypetrain" | "redemption" }
+  | { category: "notification"; type: "follow" | "raid" | "raidcancel" | "shoutout" | "announcement" };
+
 export interface UnifiedChatMessage {
   // Common fields for both platforms
   id?: string;
@@ -48,11 +55,9 @@ export interface UnifiedChatMessage {
   // Platform-specific data can be stored here
   twitchSpecific?: {
     bits?: number;
-    firstMessage?: boolean;
-    returningChatter?: boolean;
     badges?: BadgeIcon[];
     isHighlighted?: boolean;
-    messageType?: "sub" | "resub" | "subgift" | "communitysub" | "announcement" | "ban" | "timeout" | "giftpaidupgrade" | "primepaidupgrade" | "whisper" | "payforward" | "action" | "raidcancel" | "messageremove";
+    messageType?: TwitchMessageType;
     announcementColor?: string;
     timeoutDuration?: number;
     giftCount?: number;

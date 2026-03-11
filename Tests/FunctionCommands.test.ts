@@ -285,6 +285,8 @@ describe("YouTube toggle commands", () => {
         expect(mockSetPollingOverride).toHaveBeenCalledWith("force_on")
         expect(mockSend).toHaveBeenCalledOnce()
         expect(mockSend.mock.calls[0][0].message.text).toContain("forced ON")
+        expect(mockSend.mock.calls[0][0].channel.name).toBe("Admin")
+        expect(mockSend).toHaveBeenCalledWith(expect.anything(), true, false)
     })
 
     it("HandleYouTubeToggleOff calls setPollingOverride('force_off')", () => {
@@ -293,6 +295,8 @@ describe("YouTube toggle commands", () => {
 
         expect(mockSetPollingOverride).toHaveBeenCalledWith("force_off")
         expect(mockSend.mock.calls[0][0].message.text).toContain("forced OFF")
+        expect(mockSend.mock.calls[0][0].channel.name).toBe("Admin")
+        expect(mockSend).toHaveBeenCalledWith(expect.anything(), true, false)
     })
 
     it("HandleYouTubeToggleAuto calls setPollingOverride(null)", () => {
@@ -301,6 +305,8 @@ describe("YouTube toggle commands", () => {
 
         expect(mockSetPollingOverride).toHaveBeenCalledWith(null)
         expect(mockSend.mock.calls[0][0].message.text).toContain("AUTO")
+        expect(mockSend.mock.calls[0][0].channel.name).toBe("Admin")
+        expect(mockSend).toHaveBeenCalledWith(expect.anything(), true, false)
     })
 
     it("HandleYouTubeStatus shows auto mode by default", () => {
@@ -312,6 +318,8 @@ describe("YouTube toggle commands", () => {
         expect(text).toContain("AUTO")
         expect(text).toContain("Polling:")
         expect(text).toContain("Monitoring:")
+        expect(mockSend.mock.calls[0][0].channel.name).toBe("Admin")
+        expect(mockSend).toHaveBeenCalledWith(expect.anything(), true, false)
     })
 
     it("HandleYouTubeStatus shows FORCED ON mode", () => {

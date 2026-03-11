@@ -54,16 +54,16 @@ vi.mock("../Server/Integrations/Discord", () => ({
 vi.mock("fs", () => ({
     default: {
         promises: {
-            readFile: (...args: unknown[]) => mockReadFile(...args),
-            writeFile: (...args: unknown[]) => mockWriteFile(...args),
+            readFile: (...args: unknown[]) => mockReadFile(...args) as Promise<string>,
+            writeFile: (...args: unknown[]) => mockWriteFile(...args) as Promise<void>,
         },
         readFileSync: vi.fn().mockReturnValue("[]"),
         writeFile: vi.fn(),
         existsSync: vi.fn().mockReturnValue(false),
     },
     promises: {
-        readFile: (...args: unknown[]) => mockReadFile(...args),
-        writeFile: (...args: unknown[]) => mockWriteFile(...args),
+        readFile: (...args: unknown[]) => mockReadFile(...args) as Promise<string>,
+        writeFile: (...args: unknown[]) => mockWriteFile(...args) as Promise<void>,
     },
 }))
 
@@ -241,7 +241,7 @@ describe("AddQuizScore", () => {
         const msg = makeMessage("!addscore MockedUser", "twitch", "Wingman953")
         await AddQuizScore(msg)
         expect(mockWriteFile).toHaveBeenCalled()
-        const writtenPath = mockWriteFile.mock.calls[0][0]
+        const writtenPath = mockWriteFile.mock.calls[0][0] as string
         expect(writtenPath).toContain("QuizLeaderboards.json")
     })
 
@@ -639,10 +639,10 @@ describe("PublishLeaderboards", () => {
         await PublishLeaderboards()
 
         // Both publish functions should receive the combined data
-        const twitchArgs = mockPublishTwitch.mock.calls[0][0]
-        const youtubeArgs = mockPublishYouTube.mock.calls[0][0]
-        expect(twitchArgs.length).toBe(2)
-        expect(youtubeArgs.length).toBe(2)
+        const twitchArgs = mockPublishTwitch.mock.calls[0][0] as unknown[]
+        const youtubeArgs = mockPublishYouTube.mock.calls[0][0] as unknown[]
+        expect(twitchArgs).toHaveLength(2)
+        expect(youtubeArgs).toHaveLength(2)
     })
 
     it("handles errors gracefully", async () => {

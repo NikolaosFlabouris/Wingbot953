@@ -211,20 +211,20 @@ describe("HandleHaloRunsWr", () => {
         mockSend.mockClear()
     })
 
-    it("sends error for incorrect number of parameters", () => {
-        HandleHaloRunsWr(makeMessage("!wr odst solo"))
+    it("sends error for incorrect number of parameters", async () => {
+        await HandleHaloRunsWr(makeMessage("!wr odst solo"))
         expect(mockSend).toHaveBeenCalledOnce()
         expect(mockSend.mock.calls[0][0].message.text).toContain("Incorrect number of parameters")
     })
 
-    it("sends error for two parameters", () => {
-        HandleHaloRunsWr(makeMessage("!wr odst"))
+    it("sends error for two parameters", async () => {
+        await HandleHaloRunsWr(makeMessage("!wr odst"))
         expect(mockSend).toHaveBeenCalledOnce()
         expect(mockSend.mock.calls[0][0].message.text).toContain("Incorrect number of parameters")
     })
 
-    it("sends error message when FindHaloRunsCompatibleNames fails for game", () => {
-        HandleHaloRunsWr(makeMessage("!wr invalidgame solo fg easy"))
+    it("sends error message when FindHaloRunsCompatibleNames fails for game", async () => {
+        await HandleHaloRunsWr(makeMessage("!wr invalidgame solo fg easy"))
         expect(mockSend).toHaveBeenCalled()
         expect(mockSend.mock.calls[0][0].message.text).toContain("Failed to parse game")
     })

@@ -40,8 +40,8 @@ const mockWriteFile = vi.fn()
 
 vi.mock("fs", () => ({
     default: {
-        readFileSync: (...args: unknown[]) => mockReadFileSync(...args),
-        writeFile: (...args: unknown[]) => mockWriteFile(...args),
+        readFileSync: (...args: unknown[]) => mockReadFileSync(...args) as string,
+        writeFile: (...args: unknown[]) => mockWriteFile(...args) as void,
     },
 }))
 

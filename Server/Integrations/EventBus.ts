@@ -84,11 +84,20 @@ export const EventTypes = {
   // Twitch events
   TWITCH_STREAM_STARTED: 'twitch:stream:started',
   TWITCH_STREAM_ENDED: 'twitch:stream:ended',
-  
+  TWITCH_CHANNEL_POINT_REDEMPTION: 'twitch:channel_point_redemption',
+  TWITCH_FOLLOW: 'twitch:follow',
+  TWITCH_HYPE_TRAIN_BEGIN: 'twitch:hype_train:begin',
+  TWITCH_HYPE_TRAIN_END: 'twitch:hype_train:end',
+  TWITCH_PREDICTION_BEGIN: 'twitch:prediction:begin',
+  TWITCH_PREDICTION_END: 'twitch:prediction:end',
+  TWITCH_POLL_BEGIN: 'twitch:poll:begin',
+  TWITCH_POLL_END: 'twitch:poll:end',
+  TWITCH_SHOUTOUT_RECEIVE: 'twitch:shoutout:receive',
+
   // YouTube events (for future use)
   YOUTUBE_STREAM_STARTED: 'youtube:stream:started',
   YOUTUBE_STREAM_ENDED: 'youtube:stream:ended',
-  
+
   // Discord events (for future use)
   DISCORD_CONNECTED: 'discord:connected',
   DISCORD_DISCONNECTED: 'discord:disconnected',

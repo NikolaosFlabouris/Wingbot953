@@ -1,5 +1,13 @@
-import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage"
+import { UnifiedChatMessage, TwitchMessageType } from "../../Common/UnifiedChatMessage"
 import {
+    buildFollowMessage,
+    buildHypeTrainBeginMessage,
+    buildHypeTrainEndMessage,
+    buildPollBeginMessage,
+    buildPollEndMessage,
+    buildPredictionBeginMessage,
+    buildPredictionEndMessage,
+    buildShoutoutReceiveMessage,
     buildSubMessage,
     buildResubMessage,
     buildSubGiftMessage,
@@ -211,7 +219,7 @@ type SimulatedEvent = () => {
     userMessage?: UnifiedChatMessage
 }
 
-function makeBotMessage(text: string, messageType: string, extra?: Partial<UnifiedChatMessage["twitchSpecific"]>): UnifiedChatMessage {
+function makeBotMessage(text: string, messageType: TwitchMessageType, extra?: Partial<UnifiedChatMessage["twitchSpecific"]>): UnifiedChatMessage {
     return {
         id: `sim-event-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         platform: "twitch",
@@ -219,7 +227,19 @@ function makeBotMessage(text: string, messageType: string, extra?: Partial<Unifi
         channel: { id: "sim-channel-twitch", name: "Wingman953" },
         author: { name: "wingbot953", displayName: "Wingbot953" },
         message: { text },
-        twitchSpecific: { messageType: messageType as UnifiedChatMessage["twitchSpecific"] extends { messageType?: infer T } ? T : never, isHighlighted: true, ...extra },
+        twitchSpecific: { messageType, isHighlighted: true, ...extra },
+    }
+}
+
+function makeAdminMessage(text: string, messageType: TwitchMessageType): UnifiedChatMessage {
+    return {
+        id: `sim-event-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        platform: "twitch" as const,
+        timestamp: new Date(),
+        channel: { id: "sim-channel-twitch", name: "Admin" },
+        author: { name: "wingbot953", displayName: "Wingbot953" },
+        message: { text },
+        twitchSpecific: { messageType },
     }
 }
 
@@ -240,12 +260,61 @@ function makeUserEventMessage(displayName: string, text: string): UnifiedChatMes
 }
 
 const specialEvents: SimulatedEvent[] = [
+    // Follow
+    () => {
+        const user = randomFrom(twitchUsernames)
+        return { botMessage: makeBotMessage(buildFollowMessage(user), { category: "notification", type: "follow" }) }
+    },
+    // Hype Train Begin
+    () => {
+        const level = randomFrom([1, 2, 3])
+        return { botMessage: makeBotMessage(buildHypeTrainBeginMessage(level), { category: "activity", type: "hypetrain" }) }
+    },
+    // Hype Train End
+    () => {
+        const level = randomFrom([2, 3, 4, 5])
+        return { botMessage: makeBotMessage(buildHypeTrainEndMessage(level), { category: "activity", type: "hypetrain" }) }
+    },
+    // Poll Begin
+    () => {
+        const title = randomFrom(["Best Halo game?", "Next game to play?", "Favourite weapon?"])
+        const choices = title === "Best Halo game?"
+            ? ["Halo 3", "ODST", "Reach", "CE"]
+            : title === "Next game to play?"
+                ? ["Halo CE", "Halo 2", "Halo Infinite"]
+                : ["Energy Sword", "BR", "Sniper", "Rockets"]
+        return { botMessage: makeBotMessage(buildPollBeginMessage(title, choices), { category: "activity", type: "poll" }) }
+    },
+    // Poll End
+    () => {
+        const title = randomFrom(["Best Halo game?", "Favourite weapon?"])
+        const winner = title === "Best Halo game?" ? "ODST" : "Energy Sword"
+        const votes = randomFrom([42, 87, 156, 203])
+        return { botMessage: makeBotMessage(buildPollEndMessage(title, winner, votes), { category: "activity", type: "poll" }) }
+    },
+    // Prediction Begin
+    () => {
+        const title = randomFrom(["Will streamer PB?", "Will the run survive?", "Death before boss?"])
+        const outcomes = ["Yes", "No"]
+        return { botMessage: makeBotMessage(buildPredictionBeginMessage(title, outcomes), { category: "activity", type: "prediction" }) }
+    },
+    // Prediction End
+    () => {
+        const title = randomFrom(["Will streamer PB?", "Will the run survive?"])
+        const winner = randomFrom(["Yes", "No"])
+        return { botMessage: makeBotMessage(buildPredictionEndMessage(title, winner), { category: "activity", type: "prediction" }) }
+    },
+    // Shoutout Receive
+    () => {
+        const broadcaster = randomFrom(["SpeedGamerX", "HaloProPlayer", "RetroRunnerTV"])
+        return { botMessage: makeBotMessage(buildShoutoutReceiveMessage(broadcaster), { category: "notification", type: "shoutout" }) }
+    },
     // New subscription
     () => {
         const user = randomFrom(twitchUsernames)
         const months = randomFrom([1, 1, 1, 3, 6])
         return {
-            botMessage: makeBotMessage(buildSubMessage(user, months), "sub"),
+            botMessage: makeBotMessage(buildSubMessage(user, months), { category: "subscription", type: "sub" }),
             userMessage: Math.random() < 0.5 ? makeUserEventMessage(user, "Glad to support the channel!") : undefined,
         }
     },
@@ -254,7 +323,7 @@ const specialEvents: SimulatedEvent[] = [
         const user = randomFrom(twitchUsernames)
         const months = randomFrom([2, 3, 6, 12, 24])
         return {
-            botMessage: makeBotMessage(buildResubMessage(user, months), "resub"),
+            botMessage: makeBotMessage(buildResubMessage(user, months), { category: "subscription", type: "resub" }),
             userMessage: makeUserEventMessage(user, `Been here for ${months} months now, love the streams!`),
         }
     },
@@ -263,7 +332,7 @@ const specialEvents: SimulatedEvent[] = [
         const gifter = randomFrom(twitchUsernames)
         const recipient = randomFrom(twitchUsernames.filter(u => u !== gifter))
         return {
-            botMessage: makeBotMessage(buildSubGiftMessage(gifter, recipient), "subgift"),
+            botMessage: makeBotMessage(buildSubGiftMessage(gifter, recipient), { category: "subscription", type: "subgift" }),
         }
     },
     // Community sub bomb
@@ -271,7 +340,7 @@ const specialEvents: SimulatedEvent[] = [
         const gifter = randomFrom(twitchUsernames)
         const count = randomFrom([5, 10, 20, 50])
         return {
-            botMessage: makeBotMessage(buildCommunitySubMessage(gifter, count), "communitysub", { giftCount: count }),
+            botMessage: makeBotMessage(buildCommunitySubMessage(gifter, count), { category: "subscription", type: "communitysub" }, { giftCount: count }),
             userMessage: Math.random() < 0.3 ? makeUserEventMessage(gifter, "Subs for everyone!") : undefined,
         }
     },
@@ -280,7 +349,7 @@ const specialEvents: SimulatedEvent[] = [
         const raider = randomFrom(["SpeedGamerX", "HaloProPlayer", "RetroRunnerTV", "CasualStreamer42"])
         const viewers = randomFrom([5, 15, 50, 150, 500])
         return {
-            botMessage: makeBotMessage(buildRaidMessage(raider, viewers), "sub"),
+            botMessage: makeBotMessage(buildRaidMessage(raider, viewers), { category: "notification", type: "raid" }),
         }
     },
     // Gift paid upgrade
@@ -288,7 +357,7 @@ const specialEvents: SimulatedEvent[] = [
         const user = randomFrom(twitchUsernames)
         const gifter = randomFrom(twitchUsernames.filter(u => u !== user))
         return {
-            botMessage: makeBotMessage(buildGiftPaidUpgradeMessage(user, gifter), "giftpaidupgrade", { originalGifter: gifter }),
+            botMessage: makeBotMessage(buildGiftPaidUpgradeMessage(user, gifter), { category: "subscription", type: "giftpaidupgrade" }, { originalGifter: gifter }),
             userMessage: Math.random() < 0.5 ? makeUserEventMessage(user, "Time to pay it forward!") : undefined,
         }
     },
@@ -296,7 +365,7 @@ const specialEvents: SimulatedEvent[] = [
     () => {
         const user = randomFrom(twitchUsernames)
         return {
-            botMessage: makeBotMessage(buildPrimePaidUpgradeMessage(user), "primepaidupgrade"),
+            botMessage: makeBotMessage(buildPrimePaidUpgradeMessage(user), { category: "subscription", type: "primepaidupgrade" }),
         }
     },
     // Standard pay forward
@@ -307,7 +376,7 @@ const specialEvents: SimulatedEvent[] = [
         return {
             botMessage: makeBotMessage(
                 buildStandardPayForwardMessage(forwarder, recipient, originalGifter),
-                "payforward", { originalGifter }
+                { category: "subscription", type: "payforward" }, { originalGifter }
             ),
         }
     },
@@ -318,7 +387,7 @@ const specialEvents: SimulatedEvent[] = [
         return {
             botMessage: makeBotMessage(
                 buildCommunityPayForwardMessage(forwarder, originalGifter),
-                "payforward", { originalGifter }
+                { category: "subscription", type: "payforward" }, { originalGifter }
             ),
         }
     },
@@ -342,7 +411,7 @@ const specialEvents: SimulatedEvent[] = [
                 "New PB attempt starting soon!",
             ]) },
             twitchSpecific: {
-                messageType: "announcement" as const,
+                messageType: { category: "notification" as const, type: "announcement" as const },
                 announcementColor: randomFrom(["PRIMARY", "BLUE", "GREEN", "ORANGE", "PURPLE"]),
                 isHighlighted: true,
             },
@@ -359,7 +428,7 @@ const specialEvents: SimulatedEvent[] = [
                 channel: { id: "sim-channel-twitch", name: "Admin" },
                 author: { name: user, displayName: user },
                 message: { text: `${user} has been banned.` },
-                twitchSpecific: { messageType: "ban" as const },
+                twitchSpecific: { messageType: { category: "moderation" as const, type: "ban" as const } },
             },
         }
     },
@@ -375,7 +444,7 @@ const specialEvents: SimulatedEvent[] = [
                 channel: { id: "sim-channel-twitch", name: "Admin" },
                 author: { name: user.toLowerCase(), displayName: user },
                 message: { text: `${user} has been timed out for ${duration} seconds.` },
-                twitchSpecific: { messageType: "timeout" as const, timeoutDuration: duration },
+                twitchSpecific: { messageType: { category: "moderation" as const, type: "timeout" as const }, timeoutDuration: duration },
             },
         }
     },
@@ -400,7 +469,7 @@ const specialEvents: SimulatedEvent[] = [
                     displayName: user,
                 },
                 message: { text: action },
-                twitchSpecific: { messageType: "action" as const },
+                twitchSpecific: { messageType: { category: "chat" as const, type: "action" as const } },
             },
         }
     },
@@ -415,7 +484,7 @@ const specialEvents: SimulatedEvent[] = [
                 channel: { name: "Admin" },
                 author: { name: raider.toLowerCase(), displayName: raider },
                 message: { text: `Raid from ${raider} was cancelled.` },
-                twitchSpecific: { messageType: "raidcancel" as const },
+                twitchSpecific: { messageType: { category: "notification" as const, type: "raidcancel" as const } },
             },
         }
     },
@@ -430,14 +499,78 @@ const specialEvents: SimulatedEvent[] = [
                 channel: { id: "sim-channel-twitch", name: "Admin" },
                 author: { name: user.toLowerCase(), displayName: user },
                 message: { text: "[message deleted]" },
-                twitchSpecific: { messageType: "messageremove" as const },
+                twitchSpecific: { messageType: { category: "moderation" as const, type: "messageremove" as const } },
             },
+        }
+    },
+    // Hype Train Progress (admin-only)
+    () => {
+        const level = randomFrom([1, 2, 3, 4])
+        const total = randomFrom([500, 1200, 2500, 5000])
+        const goal = total + randomFrom([200, 500, 1000])
+        return {
+            botMessage: makeAdminMessage(`Hype Train progress - Level ${level}, ${total}/${goal}`, { category: "activity", type: "hypetrain" }),
+        }
+    },
+    // Poll Progress (admin-only)
+    () => {
+        const title = randomFrom(["Best Halo game?", "Favourite weapon?", "Next game to play?"])
+        const choices = title === "Best Halo game?"
+            ? [{ name: "Halo 3", votes: randomFrom([12, 25, 40]) }, { name: "ODST", votes: randomFrom([30, 50, 65]) }, { name: "Reach", votes: randomFrom([8, 15, 35]) }]
+            : title === "Favourite weapon?"
+                ? [{ name: "Energy Sword", votes: randomFrom([20, 35]) }, { name: "BR", votes: randomFrom([15, 28]) }, { name: "Sniper", votes: randomFrom([10, 22]) }]
+                : [{ name: "Halo CE", votes: randomFrom([18, 30]) }, { name: "Halo 2", votes: randomFrom([12, 25]) }, { name: "Halo Infinite", votes: randomFrom([8, 20]) }]
+        const choiceText = choices.map(c => `${c.name}: ${c.votes}`).join(", ")
+        return {
+            botMessage: makeAdminMessage(`Poll progress: "${title}" - ${choiceText}`, { category: "activity", type: "poll" }),
+        }
+    },
+    // Prediction Lock (admin-only)
+    () => {
+        const title = randomFrom(["Will streamer PB?", "Will the run survive?", "Death before boss?"])
+        return {
+            botMessage: makeAdminMessage(`Prediction locked: "${title}"`, { category: "activity", type: "prediction" }),
+        }
+    },
+    // Shoutout Create (admin-only)
+    () => {
+        const target = randomFrom(["SpeedGamerX", "HaloProPlayer", "RetroRunnerTV", "CasualStreamer42"])
+        return {
+            botMessage: makeAdminMessage(`Shoutout sent to ${target}`, { category: "notification", type: "shoutout" }),
+        }
+    },
+    // Channel Point Redemption - Quiz (admin-only)
+    () => {
+        const user = randomFrom(twitchUsernames)
+        return {
+            botMessage: makeAdminMessage(`${user} redeemed "Start a Quiz Round" (500 points)`, { category: "activity", type: "redemption" }),
+        }
+    },
+    // Channel Point Redemption - G'Day (admin-only)
+    () => {
+        const user = randomFrom(twitchUsernames)
+        return {
+            botMessage: makeAdminMessage(`${user} redeemed "G'Day Streamer" (100 points)`, { category: "activity", type: "redemption" }),
+        }
+    },
+    // Channel Point Redemption - G'Night (admin-only)
+    () => {
+        const user = randomFrom(twitchUsernames)
+        return {
+            botMessage: makeAdminMessage(`${user} redeemed "G'Night Streamer" (100 points)`, { category: "activity", type: "redemption" }),
+        }
+    },
+    // Channel Point Redemption - Custom Greeting (admin-only)
+    () => {
+        const user = randomFrom(twitchUsernames)
+        return {
+            botMessage: makeAdminMessage(`${user} redeemed "Add Custom Greeting" (2000 points)`, { category: "activity", type: "redemption" }),
         }
     },
 ]
 
 /**
- * Generates a random simulated special event (sub, raid, ban, announcement, etc.)
+ * Generates a random simulated special event (follow, hype train, poll, sub, raid, ban, etc.)
  * Returns the bot notification message and an optional user message.
  */
 export function generateSimulatedSpecialEvent(): {

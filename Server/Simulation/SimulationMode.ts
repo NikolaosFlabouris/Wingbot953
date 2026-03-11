@@ -52,7 +52,7 @@ function startSimulation(profile: SimulationProfile) {
         handleChatMessage(msg)
     }, profile.intervalMs * 1.5)
 
-    // Generate special events (subs, raids, bans, etc.) at a slower rate
+    // Generate special events (follows, hype trains, polls, subs, raids, bans, etc.) at a slower rate
     specialEventInterval = setInterval(() => {
         const event = generateSimulatedSpecialEvent()
         console.log(`[SIM-EVENT] ${event.botMessage.twitchSpecific?.messageType ?? "event"}: ${event.botMessage.message.text}`)
