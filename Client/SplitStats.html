@@ -51,6 +51,7 @@
 
             #splitTable {
                 height: 190px;
+                table-layout: fixed;
             }
 
             th, td {
@@ -94,17 +95,20 @@
             }
 
             .previous {
-                background: rgba(40, 40, 65, 0.75);
+                background: rgba(45, 42, 72, 0.78);
+                border-color: rgba(120, 110, 200, 0.1);
             }
 
             .current {
-                background: rgba(40, 65, 45, 0.8);
-                border-color: rgba(80, 200, 120, 0.15);
-                box-shadow: inset 0 0 12px rgba(60, 180, 100, 0.06);
+                background: rgba(35, 68, 48, 0.82);
+                border-color: rgba(80, 200, 120, 0.2);
+                box-shadow: inset 0 0 14px rgba(60, 180, 100, 0.08),
+                            0 0 6px rgba(60, 180, 100, 0.04);
             }
 
             .next {
-                background: rgba(40, 58, 65, 0.7);
+                background: rgba(38, 55, 68, 0.72);
+                border-color: rgba(80, 160, 200, 0.1);
             }
 
             /* Time value styling */
@@ -120,55 +124,86 @@
                 align-items: center;
                 justify-content: center;
                 gap: 4px;
-                transition: opacity 0.35s ease, transform 0.35s ease;
+                transition: opacity 0.4s cubic-bezier(0.22, 0.61, 0.36, 1),
+                            transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
             }
 
-            /* Value change animation */
+            /* Value change animation - old value exits upward */
             .cell-updating .cell-content {
                 opacity: 0;
-                transform: translateY(-6px);
+                transform: translateY(-14px) scale(0.92);
+            }
+
+            /* New value enters from below */
+            .cell-entering .cell-content {
+                opacity: 0;
+                transform: translateY(14px) scale(0.92);
+                transition: none;
             }
 
             .cell-updated .cell-content {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0) scale(1);
             }
 
-            /* Column slide animation for split transitions */
-            .slide-left td.previous,
-            .slide-left th.col-title:nth-child(2) {
-                animation: slideOutLeft 0.5s ease-in-out;
+            /* Split transition - Phase 1: cascade exit to the left */
+            #splitTable.split-exit td.previous .cell-content,
+            #splitTable.split-exit th.col-previous {
+                opacity: 0;
+                transform: translateX(-30px);
+                transition: opacity 0.3s ease-in,
+                            transform 0.3s ease-in;
             }
 
-            .slide-left td.current,
-            .slide-left th.col-title:nth-child(3) {
-                animation: slideToLeft 0.5s ease-in-out;
+            #splitTable.split-exit td.current .cell-content,
+            #splitTable.split-exit th.col-current {
+                opacity: 0;
+                transform: translateX(-22px);
+                transition: opacity 0.3s ease-in 0.05s,
+                            transform 0.3s ease-in 0.05s;
             }
 
-            .slide-left td.next,
-            .slide-left th.col-title:nth-child(4) {
-                animation: slideToLeft 0.5s ease-in-out;
+            #splitTable.split-exit td.next .cell-content,
+            #splitTable.split-exit th.col-next {
+                opacity: 0;
+                transform: translateX(-16px);
+                transition: opacity 0.3s ease-in 0.1s,
+                            transform 0.3s ease-in 0.1s;
             }
 
-            .slide-in-right td.next,
-            .slide-in-right th.col-title:nth-child(4) {
-                animation: slideInRight 0.45s ease-out 0.1s both;
+            /* Phase 2: position for entrance (instant, no transition) */
+            #splitTable.split-enter td .cell-content,
+            #splitTable.split-enter th.col-previous,
+            #splitTable.split-enter th.col-current,
+            #splitTable.split-enter th.col-next {
+                opacity: 0;
+                transform: translateX(25px);
+                transition: none;
             }
 
-            @keyframes slideOutLeft {
-                0%   { opacity: 1; transform: translateX(0); }
-                100% { opacity: 0.3; transform: translateX(-20px); }
+            /* Phase 3: cascade settle from right */
+            #splitTable.split-settle td.previous .cell-content,
+            #splitTable.split-settle th.col-previous {
+                opacity: 1;
+                transform: translateX(0);
+                transition: opacity 0.35s cubic-bezier(0.22, 0.61, 0.36, 1),
+                            transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
             }
 
-            @keyframes slideToLeft {
-                0%   { transform: translateX(0); }
-                30%  { transform: translateX(-8px); }
-                100% { transform: translateX(0); }
+            #splitTable.split-settle td.current .cell-content,
+            #splitTable.split-settle th.col-current {
+                opacity: 1;
+                transform: translateX(0);
+                transition: opacity 0.35s cubic-bezier(0.22, 0.61, 0.36, 1) 0.07s,
+                            transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1) 0.07s;
             }
 
-            @keyframes slideInRight {
-                0%   { opacity: 0; transform: translateX(25px); }
-                100% { opacity: 1; transform: translateX(0); }
+            #splitTable.split-settle td.next .cell-content,
+            #splitTable.split-settle th.col-next {
+                opacity: 1;
+                transform: translateX(0);
+                transition: opacity 0.35s cubic-bezier(0.22, 0.61, 0.36, 1) 0.14s,
+                            transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1) 0.14s;
             }
 
             /* Trophy styling */
@@ -212,15 +247,16 @@
             }
 
             .col-title.col-previous::after {
-                background: rgba(100, 100, 180, 0.3);
+                background: linear-gradient(90deg, transparent, rgba(120, 110, 200, 0.4), transparent);
             }
 
             .col-title.col-current::after {
-                background: rgba(80, 200, 120, 0.4);
+                background: linear-gradient(90deg, transparent, rgba(80, 200, 120, 0.5), transparent);
+                height: 2px;
             }
 
             .col-title.col-next::after {
-                background: rgba(80, 160, 180, 0.3);
+                background: linear-gradient(90deg, transparent, rgba(80, 170, 200, 0.35), transparent);
             }
 
             /* Current column header glow */
@@ -238,15 +274,18 @@
                 min-width: 250px;
             }
 
-            /* Subtle pulse for new data arrival */
-            @keyframes subtlePulse {
-                0%   { box-shadow: inset 0 0 12px rgba(60, 180, 100, 0.06); }
-                50%  { box-shadow: inset 0 0 18px rgba(60, 180, 100, 0.12); }
-                100% { box-shadow: inset 0 0 12px rgba(60, 180, 100, 0.06); }
+            /* Pulse for split transition arrival */
+            @keyframes splitPulse {
+                0%   { box-shadow: inset 0 0 14px rgba(60, 180, 100, 0.08),
+                                   0 0 6px rgba(60, 180, 100, 0.04); }
+                15%  { box-shadow: inset 0 0 28px rgba(70, 220, 120, 0.24),
+                                   0 0 14px rgba(70, 220, 120, 0.12); }
+                100% { box-shadow: inset 0 0 14px rgba(60, 180, 100, 0.08),
+                                   0 0 6px rgba(60, 180, 100, 0.04); }
             }
 
             .data-fresh .current {
-                animation: subtlePulse 1s ease-in-out;
+                animation: splitPulse 1.6s ease-out;
             }
         </style>
     </head>
@@ -279,7 +318,7 @@
                     <td class="next time" id="next-bestSplit"><span class="cell-content"></span></td>
                 </tr>
                 <tr>
-                    <th class="row-title">Comparison Split</th>
+                    <th class="row-title">Comparison</th>
                     <td class="previous time" id="previous-currentComparison"><span class="cell-content"></span></td>
                     <td class="current time" id="current-currentComparison"><span class="cell-content"></span></td>
                     <td class="next time" id="next-currentComparison"><span class="cell-content"></span></td>
@@ -317,6 +356,7 @@
                 constructor() {
                     this.previousData = null
                     this.lastSplitIndex = null
+                    this.transitionInProgress = false
                     this.connectWebSocket()
                 }
 
@@ -383,28 +423,30 @@
 
                 animateSplitTransition(splitInfo) {
                     const table = document.getElementById("splitTable")
-                    const rows = table.querySelectorAll("tbody tr")
+                    this.transitionInProgress = true
 
-                    // Phase 1: Slide out old data
-                    rows.forEach(row => row.classList.add("slide-left"))
+                    // Phase 1: Cascade content out to the left
+                    table.classList.add("split-exit")
 
                     setTimeout(() => {
-                        // Phase 2: Update data while mid-animation
+                        // Phase 2: Position for entrance while invisible
+                        table.classList.remove("split-exit")
+                        table.classList.add("split-enter")
                         this.updateFullGameTable(splitInfo, false)
 
-                        rows.forEach(row => row.classList.remove("slide-left"))
+                        // Phase 3: Cascade content in from the right
+                        requestAnimationFrame(() => {
+                            requestAnimationFrame(() => {
+                                table.classList.remove("split-enter")
+                                table.classList.add("split-settle", "data-fresh")
 
-                        // Phase 3: Slide in new "next" column
-                        rows.forEach(row => row.classList.add("slide-in-right"))
-
-                        // Pulse the current column
-                        table.classList.add("data-fresh")
-
-                        setTimeout(() => {
-                            rows.forEach(row => row.classList.remove("slide-in-right"))
-                            table.classList.remove("data-fresh")
-                        }, 600)
-                    }, 350)
+                                setTimeout(() => {
+                                    table.classList.remove("split-settle", "data-fresh")
+                                    this.transitionInProgress = false
+                                }, 1700)
+                            })
+                        })
+                    }, 420)
                 }
 
                 setCellContent(cellId, text, trophyRank, isWorldRecord) {
@@ -413,43 +455,57 @@
 
                     const wrapper = cell.querySelector(".cell-content")
                     if (!wrapper) {
-                        // Fallback for cells without wrapper
                         cell.textContent = text || ""
                         return
                     }
 
                     const oldText = wrapper.getAttribute("data-value") || ""
                     const valueChanged = oldText !== (text || "")
+                    if (!valueChanged) return
 
-                    if (valueChanged) {
-                        // Animate the value change
-                        cell.classList.add("cell-updating")
-                        cell.classList.remove("cell-updated")
+                    // During split transitions, swap content silently (table-level animation handles visuals)
+                    if (this.transitionInProgress) {
+                        this.buildCellContent(wrapper, text, trophyRank, isWorldRecord)
+                        return
+                    }
 
-                        setTimeout(() => {
-                            // Update content
-                            wrapper.innerHTML = ""
-                            wrapper.setAttribute("data-value", text || "")
+                    // Per-cell animation: old value exits upward
+                    cell.classList.remove("cell-updated", "cell-entering")
+                    cell.classList.add("cell-updating")
 
-                            if (text) {
-                                const textNode = document.createTextNode(text)
-                                wrapper.appendChild(textNode)
+                    setTimeout(() => {
+                        this.buildCellContent(wrapper, text, trophyRank, isWorldRecord)
 
-                                if (isWorldRecord && text !== "") {
-                                    wrapper.appendChild(this.createTrophyImg(1))
-                                } else if (trophyRank >= 1 && trophyRank <= 3) {
-                                    wrapper.appendChild(this.createTrophyImg(trophyRank))
-                                } else if (trophyRank >= 4) {
-                                    const rankSpan = document.createElement("span")
-                                    rankSpan.className = "rank-text"
-                                    rankSpan.textContent = `(${trophyRank}${this.getOrdinalSuffix(trophyRank)})`
-                                    wrapper.appendChild(rankSpan)
-                                }
-                            }
+                        // New value enters from below
+                        cell.classList.remove("cell-updating")
+                        cell.classList.add("cell-entering")
 
-                            cell.classList.remove("cell-updating")
-                            cell.classList.add("cell-updated")
-                        }, valueChanged ? 200 : 0)
+                        requestAnimationFrame(() => {
+                            requestAnimationFrame(() => {
+                                cell.classList.remove("cell-entering")
+                                cell.classList.add("cell-updated")
+                            })
+                        })
+                    }, 250)
+                }
+
+                buildCellContent(wrapper, text, trophyRank, isWorldRecord) {
+                    wrapper.innerHTML = ""
+                    wrapper.setAttribute("data-value", text || "")
+
+                    if (text) {
+                        wrapper.appendChild(document.createTextNode(text))
+
+                        if (isWorldRecord && text !== "") {
+                            wrapper.appendChild(this.createTrophyImg(1))
+                        } else if (trophyRank >= 1 && trophyRank <= 3) {
+                            wrapper.appendChild(this.createTrophyImg(trophyRank))
+                        } else if (trophyRank >= 4) {
+                            const rankSpan = document.createElement("span")
+                            rankSpan.className = "rank-text"
+                            rankSpan.textContent = `(${trophyRank}${this.getOrdinalSuffix(trophyRank)})`
+                            wrapper.appendChild(rankSpan)
+                        }
                     }
                 }
 
