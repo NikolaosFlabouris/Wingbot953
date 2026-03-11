@@ -746,7 +746,8 @@
                     setConnectionStatus('connecting')
                     console.log(`Attempting to connect to WebSocket server (attempt ${reconnectAttemptsRef.current + 1})`)
                     
-                    const ws = new WebSocket("ws://localhost:8080")
+                    const protocol = location.protocol === "https:" ? "wss:" : "ws:"
+                    const ws = new WebSocket(`${protocol}//${location.host}/ws/chat`)
 
                     ws.onopen = () => {
                         console.log("Connected to WebSocket server")

@@ -16,6 +16,7 @@ import {
   determineVirgilMood,
   formatTimeDisplay,
 } from "./LiveSplitData";
+import { wssVirgil, wssSplitData } from "../UnifiedServer";
 
 interface SplitData {
   name: string;
@@ -51,8 +52,8 @@ export class LiveSplitClient {
   private splitTableInterval: NodeJS.Timeout | null = null;
   private pendingCommands: Map<number, (response: string) => void> = new Map();
   private commandId: number = 0;
-  private wssVirgil: WebSocket.Server;
-  private wssSplitData: WebSocket.Server;
+  private wssVirgil: WebSocket.Server = wssVirgil;
+  private wssSplitData: WebSocket.Server = wssSplitData;
   private currentSplitIndex: number;
   private previousSplitData: SplitData;
   private currentSplitData: SplitData;
@@ -78,8 +79,7 @@ export class LiveSplitClient {
     this.splitTableInterval = null;
     this.pendingCommands = new Map();
     this.commandId = 0;
-    this.wssVirgil = new WebSocket.Server({ port: 8081 });
-    this.wssSplitData = new WebSocket.Server({ port: 8082 });
+    // WebSocket servers are now provided by UnifiedServer via path-based routing
     this.currentSplitIndex = -1;
     this.previousSplitData = {
       name: "",

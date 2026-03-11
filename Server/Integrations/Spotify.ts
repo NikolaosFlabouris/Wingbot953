@@ -3,7 +3,7 @@ import open from "open";
 import { TwitchManager } from "./Twitch.js";
 import * as dotenv from "dotenv";
 dotenv.config({ quiet: true });
-import * as http from "node:http";
+import type { Express } from "express";
 
 import { sendChatMessage, Wingbot953Message } from "../MessageHandling.js";
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage";
@@ -91,9 +91,9 @@ export class SpotifyManager {
 
   /**
    * Initializes the Spotify service with OAuth authentication
-   * @param server HTTP server instance for handling OAuth callback
+   * @param expressApp Express app instance for handling OAuth callback
    */
-  public initialise(server: http.Server): void {
+  public initialise(expressApp: Express): void {
     this.spotifyApi = new SpotifyWebApi({
       clientId: process.env.SPOTIFY_CLIENT_ID,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
@@ -105,25 +105,15 @@ export class SpotifyManager {
       "Wingbot953Integration"
     );
 
-    // Add request listener to the existing server to handle Spotify OAuth callback
-    const originalListeners = server.listeners("request");
-
-    // Create our request handler
-    const spotifyHandler = async (
-      req: http.IncomingMessage,
-      res: http.ServerResponse
-    ) => {
-      const parsedUrl = new URL(req.url || "/", "http://localhost:3000");
-
-      // Check if this is the Spotify callback
-      if (parsedUrl.pathname === "/spotify/callback") {
+    // Register the Spotify OAuth callback route
+    expressApp.get("/spotify/callback", (req, res) => {
+      void (async () => {
         console.log("Spotify Callback received");
 
-        const code = parsedUrl.searchParams.get("code");
+        const code = req.query.code as string | undefined;
 
         if (!code) {
-          res.writeHead(400, { "Content-Type": "text/plain" });
-          res.end("Missing authorization code");
+          res.status(400).type("text/plain").send("Missing authorization code");
           return;
         }
 
@@ -147,16 +137,15 @@ export class SpotifyManager {
           console.log("SpotifyAPI setup complete.");
 
           // Send success response
-          res.writeHead(200, { "Content-Type": "text/html" });
-          res.end(`
+          res.status(200).type("text/html").send(`
             <!DOCTYPE html>
             <html>
               <head>
                 <title>Spotify Authentication Complete</title>
                 <style>
-                  body { 
-                    font-family: Arial, sans-serif; 
-                    text-align: center; 
+                  body {
+                    font-family: Arial, sans-serif;
+                    text-align: center;
                     padding: 50px;
                     background: linear-gradient(135deg, #1DB954, #191414);
                     color: white;
@@ -170,21 +159,21 @@ export class SpotifyManager {
                     margin: 0 auto;
                     backdrop-filter: blur(10px);
                   }
-                  .success { 
-                    color: #1DB954; 
+                  .success {
+                    color: #1DB954;
                     font-size: 2.5em;
                     margin-bottom: 20px;
                   }
-                  h2 { 
-                    margin-bottom: 30px; 
+                  h2 {
+                    margin-bottom: 30px;
                     font-size: 1.5em;
                   }
-                  p { 
-                    font-size: 1.2em; 
+                  p {
+                    font-size: 1.2em;
                     margin-bottom: 30px;
                   }
-                  #countdown { 
-                    font-weight: bold; 
+                  #countdown {
+                    font-weight: bold;
                     color: #1DB954;
                     font-size: 1.3em;
                   }
@@ -211,20 +200,20 @@ export class SpotifyManager {
                   <p>This window will close in <span id="countdown">1</span> seconds...</p>
                   <button onclick="window.close()">Close Now</button>
                 </div>
-                
+
                 <script>
                   let count = 1;
                   const countdown = document.getElementById('countdown');
-                  
+
                   const timer = setInterval(() => {
                     count--;
                     countdown.textContent = count;
-                    
+
                     if (count <= 0) {
                       clearInterval(timer);
                       window.close();
                       setTimeout(() => {
-                        document.querySelector('.container').innerHTML = 
+                        document.querySelector('.container').innerHTML =
                           '<div class="success">✓</div><h2>Please close this tab manually</h2><p>Authentication completed successfully!</p>';
                       }, 500);
                     }
@@ -235,16 +224,15 @@ export class SpotifyManager {
           `);
         } catch (err: unknown) {
           console.log("Something went wrong with authorizationCodeGrant!", err);
-          res.writeHead(500, { "Content-Type": "text/html" });
-          res.end(`
+          res.status(500).type("text/html").send(`
             <!DOCTYPE html>
             <html>
               <head>
                 <title>Spotify Authentication Failed</title>
                 <style>
-                  body { 
-                    font-family: Arial, sans-serif; 
-                    text-align: center; 
+                  body {
+                    font-family: Arial, sans-serif;
+                    text-align: center;
                     padding: 50px;
                     background: linear-gradient(135deg, #FF4444, #AA0000);
                     color: white;
@@ -258,8 +246,8 @@ export class SpotifyManager {
                     margin: 0 auto;
                     backdrop-filter: blur(10px);
                   }
-                  .error { 
-                    color: #FF4444; 
+                  .error {
+                    color: #FF4444;
                     font-size: 2.5em;
                     margin-bottom: 20px;
                   }
@@ -276,32 +264,8 @@ export class SpotifyManager {
             </html>
           `);
         }
-        return; // We handled this request
-      }
-
-      // If it's not a Spotify callback, pass to original handlers
-      for (const listener of originalListeners) {
-        if (typeof listener === "function") {
-          try {
-            listener.call(server, req, res);
-            return; // Successfully handled by original listener
-          } catch {
-            // Continue to next listener if this one fails
-            continue;
-          }
-        }
-      }
-
-      // If no original handlers could handle the request and response isn't sent yet
-      if (!res.headersSent) {
-        res.writeHead(404, { "Content-Type": "text/plain" });
-        res.end("Not Found");
-      }
-    };
-
-    // Remove all existing listeners and add our handler
-    server.removeAllListeners("request");
-    server.on("request", (...args: Parameters<typeof spotifyHandler>) => void spotifyHandler(...args));
+      })();
+    });
 
     void open(authorizeURL);
   }

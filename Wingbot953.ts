@@ -5,30 +5,25 @@ import { QuizManager } from "./Server/Commands/Quiz";
 import { HaloRunsSetup } from "./Server/Integrations/HaloRuns";
 import { GenerateCommandsList } from "./Server/Commands/FunctionCommands";
 import { YouTubeManager } from "./Server/Integrations/YouTube";
-import { createWebSocket } from "./Server/MessageHandling";
+import { setupChatWebSocket } from "./Server/MessageHandling";
 import { LiveSplitClient } from "./Server/Integrations/LiveSplit";
 import { BadgeCache } from "./Server/Integrations/TwitchBadgeCache";
 import { validateEnvironment } from "./Server/Config";
-
-import * as http from "node:http";
-
-const server = http.createServer();
-const port = 3000;
+import { app, startServer } from "./Server/UnifiedServer";
 
 async function main() {
   validateEnvironment();
-  server.listen(port);
-  console.log(`Server listening on port ${port}`);
+  startServer();
 
-  createWebSocket();
+  setupChatWebSocket();
 
   DiscordSetup();
 
-  SpotifyManager.getInstance().initialise(server);
+  SpotifyManager.getInstance().initialise(app);
 
-  await TwitchManager.getInstance().initialise(server);
+  await TwitchManager.getInstance().initialise(app);
 
-  await YouTubeManager.getInstance().initialise(server);
+  await YouTubeManager.getInstance().initialise(app);
 
   QuizManager.getInstance().initialise();
 

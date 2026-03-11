@@ -8,9 +8,7 @@ import functionMap from "./Commands/FunctionCommands";
 import { YouTubeManager } from "./Integrations/YouTube";
 import WebSocket from "ws";
 import { UnifiedChatMessage } from "../Common/UnifiedChatMessage";
-
-// Store connected clients
-const clients: WebSocket[] = [];
+import { wssChat } from "./UnifiedServer";
 
 export const Wingbot953Message: UnifiedChatMessage = {
   platform: "all",
@@ -24,25 +22,12 @@ export const Wingbot953Message: UnifiedChatMessage = {
   },
 };
 
-export function createWebSocket() {
-  // Create WebSocket server
-  const PORT = process.env.PORT || 8080;
-  const wss = new WebSocket.Server({ port: Number(PORT) });
+export function setupChatWebSocket() {
+  wssChat.on("connection", (ws: WebSocket) => {
+    console.log("Chat client connected");
 
-  console.log(`WebSocket server is running on port ${PORT}`);
-
-  // Handle new connections
-  wss.on("connection", (ws: WebSocket) => {
-    console.log("Client connected");
-    clients.push(ws);
-
-    // Handle disconnection
     ws.on("close", () => {
-      console.log("Client disconnected");
-      const index = clients.indexOf(ws);
-      if (index !== -1) {
-        clients.splice(index, 1);
-      }
+      console.log("Chat client disconnected");
     });
 
     ws.on("message", (rawData: WebSocket.RawData) => {
@@ -179,7 +164,7 @@ export function sendToWebSocketClients(msg: UnifiedChatMessage) {
 
   const messageString = JSON.stringify(msg);
 
-  clients.forEach((client) => {
+  wssChat.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       client.send(messageString);
     }

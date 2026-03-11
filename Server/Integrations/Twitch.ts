@@ -7,8 +7,8 @@ import { ChatClient } from "@twurple/chat";
 import { ApiClient, CommercialLength, HelixUser } from "@twurple/api";
 import { EventSubWsListener } from "@twurple/eventsub-ws";
 import open from "open";
-import * as http from "node:http";
 import * as fs from "fs";
+import type { Express } from "express";
 
 import { AddWelcomeMessage, LoadWelcomeMessages } from "../Commands/VipWelcome";
 import { SecondsToDuration, Between, sleep } from "../Commands/Utils";
@@ -245,9 +245,9 @@ export class TwitchManager {
 
   /**
    * Initializes the Twitch integration with OAuth authentication
-   * @param server HTTP server instance for handling OAuth callback
+   * @param expressApp Express app instance for handling OAuth callback
    */
-  public async initialise(server: http.Server): Promise<void> {
+  public async initialise(expressApp: Express): Promise<void> {
     console.log("Twitch Integration Setup");
 
     try {
@@ -267,7 +267,7 @@ export class TwitchManager {
       }
 
       // Start OAuth flow if no tokens exist
-      await this.startAuthFlow(server);
+      await this.startAuthFlow(expressApp);
     } catch (error) {
       console.error("Error during Twitch initialization:", error);
       throw error;
@@ -275,32 +275,21 @@ export class TwitchManager {
   }
 
   /**
-   * Starts the OAuth authentication flow using the provided server
+   * Starts the OAuth authentication flow using Express routes
    * @private
-   * @param server The HTTP server instance to handle OAuth callback
+   * @param expressApp The Express app instance to register OAuth callback route
    */
-  private async startAuthFlow(server: http.Server): Promise<void> {
+  private async startAuthFlow(expressApp: Express): Promise<void> {
     return new Promise((resolve, reject) => {
-      // Store original listeners to restore later
-      const originalListeners = server.listeners("request");
-
-      // Create our request handler
-      const twitchHandler = async (
-        req: http.IncomingMessage,
-        res: http.ServerResponse,
-      ) => {
-        try {
-          const parsedUrl = new URL(req.url || "/", `http://localhost:3000`);
-          const pathname = parsedUrl.pathname;
-
-          // Handle the Twitch OAuth callback
-          if (pathname === "/twitch/callback") {
+      // Register the Twitch OAuth callback route
+      expressApp.get("/twitch/callback", (req, res) => {
+        void (async () => {
+          try {
             console.log("Twitch Callback received");
 
-            const code = parsedUrl.searchParams.get("code");
+            const code = req.query.code as string | undefined;
             if (!code) {
-              res.writeHead(400, { "Content-Type": "text/plain" });
-              res.end("Missing authorization code");
+              res.status(400).type("text/plain").send("Missing authorization code");
               return;
             }
 
@@ -317,8 +306,7 @@ export class TwitchManager {
                 this.authStep = "streamer";
 
                 // Send intermediate response and open streamer auth
-                res.writeHead(200, { "Content-Type": "text/html" });
-                res.end(this.generateIntermediateResponse());
+                res.status(200).type("text/html").send(this.generateIntermediateResponse());
 
                 // Open streamer auth in different browser
                 setTimeout(() => {
@@ -341,8 +329,7 @@ export class TwitchManager {
                 this.saveTokens();
 
                 // Send success response
-                res.writeHead(200, { "Content-Type": "text/html" });
-                res.end(this.generateSuccessResponse());
+                res.status(200).type("text/html").send(this.generateSuccessResponse());
 
                 // Continue setup
                 await this.continueSetup();
@@ -350,48 +337,18 @@ export class TwitchManager {
               }
             } catch (error) {
               console.error("Error during token exchange:", error);
-              res.writeHead(500, { "Content-Type": "text/html" });
-              res.end(this.generateErrorResponse());
+              res.status(500).type("text/html").send(this.generateErrorResponse());
               reject(error instanceof Error ? error : new Error(String(error)));
             }
-            return; // We handled this request
-          }
-
-          // If it's not a Twitch callback, pass to original handlers
-          for (const listener of originalListeners) {
-            if (typeof listener === "function") {
-              try {
-                listener.call(server, req, res);
-                return; // Successfully handled by original listener
-              } catch {
-                continue; // Continue to next listener if this one fails
-              }
+          } catch (e) {
+            console.error("Server error:", e);
+            if (!res.headersSent) {
+              res.status(500).type("text/plain").send("Server error");
             }
+            reject(e instanceof Error ? e : new Error(String(e)));
           }
-
-          // If no original handlers could handle the request
-          if (!res.headersSent) {
-            res.writeHead(404, { "Content-Type": "text/plain" });
-            res.end("Not Found");
-          }
-        } catch (e) {
-          console.error("Server error:", e);
-          if (!res.headersSent) {
-            res.writeHead(500, { "Content-Type": "text/plain" });
-            res.end("Server error");
-          }
-          reject(e instanceof Error ? e : new Error(String(e)));
-        }
-      };
-
-      // Remove all existing listeners and add our handler
-      server.removeAllListeners("request");
-      server.on(
-        "request",
-        (req: http.IncomingMessage, res: http.ServerResponse) => {
-          void twitchHandler(req, res);
-        },
-      );
+        })();
+      });
 
       // Start the auth flow by opening bot auth
       open(this.generateAuthUrl(), {

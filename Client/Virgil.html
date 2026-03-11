@@ -54,7 +54,8 @@
                     let shouldReconnect = true
 
                     function connect() {
-                        ws = new WebSocket("ws://localhost:8081")
+                        const protocol = location.protocol === "https:" ? "wss:" : "ws:"
+                        ws = new WebSocket(`${protocol}//${location.host}/ws/virgil`)
 
                         ws.onopen = () => {
                             console.log("WebSocket connected")
