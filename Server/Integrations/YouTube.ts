@@ -9,7 +9,7 @@ import {
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage";
 import * as fs from "fs";
 import open from "open";
-import * as http from "node:http";
+import type { Express } from "express";
 import { YoutubeLivestreamAlert } from "./Discord";
 import { EventBus, EventTypes } from "./EventBus";
 import {
@@ -63,7 +63,7 @@ interface StreamInfo {
 export class YouTubeManager {
   private static instance: YouTubeManager;
 
-  private server?: http.Server;
+  private expressApp?: Express;
 
   // Authentication state
   private youtubeClient?: youtube_v3.Youtube;
@@ -152,14 +152,14 @@ export class YouTubeManager {
 
   /**
    * Initialises the YouTube integration with OAuth authentication and starts monitoring
-   * @param server HTTP server instance for handling OAuth callback
+   * @param expressApp Express app instance for handling OAuth callback
    * @param testMode Whether to run in test mode (generates fake messages instead of connecting to API)
    */
   public async initialise(
-    server: http.Server,
+    expressApp: Express,
     testMode: boolean = false,
   ): Promise<void> {
-    this.server = server;
+    this.expressApp = expressApp;
     this.isTestMode = testMode;
     if (this.isTestMode) {
       // Prevent writes to production data files (e.g. QuizLeaderboards.json)
@@ -231,33 +231,20 @@ export class YouTubeManager {
   }
 
   /**
-   * Start the OAuth2 authentication flow using the provided server
+   * Start the OAuth2 authentication flow using Express routes
    * @private
-   * @param server The HTTP server instance to handle OAuth callback
    * @returns Promise that resolves when authentication is complete
    */
   private async startAuthFlow(): Promise<void> {
     return new Promise((resolve, reject) => {
-      // Add request listener to the existing server to handle YouTube OAuth callback
-      const originalListeners = this.server!.listeners("request");
-
-      // Create our request handler
-      const youtubeHandler = async (
-        req: http.IncomingMessage,
-        res: http.ServerResponse,
-      ) => {
-        try {
-          const parsedUrl = new URL(req.url || "/", `http://localhost:3000`);
-          const pathname = parsedUrl.pathname;
-
-          // Handle the OAuth2 callback
-          if (pathname === "/youtube/callback") {
-            // Extract the authorization code from query parameters
-            const code = parsedUrl.searchParams.get("code");
+      // Register the YouTube OAuth callback route
+      this.expressApp!.get("/youtube/callback", (req, res) => {
+        void (async () => {
+          try {
+            const code = req.query.code as string | undefined;
 
             if (!code) {
-              res.writeHead(400, { "Content-Type": "text/plain" });
-              res.end("Missing authorization code");
+              res.status(400).type("text/plain").send("Missing authorization code");
               return;
             }
 
@@ -280,16 +267,15 @@ export class YouTubeManager {
               this.isAuthenticated = true;
 
               // Send success response
-              res.writeHead(200, { "Content-Type": "text/html" });
-              res.end(`
+              res.status(200).type("text/html").send(`
                 <!DOCTYPE html>
                 <html>
                   <head>
                     <title>YouTube Authentication Complete</title>
                     <style>
-                      body { 
-                        font-family: Arial, sans-serif; 
-                        text-align: center; 
+                      body {
+                        font-family: Arial, sans-serif;
+                        text-align: center;
                         padding: 50px;
                         background: linear-gradient(135deg, #FF0000, #CC0000);
                         color: white;
@@ -303,21 +289,21 @@ export class YouTubeManager {
                         margin: 0 auto;
                         backdrop-filter: blur(10px);
                       }
-                      .success { 
-                        color: #FF0000; 
+                      .success {
+                        color: #FF0000;
                         font-size: 2.5em;
                         margin-bottom: 20px;
                       }
-                      h2 { 
-                        margin-bottom: 30px; 
+                      h2 {
+                        margin-bottom: 30px;
                         font-size: 1.5em;
                       }
-                      p { 
-                        font-size: 1.2em; 
+                      p {
+                        font-size: 1.2em;
                         margin-bottom: 30px;
                       }
-                      #countdown { 
-                        font-weight: bold; 
+                      #countdown {
+                        font-weight: bold;
                         color: #FF0000;
                         font-size: 1.3em;
                       }
@@ -344,20 +330,20 @@ export class YouTubeManager {
                       <p>This window will close in <span id="countdown">3</span> seconds...</p>
                       <button onclick="window.close()">Close Now</button>
                     </div>
-                    
+
                     <script>
                       let count = 3;
                       const countdown = document.getElementById('countdown');
-                      
+
                       const timer = setInterval(() => {
                         count--;
                         countdown.textContent = count;
-                        
+
                         if (count <= 0) {
                           clearInterval(timer);
                           window.close();
                           setTimeout(() => {
-                            document.querySelector('.container').innerHTML = 
+                            document.querySelector('.container').innerHTML =
                               '<div class="success">✓</div><h2>Please close this tab manually</h2><p>Authentication completed successfully!</p>';
                           }, 500);
                         }
@@ -370,16 +356,15 @@ export class YouTubeManager {
               resolve();
             } catch (tokenError) {
               console.error("Error getting tokens:", tokenError);
-              res.writeHead(500, { "Content-Type": "text/html" });
-              res.end(`
+              res.status(500).type("text/html").send(`
                 <!DOCTYPE html>
                 <html>
                   <head>
                     <title>YouTube Authentication Failed</title>
                     <style>
-                      body { 
-                        font-family: Arial, sans-serif; 
-                        text-align: center; 
+                      body {
+                        font-family: Arial, sans-serif;
+                        text-align: center;
                         padding: 50px;
                         background: linear-gradient(135deg, #FF4444, #AA0000);
                         color: white;
@@ -393,8 +378,8 @@ export class YouTubeManager {
                         margin: 0 auto;
                         backdrop-filter: blur(10px);
                       }
-                      .error { 
-                        color: #FF4444; 
+                      .error {
+                        color: #FF4444;
                         font-size: 2.5em;
                         margin-bottom: 20px;
                       }
@@ -416,44 +401,15 @@ export class YouTubeManager {
                   : new Error(String(tokenError)),
               );
             }
-            return; // We handled this request
-          }
-
-          // If it's not a YouTube callback, pass to original handlers
-          for (const listener of originalListeners) {
-            if (typeof listener === "function") {
-              try {
-                listener.call(this.server, req, res);
-                return; // Successfully handled by original listener
-              } catch {
-                // Continue to next listener if this one fails
-                continue;
-              }
+          } catch (e) {
+            console.error("Server error:", e);
+            if (!res.headersSent) {
+              res.status(500).type("text/plain").send("Server error");
             }
+            reject(e instanceof Error ? e : new Error(String(e)));
           }
-
-          // If no original handlers could handle the request and response isn't sent yet
-          if (!res.headersSent) {
-            res.writeHead(404, { "Content-Type": "text/plain" });
-            res.end("Not Found");
-          }
-        } catch (e) {
-          console.error("Server error:", e);
-          if (!res.headersSent) {
-            res.writeHead(500, { "Content-Type": "text/plain" });
-            res.end("Server error");
-          }
-          reject(e instanceof Error ? e : new Error(String(e)));
-        }
-      };
-
-      // Remove all existing listeners and add our handler
-      this.server!.removeAllListeners("request");
-      this.server!.on(
-        "request",
-        (...args: Parameters<typeof youtubeHandler>) =>
-          void youtubeHandler(...args),
-      );
+        })();
+      });
 
       // Generate the auth URL
       const authUrl = this.oAuth2Client!.generateAuthUrl({

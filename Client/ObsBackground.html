@@ -72,8 +72,8 @@
             changeGradientColor(gameToColourMapping["Halo 3: ODST"]);
 
             try {
-                // Replace with your WebSocket server URL
-                socket = new WebSocket('ws://localhost:8082');
+                const protocol = location.protocol === "https:" ? "wss:" : "ws:";
+                socket = new WebSocket(`${protocol}//${location.host}/ws/splits`);
                 
                 socket.onopen = function(event) {
                     console.log('OBS Background WebSocket connected');

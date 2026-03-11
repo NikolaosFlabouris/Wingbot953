@@ -3,7 +3,7 @@
 // is blocked from the moment the module loads.
 process.env.DEBUG = "TRUE"
 
-import { handleChatMessage, sendChatMessage, createWebSocket } from "../MessageHandling"
+import { handleChatMessage, sendChatMessage, setupChatWebSocket } from "../MessageHandling"
 import { GenerateCommandsList } from "../Commands/FunctionCommands"
 import {
     generateSimulatedMessage,
@@ -11,13 +11,13 @@ import {
     simulationProfiles,
     SimulationProfile,
 } from "./SimulatedData"
-import * as http from "node:http"
+import { startServer, server } from "../UnifiedServer"
 
 /**
  * Simulation Mode for Wingbot953
  *
  * Starts the bot with:
- * - Real Express server (port 3000) and WebSocket server (port 8080)
+ * - Real Express server (port 3000) with WebSocket endpoints and static file serving
  * - Simulated chat messages from both Twitch and YouTube platforms
  * - No real API connections (Twitch, YouTube, Discord, Spotify, etc.)
  * - DEBUG=TRUE to prevent writes to production data files
@@ -90,13 +90,10 @@ async function main() {
         process.exit(1)
     }
 
-    // Start real servers
-    const server = http.createServer()
-    const port = 3000
-    server.listen(port)
-    console.log(`Server listening on port ${port}`)
+    // Start unified server (Express + WebSocket on single port)
+    startServer()
 
-    createWebSocket()
+    setupChatWebSocket()
     GenerateCommandsList()
 
     // Start simulation

@@ -361,7 +361,8 @@
                 }
 
                 connectWebSocket() {
-                    this.ws = new WebSocket("ws://localhost:8082")
+                    const protocol = location.protocol === "https:" ? "wss:" : "ws:"
+                    this.ws = new WebSocket(`${protocol}//${location.host}/ws/splits`)
 
                     this.ws.onmessage = (event) => {
                         const splitInfo = JSON.parse(event.data)

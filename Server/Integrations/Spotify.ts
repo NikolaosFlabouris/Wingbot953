@@ -3,7 +3,7 @@ import open from "open";
 import { TwitchManager } from "./Twitch.js";
 import * as dotenv from "dotenv";
 dotenv.config({ quiet: true });
-import * as http from "node:http";
+import type { Express } from "express";
 
 import { sendChatMessage, Wingbot953Message } from "../MessageHandling.js";
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage";
@@ -91,9 +91,9 @@ export class SpotifyManager {
 
   /**
    * Initializes the Spotify service with OAuth authentication
-   * @param server HTTP server instance for handling OAuth callback
+   * @param expressApp Express app instance for handling OAuth callback
    */
-  public initialise(server: http.Server): void {
+  public initialise(expressApp: Express): void {
     this.spotifyApi = new SpotifyWebApi({
       clientId: process.env.SPOTIFY_CLIENT_ID,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
@@ -102,28 +102,18 @@ export class SpotifyManager {
 
     const authorizeURL = this.spotifyApi.createAuthorizeURL(
       SPOTIFY_SCOPES,
-      "Wingbot953Integration"
+      "Wingbot953Integration",
     );
 
-    // Add request listener to the existing server to handle Spotify OAuth callback
-    const originalListeners = server.listeners("request");
-
-    // Create our request handler
-    const spotifyHandler = async (
-      req: http.IncomingMessage,
-      res: http.ServerResponse
-    ) => {
-      const parsedUrl = new URL(req.url || "/", "http://localhost:3000");
-
-      // Check if this is the Spotify callback
-      if (parsedUrl.pathname === "/spotify/callback") {
+    // Register the Spotify OAuth callback route
+    expressApp.get("/spotify/callback", (req, res) => {
+      void (async () => {
         console.log("Spotify Callback received");
 
-        const code = parsedUrl.searchParams.get("code");
+        const code = req.query.code as string | undefined;
 
         if (!code) {
-          res.writeHead(400, { "Content-Type": "text/plain" });
-          res.end("Missing authorization code");
+          res.status(400).type("text/plain").send("Missing authorization code");
           return;
         }
 
@@ -140,23 +130,22 @@ export class SpotifyManager {
 
           this.tokenRefreshInterval = setInterval(
             () => void this.refreshToken(),
-            data.body["expires_in"] * 1000
+            data.body["expires_in"] * 1000,
           );
 
           this.isAuthenticated = true;
           console.log("SpotifyAPI setup complete.");
 
           // Send success response
-          res.writeHead(200, { "Content-Type": "text/html" });
-          res.end(`
+          res.status(200).type("text/html").send(`
             <!DOCTYPE html>
             <html>
               <head>
                 <title>Spotify Authentication Complete</title>
                 <style>
-                  body { 
-                    font-family: Arial, sans-serif; 
-                    text-align: center; 
+                  body {
+                    font-family: Arial, sans-serif;
+                    text-align: center;
                     padding: 50px;
                     background: linear-gradient(135deg, #1DB954, #191414);
                     color: white;
@@ -170,21 +159,21 @@ export class SpotifyManager {
                     margin: 0 auto;
                     backdrop-filter: blur(10px);
                   }
-                  .success { 
-                    color: #1DB954; 
+                  .success {
+                    color: #1DB954;
                     font-size: 2.5em;
                     margin-bottom: 20px;
                   }
-                  h2 { 
-                    margin-bottom: 30px; 
+                  h2 {
+                    margin-bottom: 30px;
                     font-size: 1.5em;
                   }
-                  p { 
-                    font-size: 1.2em; 
+                  p {
+                    font-size: 1.2em;
                     margin-bottom: 30px;
                   }
-                  #countdown { 
-                    font-weight: bold; 
+                  #countdown {
+                    font-weight: bold;
                     color: #1DB954;
                     font-size: 1.3em;
                   }
@@ -211,20 +200,20 @@ export class SpotifyManager {
                   <p>This window will close in <span id="countdown">1</span> seconds...</p>
                   <button onclick="window.close()">Close Now</button>
                 </div>
-                
+
                 <script>
                   let count = 1;
                   const countdown = document.getElementById('countdown');
-                  
+
                   const timer = setInterval(() => {
                     count--;
                     countdown.textContent = count;
-                    
+
                     if (count <= 0) {
                       clearInterval(timer);
                       window.close();
                       setTimeout(() => {
-                        document.querySelector('.container').innerHTML = 
+                        document.querySelector('.container').innerHTML =
                           '<div class="success">✓</div><h2>Please close this tab manually</h2><p>Authentication completed successfully!</p>';
                       }, 500);
                     }
@@ -235,16 +224,15 @@ export class SpotifyManager {
           `);
         } catch (err: unknown) {
           console.log("Something went wrong with authorizationCodeGrant!", err);
-          res.writeHead(500, { "Content-Type": "text/html" });
-          res.end(`
+          res.status(500).type("text/html").send(`
             <!DOCTYPE html>
             <html>
               <head>
                 <title>Spotify Authentication Failed</title>
                 <style>
-                  body { 
-                    font-family: Arial, sans-serif; 
-                    text-align: center; 
+                  body {
+                    font-family: Arial, sans-serif;
+                    text-align: center;
                     padding: 50px;
                     background: linear-gradient(135deg, #FF4444, #AA0000);
                     color: white;
@@ -258,8 +246,8 @@ export class SpotifyManager {
                     margin: 0 auto;
                     backdrop-filter: blur(10px);
                   }
-                  .error { 
-                    color: #FF4444; 
+                  .error {
+                    color: #FF4444;
                     font-size: 2.5em;
                     margin-bottom: 20px;
                   }
@@ -276,32 +264,8 @@ export class SpotifyManager {
             </html>
           `);
         }
-        return; // We handled this request
-      }
-
-      // If it's not a Spotify callback, pass to original handlers
-      for (const listener of originalListeners) {
-        if (typeof listener === "function") {
-          try {
-            listener.call(server, req, res);
-            return; // Successfully handled by original listener
-          } catch {
-            // Continue to next listener if this one fails
-            continue;
-          }
-        }
-      }
-
-      // If no original handlers could handle the request and response isn't sent yet
-      if (!res.headersSent) {
-        res.writeHead(404, { "Content-Type": "text/plain" });
-        res.end("Not Found");
-      }
-    };
-
-    // Remove all existing listeners and add our handler
-    server.removeAllListeners("request");
-    server.on("request", (...args: Parameters<typeof spotifyHandler>) => void spotifyHandler(...args));
+      })();
+    });
 
     void open(authorizeURL);
   }
@@ -362,8 +326,8 @@ export class SpotifyManager {
       this.sendResponse(
         msg,
         `Currently playing: ${currentTrack.name} by ${currentTrack.artists.join(
-          ", "
-        )}`
+          ", ",
+        )}`,
       );
     } else {
       this.sendResponse(msg, "No song is currently playing.");
@@ -391,7 +355,7 @@ export class SpotifyManager {
         msg,
         `${currentTrack.name} by ${currentTrack.artists.join(", ")} is from ${
           currentTrack.releaseYear
-        }.`
+        }.`,
       );
     } else {
       this.sendResponse(msg, "No song is currently playing.");
@@ -426,17 +390,17 @@ export class SpotifyManager {
     if (classification.type === "exact") {
       this.sendResponse(
         msg,
-        `wingma14Jam ${currentTrack.name} by ${artistsString} is a 2013 song! wingma14Jam`
+        `wingma14Jam ${currentTrack.name} by ${artistsString} is a 2013 song! wingma14Jam`,
       );
     } else if (classification.type === "close") {
       this.sendResponse(
         msg,
-        `${currentTrack.name} by ${artistsString} is a 2013-ish song! It is from ${year}.  wingma14Jam`
+        `${currentTrack.name} by ${artistsString} is a 2013-ish song! It is from ${year}.  wingma14Jam`,
       );
     } else {
       this.sendResponse(
         msg,
-        `${currentTrack.name} by ${artistsString} is not a 2013 song. It is from ${year}.`
+        `${currentTrack.name} by ${artistsString} is not a 2013 song. It is from ${year}.`,
       );
     }
   }
@@ -479,7 +443,7 @@ export class SpotifyManager {
     } catch (error) {
       console.error(
         "Something went wrong with getMyCurrentPlayingTrack:",
-        error
+        error,
       );
       return null;
     }
@@ -492,7 +456,7 @@ export class SpotifyManager {
    * @returns The playlist ID if found, null otherwise
    */
   private async findPlaylistByName(
-    playlistName: string
+    playlistName: string,
   ): Promise<string | null> {
     try {
       let offset = 0;
@@ -509,7 +473,7 @@ export class SpotifyManager {
         }
 
         const playlist = response.body.items.find(
-          (p) => p.name.toLowerCase() === playlistName.toLowerCase()
+          (p) => p.name.toLowerCase() === playlistName.toLowerCase(),
         );
 
         if (playlist) {
@@ -537,7 +501,7 @@ export class SpotifyManager {
    * @returns Array of track objects
    */
   private async getAllPlaylistTracks(
-    playlistId: string
+    playlistId: string,
   ): Promise<SpotifyApi.PlaylistTrackObject[]> {
     const tracks: SpotifyApi.PlaylistTrackObject[] = [];
     let offset = 0;
@@ -569,7 +533,7 @@ export class SpotifyManager {
    */
   private async getRandomTracksFromPlaylistByName(
     playlistName: string,
-    numberOfTracks: number
+    numberOfTracks: number,
   ): Promise<Track[] | null> {
     try {
       const playlistId = await this.findPlaylistByName(playlistName);
@@ -597,7 +561,7 @@ export class SpotifyManager {
         if (!item.track) {
           console.error(
             "Error getting random tracks:",
-            "Unexpected null track found"
+            "Unexpected null track found",
           );
           throw new Error("Unexpected null track found");
         }
@@ -621,7 +585,7 @@ export class SpotifyManager {
    */
   public async addTracksFromPlaylistToQueue(
     playlistName: string,
-    numberOfTracks: number
+    numberOfTracks: number,
   ): Promise<void> {
     try {
       if (!this.isAuthenticated) {
@@ -631,20 +595,20 @@ export class SpotifyManager {
 
       const randomTracks = await this.getRandomTracksFromPlaylistByName(
         playlistName,
-        numberOfTracks
+        numberOfTracks,
       );
 
       if (randomTracks) {
         console.log(
-          `* Randomly selected ${randomTracks.length} from playlist "${playlistName}":`
+          `* Randomly selected ${randomTracks.length} from playlist "${playlistName}":`,
         );
 
         const addPromises = randomTracks.map((track) =>
           this.spotifyApi
             .addToQueue(`spotify:track:${track.id}`)
             .catch((error) =>
-              console.error(`Failed to add track ${track.name}:`, error)
-            )
+              console.error(`Failed to add track ${track.name}:`, error),
+            ),
         );
 
         await Promise.allSettled(addPromises);
@@ -674,7 +638,7 @@ export class SpotifyManager {
     if (!canRequestSong(msg.author)) {
       this.sendResponse(
         msg,
-        "Only subscribers, and moderators can add songs to the queue."
+        "Only subscribers, and moderators can add songs to the queue.",
       );
       return;
     }
@@ -685,7 +649,7 @@ export class SpotifyManager {
     if (indexOfSpace === -1) {
       this.sendResponse(
         msg,
-        "Failed to add song. Format: !sr <link> | !sr <song name> by <artist>"
+        "Failed to add song. Format: !sr <link> | !sr <song name> by <artist>",
       );
       return;
     }
@@ -702,7 +666,7 @@ export class SpotifyManager {
           msg,
           `Added to queue: ${response.name} by ${response.artists
             .map((artist) => artist.name)
-            .join(", ")}`
+            .join(", ")}`,
         );
       } catch (error) {
         console.error("Error retrieving track from URL:", error);
@@ -719,7 +683,7 @@ export class SpotifyManager {
           msg,
           `Added to queue: ${bestMatch.name} by ${bestMatch.artists
             .map((a) => a.name)
-            .join(", ")}`
+            .join(", ")}`,
         );
       } catch (error) {
         console.error("Error adding track from search:", error);
@@ -737,7 +701,7 @@ export class SpotifyManager {
    * @returns The best matching track or null if no match found
    */
   private async fuzzySearchSpotifySong(
-    query: string
+    query: string,
   ): Promise<SpotifyApi.TrackObjectFull | null> {
     console.log("Fuzzy search query:", query);
 
@@ -767,5 +731,4 @@ export class SpotifyManager {
       return null;
     }
   }
-
 }

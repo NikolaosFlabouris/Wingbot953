@@ -91,14 +91,30 @@ vi.mock("../Server/Commands/VipWelcome", () => ({
     CheckForWelcomeMessage: mockCheckForWelcomeMessage,
 }))
 
-vi.mock("ws", () => ({
-    default: {
-        Server: vi.fn(() => ({
-            on: vi.fn(),
-        })),
-        OPEN: 1,
-    },
-}))
+vi.mock("ws", () => {
+    const MockServer = vi.fn(function () {
+        return { on: vi.fn(), clients: new Set() }
+    })
+    return {
+        default: {
+            Server: MockServer,
+            OPEN: 1,
+        },
+    }
+})
+
+vi.mock("../Server/UnifiedServer", () => {
+    const mockWss = { on: vi.fn(), clients: new Set() }
+    return {
+        app: {},
+        server: {},
+        startServer: vi.fn(),
+        wssChat: mockWss,
+        wssSplitData: mockWss,
+        wssVirgil: mockWss,
+        PORT: 3000,
+    }
+})
 
 // Mock fs for Quiz/VipWelcome indirect imports
 vi.mock("fs", () => ({
