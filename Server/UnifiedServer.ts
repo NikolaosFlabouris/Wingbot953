@@ -7,7 +7,7 @@ const app = express();
 const server = http.createServer(app);
 
 // Serve static client files (HTML, images, fonts, etc.)
-app.use(express.static(path.join(__dirname, "..", "Client")));
+app.use(express.static(path.join(__dirname, "..", "..", "Client")));
 
 // WebSocket servers (noServer mode — routed via HTTP upgrade)
 const wssChat = new WebSocket.Server({ noServer: true });

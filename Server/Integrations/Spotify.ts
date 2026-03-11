@@ -102,7 +102,7 @@ export class SpotifyManager {
 
     const authorizeURL = this.spotifyApi.createAuthorizeURL(
       SPOTIFY_SCOPES,
-      "Wingbot953Integration"
+      "Wingbot953Integration",
     );
 
     // Register the Spotify OAuth callback route
@@ -130,7 +130,7 @@ export class SpotifyManager {
 
           this.tokenRefreshInterval = setInterval(
             () => void this.refreshToken(),
-            data.body["expires_in"] * 1000
+            data.body["expires_in"] * 1000,
           );
 
           this.isAuthenticated = true;
@@ -326,8 +326,8 @@ export class SpotifyManager {
       this.sendResponse(
         msg,
         `Currently playing: ${currentTrack.name} by ${currentTrack.artists.join(
-          ", "
-        )}`
+          ", ",
+        )}`,
       );
     } else {
       this.sendResponse(msg, "No song is currently playing.");
@@ -355,7 +355,7 @@ export class SpotifyManager {
         msg,
         `${currentTrack.name} by ${currentTrack.artists.join(", ")} is from ${
           currentTrack.releaseYear
-        }.`
+        }.`,
       );
     } else {
       this.sendResponse(msg, "No song is currently playing.");
@@ -390,17 +390,17 @@ export class SpotifyManager {
     if (classification.type === "exact") {
       this.sendResponse(
         msg,
-        `wingma14Jam ${currentTrack.name} by ${artistsString} is a 2013 song! wingma14Jam`
+        `wingma14Jam ${currentTrack.name} by ${artistsString} is a 2013 song! wingma14Jam`,
       );
     } else if (classification.type === "close") {
       this.sendResponse(
         msg,
-        `${currentTrack.name} by ${artistsString} is a 2013-ish song! It is from ${year}.  wingma14Jam`
+        `${currentTrack.name} by ${artistsString} is a 2013-ish song! It is from ${year}.  wingma14Jam`,
       );
     } else {
       this.sendResponse(
         msg,
-        `${currentTrack.name} by ${artistsString} is not a 2013 song. It is from ${year}.`
+        `${currentTrack.name} by ${artistsString} is not a 2013 song. It is from ${year}.`,
       );
     }
   }
@@ -443,7 +443,7 @@ export class SpotifyManager {
     } catch (error) {
       console.error(
         "Something went wrong with getMyCurrentPlayingTrack:",
-        error
+        error,
       );
       return null;
     }
@@ -456,7 +456,7 @@ export class SpotifyManager {
    * @returns The playlist ID if found, null otherwise
    */
   private async findPlaylistByName(
-    playlistName: string
+    playlistName: string,
   ): Promise<string | null> {
     try {
       let offset = 0;
@@ -473,7 +473,7 @@ export class SpotifyManager {
         }
 
         const playlist = response.body.items.find(
-          (p) => p.name.toLowerCase() === playlistName.toLowerCase()
+          (p) => p.name.toLowerCase() === playlistName.toLowerCase(),
         );
 
         if (playlist) {
@@ -501,7 +501,7 @@ export class SpotifyManager {
    * @returns Array of track objects
    */
   private async getAllPlaylistTracks(
-    playlistId: string
+    playlistId: string,
   ): Promise<SpotifyApi.PlaylistTrackObject[]> {
     const tracks: SpotifyApi.PlaylistTrackObject[] = [];
     let offset = 0;
@@ -533,7 +533,7 @@ export class SpotifyManager {
    */
   private async getRandomTracksFromPlaylistByName(
     playlistName: string,
-    numberOfTracks: number
+    numberOfTracks: number,
   ): Promise<Track[] | null> {
     try {
       const playlistId = await this.findPlaylistByName(playlistName);
@@ -561,7 +561,7 @@ export class SpotifyManager {
         if (!item.track) {
           console.error(
             "Error getting random tracks:",
-            "Unexpected null track found"
+            "Unexpected null track found",
           );
           throw new Error("Unexpected null track found");
         }
@@ -585,7 +585,7 @@ export class SpotifyManager {
    */
   public async addTracksFromPlaylistToQueue(
     playlistName: string,
-    numberOfTracks: number
+    numberOfTracks: number,
   ): Promise<void> {
     try {
       if (!this.isAuthenticated) {
@@ -595,20 +595,20 @@ export class SpotifyManager {
 
       const randomTracks = await this.getRandomTracksFromPlaylistByName(
         playlistName,
-        numberOfTracks
+        numberOfTracks,
       );
 
       if (randomTracks) {
         console.log(
-          `* Randomly selected ${randomTracks.length} from playlist "${playlistName}":`
+          `* Randomly selected ${randomTracks.length} from playlist "${playlistName}":`,
         );
 
         const addPromises = randomTracks.map((track) =>
           this.spotifyApi
             .addToQueue(`spotify:track:${track.id}`)
             .catch((error) =>
-              console.error(`Failed to add track ${track.name}:`, error)
-            )
+              console.error(`Failed to add track ${track.name}:`, error),
+            ),
         );
 
         await Promise.allSettled(addPromises);
@@ -638,7 +638,7 @@ export class SpotifyManager {
     if (!canRequestSong(msg.author)) {
       this.sendResponse(
         msg,
-        "Only subscribers, and moderators can add songs to the queue."
+        "Only subscribers, and moderators can add songs to the queue.",
       );
       return;
     }
@@ -649,7 +649,7 @@ export class SpotifyManager {
     if (indexOfSpace === -1) {
       this.sendResponse(
         msg,
-        "Failed to add song. Format: !sr <link> | !sr <song name> by <artist>"
+        "Failed to add song. Format: !sr <link> | !sr <song name> by <artist>",
       );
       return;
     }
@@ -666,7 +666,7 @@ export class SpotifyManager {
           msg,
           `Added to queue: ${response.name} by ${response.artists
             .map((artist) => artist.name)
-            .join(", ")}`
+            .join(", ")}`,
         );
       } catch (error) {
         console.error("Error retrieving track from URL:", error);
@@ -683,7 +683,7 @@ export class SpotifyManager {
           msg,
           `Added to queue: ${bestMatch.name} by ${bestMatch.artists
             .map((a) => a.name)
-            .join(", ")}`
+            .join(", ")}`,
         );
       } catch (error) {
         console.error("Error adding track from search:", error);
@@ -701,7 +701,7 @@ export class SpotifyManager {
    * @returns The best matching track or null if no match found
    */
   private async fuzzySearchSpotifySong(
-    query: string
+    query: string,
   ): Promise<SpotifyApi.TrackObjectFull | null> {
     console.log("Fuzzy search query:", query);
 
@@ -731,5 +731,4 @@ export class SpotifyManager {
       return null;
     }
   }
-
 }

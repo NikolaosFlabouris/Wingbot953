@@ -62,10 +62,14 @@ import {
  * Twitch OAuth scopes required for the application
  */
 const TWITCH_SCOPES = [
-  "chat:read",
+  // Analytics
   "analytics:read:extensions",
   "analytics:read:games",
+
+  // Bits
   "bits:read",
+
+  // Channel
   "channel:edit:commercial",
   "channel:manage:broadcast",
   "channel:manage:extensions",
@@ -75,6 +79,7 @@ const TWITCH_SCOPES = [
   "channel:manage:redemptions",
   "channel:manage:schedule",
   "channel:manage:videos",
+  "channel:moderate",
   "channel:read:editors",
   "channel:read:goals",
   "channel:read:hype_train",
@@ -83,22 +88,36 @@ const TWITCH_SCOPES = [
   "channel:read:redemptions",
   "channel:read:stream_key",
   "channel:read:subscriptions",
+
+  // Chat
+  "chat:edit",
+  "chat:read",
+
+  // Clips
   "clips:edit",
+
+  // Moderation
   "moderation:read",
-  "moderator:manage:banned_users",
-  "moderator:read:blocked_terms",
-  "moderator:manage:blocked_terms",
+
+  // Moderator
   "moderator:manage:automod",
-  "moderator:read:automod_settings",
   "moderator:manage:automod_settings",
+  "moderator:manage:banned_users",
+  "moderator:manage:blocked_terms",
+  "moderator:manage:chat_settings",
+  "moderator:manage:unban_requests",
+  "moderator:read:automod_settings",
+  "moderator:read:blocked_terms",
   "moderator:read:chat_messages",
   "moderator:read:chat_settings",
-  "moderator:manage:chat_settings",
   "moderator:read:followers",
   "moderator:read:moderators",
   "moderator:read:shoutouts",
+  "moderator:read:unban_requests",
   "moderator:read:vips",
   "moderator:read:warnings",
+
+  // User
   "user:edit",
   "user:edit:follows",
   "user:manage:blocked_users",
@@ -109,9 +128,9 @@ const TWITCH_SCOPES = [
   "user:read:follows",
   "user:read:subscriptions",
   "user:write:chat",
-  "channel:moderate",
+
+  // Whispers
   "whispers:edit",
-  "chat:edit",
 ];
 
 /**
@@ -289,7 +308,10 @@ export class TwitchManager {
 
             const code = req.query.code as string | undefined;
             if (!code) {
-              res.status(400).type("text/plain").send("Missing authorization code");
+              res
+                .status(400)
+                .type("text/plain")
+                .send("Missing authorization code");
               return;
             }
 
@@ -306,7 +328,10 @@ export class TwitchManager {
                 this.authStep = "streamer";
 
                 // Send intermediate response and open streamer auth
-                res.status(200).type("text/html").send(this.generateIntermediateResponse());
+                res
+                  .status(200)
+                  .type("text/html")
+                  .send(this.generateIntermediateResponse());
 
                 // Open streamer auth in different browser
                 setTimeout(() => {
@@ -329,7 +354,10 @@ export class TwitchManager {
                 this.saveTokens();
 
                 // Send success response
-                res.status(200).type("text/html").send(this.generateSuccessResponse());
+                res
+                  .status(200)
+                  .type("text/html")
+                  .send(this.generateSuccessResponse());
 
                 // Continue setup
                 await this.continueSetup();
@@ -337,7 +365,10 @@ export class TwitchManager {
               }
             } catch (error) {
               console.error("Error during token exchange:", error);
-              res.status(500).type("text/html").send(this.generateErrorResponse());
+              res
+                .status(500)
+                .type("text/html")
+                .send(this.generateErrorResponse());
               reject(error instanceof Error ? error : new Error(String(error)));
             }
           } catch (e) {
@@ -395,8 +426,29 @@ export class TwitchManager {
           <div class="container">
             <div class="success">✓</div>
             <h2>Bot Authentication Complete</h2>
-            <p>Please wait for the streamer authentication window to open...</p>
+            <p>The streamer authentication window will open shortly.</p>
+            <p>This window will close in <span id="countdown">3</span> seconds...</p>
+            <button onclick="window.close()">Close Now</button>
           </div>
+
+          <script>
+            let count = 3;
+            const countdown = document.getElementById('countdown');
+
+            const timer = setInterval(() => {
+              count--;
+              countdown.textContent = count;
+
+              if (count <= 0) {
+                clearInterval(timer);
+                window.close();
+                setTimeout(() => {
+                  document.querySelector('.container').innerHTML =
+                    '<div class="success">✓</div><h2>Please close this tab manually</h2><p>Bot authentication completed successfully!</p>';
+                }, 500);
+              }
+            }, 1000);
+          </script>
         </body>
       </html>
     `;
@@ -750,7 +802,7 @@ export class TwitchManager {
 
       // Moderator-condition subscriptions (broadcaster subscribes as moderator of their own channel)
       try {
-        this.subscribeToModerationEvents(broadcasterId, broadcasterId);
+        this.subscribeToModerationEvents(broadcasterId, botId);
       } catch (error) {
         console.error(
           "TwitchEventSub: Failed to subscribe to moderation events:",
@@ -972,7 +1024,12 @@ export class TwitchManager {
               ),
               isHighlighted: event.messageType === "highlight",
               ...(event.messageType === "action"
-                ? { messageType: { category: "chat" as const, type: "action" as const } }
+                ? {
+                    messageType: {
+                      category: "chat" as const,
+                      type: "action" as const,
+                    },
+                  }
                 : {}),
             },
           };
@@ -1072,11 +1129,14 @@ export class TwitchManager {
       sendChatMessage(subMessage);
 
       if (event.messageText) {
-        const userSubMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+        const userSubMessage: UnifiedChatMessage =
+          structuredClone(Wingbot953Message);
         userSubMessage.platform = "twitch";
         userSubMessage.message.text = `Sub message from ${event.chatterName}: ${event.messageText}`;
         userSubMessage.author.displayName = event.chatterDisplayName;
-        userSubMessage.twitchSpecific = { messageType: { category: "subscription", type: "sub" } };
+        userSubMessage.twitchSpecific = {
+          messageType: { category: "subscription", type: "sub" },
+        };
         sendChatMessage(userSubMessage);
       }
     });
@@ -1101,11 +1161,14 @@ export class TwitchManager {
       sendChatMessage(subMessage);
 
       if (event.messageText) {
-        const userResubMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+        const userResubMessage: UnifiedChatMessage =
+          structuredClone(Wingbot953Message);
         userResubMessage.platform = "twitch";
         userResubMessage.message.text = `${event.messageText}`;
         userResubMessage.author.displayName = event.chatterDisplayName;
-        userResubMessage.twitchSpecific = { messageType: { category: "subscription", type: "resub" } };
+        userResubMessage.twitchSpecific = {
+          messageType: { category: "subscription", type: "resub" },
+        };
         sendChatMessage(userResubMessage);
       }
     });
@@ -1162,11 +1225,14 @@ export class TwitchManager {
       sendChatMessage(communitySubMessage);
 
       if (event.messageText) {
-        const gifterMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+        const gifterMessage: UnifiedChatMessage =
+          structuredClone(Wingbot953Message);
         gifterMessage.platform = "twitch";
         gifterMessage.message.text = `${event.messageText}`;
         gifterMessage.author.displayName = gifterName;
-        gifterMessage.twitchSpecific = { messageType: { category: "subscription", type: "communitysub" } };
+        gifterMessage.twitchSpecific = {
+          messageType: { category: "subscription", type: "communitysub" },
+        };
         sendChatMessage(gifterMessage);
       }
     });
@@ -1261,11 +1327,14 @@ export class TwitchManager {
       sendChatMessage(upgradeMessage);
 
       if (event.messageText) {
-        const userUpgradeMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+        const userUpgradeMessage: UnifiedChatMessage =
+          structuredClone(Wingbot953Message);
         userUpgradeMessage.platform = "twitch";
         userUpgradeMessage.message.text = `${event.messageText}`;
         userUpgradeMessage.author.displayName = event.chatterDisplayName;
-        userUpgradeMessage.twitchSpecific = { messageType: { category: "subscription", type: "giftpaidupgrade" } };
+        userUpgradeMessage.twitchSpecific = {
+          messageType: { category: "subscription", type: "giftpaidupgrade" },
+        };
         sendChatMessage(userUpgradeMessage);
       }
     });
@@ -1293,11 +1362,14 @@ export class TwitchManager {
       sendChatMessage(upgradeMessage);
 
       if (event.messageText) {
-        const userPrimeMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+        const userPrimeMessage: UnifiedChatMessage =
+          structuredClone(Wingbot953Message);
         userPrimeMessage.platform = "twitch";
         userPrimeMessage.message.text = `${event.messageText}`;
         userPrimeMessage.author.displayName = event.chatterDisplayName;
-        userPrimeMessage.twitchSpecific = { messageType: { category: "subscription", type: "primepaidupgrade" } };
+        userPrimeMessage.twitchSpecific = {
+          messageType: { category: "subscription", type: "primepaidupgrade" },
+        };
         sendChatMessage(userPrimeMessage);
       }
     });
@@ -1339,11 +1411,14 @@ export class TwitchManager {
       sendChatMessage(payForwardMessage);
 
       if (event.messageText) {
-        const userPayForwardMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+        const userPayForwardMessage: UnifiedChatMessage =
+          structuredClone(Wingbot953Message);
         userPayForwardMessage.platform = "twitch";
         userPayForwardMessage.message.text = `${event.messageText}`;
         userPayForwardMessage.author.displayName = event.chatterDisplayName;
-        userPayForwardMessage.twitchSpecific = { messageType: { category: "subscription", type: "payforward" } };
+        userPayForwardMessage.twitchSpecific = {
+          messageType: { category: "subscription", type: "payforward" },
+        };
         sendChatMessage(userPayForwardMessage);
       }
     });
