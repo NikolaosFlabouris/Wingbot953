@@ -192,8 +192,10 @@ export class TwitchManager {
   private periodicMessagesInterval?: NodeJS.Timeout;
   private streamNameAndGameInterval?: NodeJS.Timeout;
 
-  // EventSub
-  private eventSubListener?: EventSubWsListener;
+  // Two EventSub listeners: one per user identity to avoid WebSocket transport conflicts.
+  // Twitch requires all subscriptions on a single WebSocket to use the same user's token.
+  private botEventSubListener?: EventSubWsListener;
+  private streamerEventSubListener?: EventSubWsListener;
   private isEventSubInitialised: boolean = false;
 
   // Subscriber tracking
@@ -771,19 +773,23 @@ export class TwitchManager {
       return;
     }
 
-    console.log("TwitchEventSub: Initialising EventSub WebSocket listener...");
+    console.log("TwitchEventSub: Initialising EventSub WebSocket listeners...");
 
     try {
-      this.eventSubListener = new EventSubWsListener({
+      this.botEventSubListener = new EventSubWsListener({
+        apiClient: this.apiClient,
+      });
+      this.streamerEventSubListener = new EventSubWsListener({
         apiClient: this.apiClient,
       });
 
       const broadcasterId = this.streamerUser.id;
       const botId = this.botUser.id;
 
-      // User-condition subscriptions (bot reads chat via user:read:chat)
+      // --- Bot listener: subscriptions that use the bot's token ---
+
       try {
-        this.subscribeToChatMessages(broadcasterId, botId);
+        this.subscribeToChatMessages(this.botEventSubListener, broadcasterId, botId);
       } catch (error) {
         console.error(
           "TwitchEventSub: Failed to subscribe to chat messages:",
@@ -792,7 +798,7 @@ export class TwitchManager {
       }
 
       try {
-        this.subscribeToChatNotifications(broadcasterId, botId);
+        this.subscribeToChatNotifications(this.botEventSubListener, broadcasterId, botId);
       } catch (error) {
         console.error(
           "TwitchEventSub: Failed to subscribe to chat notifications:",
@@ -800,18 +806,8 @@ export class TwitchManager {
         );
       }
 
-      // Moderator-condition subscriptions (broadcaster subscribes as moderator of their own channel)
       try {
-        this.subscribeToModerationEvents(broadcasterId, botId);
-      } catch (error) {
-        console.error(
-          "TwitchEventSub: Failed to subscribe to moderation events:",
-          error,
-        );
-      }
-
-      try {
-        this.subscribeToFollowEvents(broadcasterId, botId);
+        this.subscribeToFollowEvents(this.botEventSubListener, broadcasterId, botId);
       } catch (error) {
         console.error(
           "TwitchEventSub: Failed to subscribe to follow events:",
@@ -820,7 +816,7 @@ export class TwitchManager {
       }
 
       try {
-        this.subscribeToShoutoutEvents(broadcasterId, botId);
+        this.subscribeToShoutoutEvents(this.botEventSubListener, broadcasterId, botId);
       } catch (error) {
         console.error(
           "TwitchEventSub: Failed to subscribe to shoutout events:",
@@ -828,9 +824,19 @@ export class TwitchManager {
         );
       }
 
-      // Broadcaster-condition subscriptions (use streamer's token implicitly)
+      // --- Streamer listener: subscriptions that use the streamer's token ---
+
       try {
-        this.subscribeToHypeTrainEvents(broadcasterId);
+        this.subscribeToModerationEvents(this.streamerEventSubListener, broadcasterId, broadcasterId);
+      } catch (error) {
+        console.error(
+          "TwitchEventSub: Failed to subscribe to moderation events:",
+          error,
+        );
+      }
+
+      try {
+        this.subscribeToHypeTrainEvents(this.streamerEventSubListener, broadcasterId);
       } catch (error) {
         console.error(
           "TwitchEventSub: Failed to subscribe to hype train events:",
@@ -839,7 +845,7 @@ export class TwitchManager {
       }
 
       try {
-        this.subscribeToChannelPointRedemptions(broadcasterId);
+        this.subscribeToChannelPointRedemptions(this.streamerEventSubListener, broadcasterId);
       } catch (error) {
         console.error(
           "TwitchEventSub: Failed to subscribe to channel point events:",
@@ -848,7 +854,7 @@ export class TwitchManager {
       }
 
       try {
-        this.subscribeToStreamEvents(broadcasterId);
+        this.subscribeToStreamEvents(this.streamerEventSubListener, broadcasterId);
       } catch (error) {
         console.error(
           "TwitchEventSub: Failed to subscribe to stream events:",
@@ -857,7 +863,7 @@ export class TwitchManager {
       }
 
       try {
-        this.subscribeToPredictionEvents(broadcasterId);
+        this.subscribeToPredictionEvents(this.streamerEventSubListener, broadcasterId);
       } catch (error) {
         console.error(
           "TwitchEventSub: Failed to subscribe to prediction events:",
@@ -866,7 +872,7 @@ export class TwitchManager {
       }
 
       try {
-        this.subscribeToPollEvents(broadcasterId);
+        this.subscribeToPollEvents(this.streamerEventSubListener, broadcasterId);
       } catch (error) {
         console.error(
           "TwitchEventSub: Failed to subscribe to poll events:",
@@ -874,10 +880,11 @@ export class TwitchManager {
         );
       }
 
-      this.eventSubListener.start();
+      this.botEventSubListener.start();
+      this.streamerEventSubListener.start();
       this.isEventSubInitialised = true;
       console.log(
-        "TwitchEventSub: EventSub WebSocket listener started successfully.",
+        "TwitchEventSub: EventSub WebSocket listeners started successfully.",
       );
     } catch (error) {
       console.error("TwitchEventSub: Failed to initialise EventSub:", error);
@@ -982,10 +989,8 @@ export class TwitchManager {
    * Subscribes to chat messages via EventSub, replacing IRC onMessage and onAction.
    * Messages are converted to UnifiedChatMessage and routed through handleChatMessage.
    */
-  private subscribeToChatMessages(broadcasterId: string, botId: string): void {
-    if (!this.eventSubListener) return;
-
-    this.eventSubListener.onChannelChatMessage(
+  private subscribeToChatMessages(listener: EventSubWsListener, broadcasterId: string, botId: string): void {
+    listener.onChannelChatMessage(
       broadcasterId,
       botId,
       (event) => {
@@ -1046,12 +1051,11 @@ export class TwitchManager {
    * onPrimePaidUpgrade, onStandardPayForward, onCommunityPayForward, and onRaidCancel.
    */
   private subscribeToChatNotifications(
+    listener: EventSubWsListener,
     broadcasterId: string,
     botId: string,
   ): void {
-    if (!this.eventSubListener) return;
-
-    this.eventSubListener.onChannelChatNotification(
+    listener.onChannelChatNotification(
       broadcasterId,
       botId,
       (event) => {
@@ -1458,12 +1462,11 @@ export class TwitchManager {
    * Uses moderator condition (bot is a moderator in the channel).
    */
   private subscribeToModerationEvents(
+    listener: EventSubWsListener,
     broadcasterId: string,
     moderatorId: string,
   ): void {
-    if (!this.eventSubListener) return;
-
-    this.eventSubListener.onChannelModerate(
+    listener.onChannelModerate(
       broadcasterId,
       moderatorId,
       (event) => {
@@ -1582,12 +1585,11 @@ export class TwitchManager {
   }
 
   private subscribeToFollowEvents(
+    listener: EventSubWsListener,
     broadcasterId: string,
     moderatorId: string,
   ): void {
-    if (!this.eventSubListener) return;
-
-    this.eventSubListener.onChannelFollow(
+    listener.onChannelFollow(
       broadcasterId,
       moderatorId,
       (event) => {
@@ -1613,10 +1615,8 @@ export class TwitchManager {
     );
   }
 
-  private subscribeToHypeTrainEvents(broadcasterId: string): void {
-    if (!this.eventSubListener) return;
-
-    this.eventSubListener.onChannelHypeTrainBeginV2(broadcasterId, (event) => {
+  private subscribeToHypeTrainEvents(listener: EventSubWsListener, broadcasterId: string): void {
+    listener.onChannelHypeTrainBeginV2(broadcasterId, (event) => {
       console.log(
         `TwitchEventSub: Hype Train started! Level ${event.level}, Goal: ${event.goal}`,
       );
@@ -1640,7 +1640,7 @@ export class TwitchManager {
       });
     });
 
-    this.eventSubListener.onChannelHypeTrainProgressV2(
+    listener.onChannelHypeTrainProgressV2(
       broadcasterId,
       (event) => {
         console.log(
@@ -1660,7 +1660,7 @@ export class TwitchManager {
       },
     );
 
-    this.eventSubListener.onChannelHypeTrainEndV2(broadcasterId, (event) => {
+    listener.onChannelHypeTrainEndV2(broadcasterId, (event) => {
       console.log(`TwitchEventSub: Hype Train ended at level ${event.level}!`);
 
       const hypeEndMessage: UnifiedChatMessage =
@@ -1691,10 +1691,8 @@ export class TwitchManager {
    * Subscribes to channel point custom reward redemption events.
    * Replaces the previous polling-based redemption detection.
    */
-  private subscribeToChannelPointRedemptions(broadcasterId: string): void {
-    if (!this.eventSubListener) return;
-
-    this.eventSubListener.onChannelRedemptionAdd(broadcasterId, (event) => {
+  private subscribeToChannelPointRedemptions(listener: EventSubWsListener, broadcasterId: string): void {
+    listener.onChannelRedemptionAdd(broadcasterId, (event) => {
       console.log(
         `TwitchEventSub: Channel point redemption - ${event.userDisplayName} redeemed "${event.rewardTitle}"`,
       );
@@ -1744,10 +1742,8 @@ export class TwitchManager {
    * Subscribes to stream online and offline events.
    * Replaces the previous polling-based stream status detection.
    */
-  private subscribeToStreamEvents(broadcasterId: string): void {
-    if (!this.eventSubListener) return;
-
-    this.eventSubListener.onStreamOnline(broadcasterId, (event) => {
+  private subscribeToStreamEvents(listener: EventSubWsListener, broadcasterId: string): void {
+    listener.onStreamOnline(broadcasterId, (event) => {
       console.log(`TwitchEventSub: Stream went online! Type: ${event.type}`);
 
       // Fetch stream data for title and game (not included in the event)
@@ -1770,17 +1766,15 @@ export class TwitchManager {
       })();
     });
 
-    this.eventSubListener.onStreamOffline(broadcasterId, () => {
+    listener.onStreamOffline(broadcasterId, () => {
       console.log("TwitchEventSub: Stream went offline.");
 
       this.handleStreamOffline();
     });
   }
 
-  private subscribeToPredictionEvents(broadcasterId: string): void {
-    if (!this.eventSubListener) return;
-
-    this.eventSubListener.onChannelPredictionBegin(broadcasterId, (event) => {
+  private subscribeToPredictionEvents(listener: EventSubWsListener, broadcasterId: string): void {
+    listener.onChannelPredictionBegin(broadcasterId, (event) => {
       console.log(`TwitchEventSub: Prediction started - "${event.title}"`);
 
       const outcomes = event.outcomes.map((o) => ({
@@ -1811,7 +1805,7 @@ export class TwitchManager {
       });
     });
 
-    this.eventSubListener.onChannelPredictionLock(broadcasterId, (event) => {
+    listener.onChannelPredictionLock(broadcasterId, (event) => {
       console.log(`TwitchEventSub: Prediction locked - "${event.title}"`);
 
       const lockMessage: UnifiedChatMessage =
@@ -1826,7 +1820,7 @@ export class TwitchManager {
       sendChatMessage(lockMessage, true, false);
     });
 
-    this.eventSubListener.onChannelPredictionEnd(broadcasterId, (event) => {
+    listener.onChannelPredictionEnd(broadcasterId, (event) => {
       console.log(
         `TwitchEventSub: Prediction ended - "${event.title}", Status: ${event.status}`,
       );
@@ -1858,10 +1852,8 @@ export class TwitchManager {
     });
   }
 
-  private subscribeToPollEvents(broadcasterId: string): void {
-    if (!this.eventSubListener) return;
-
-    this.eventSubListener.onChannelPollBegin(broadcasterId, (event) => {
+  private subscribeToPollEvents(listener: EventSubWsListener, broadcasterId: string): void {
+    listener.onChannelPollBegin(broadcasterId, (event) => {
       console.log(`TwitchEventSub: Poll started - "${event.title}"`);
 
       const choices = event.choices.map((c) => ({
@@ -1892,7 +1884,7 @@ export class TwitchManager {
       });
     });
 
-    this.eventSubListener.onChannelPollProgress(broadcasterId, (event) => {
+    listener.onChannelPollProgress(broadcasterId, (event) => {
       console.log(`TwitchEventSub: Poll progress - "${event.title}"`);
 
       const progressMessage: UnifiedChatMessage =
@@ -1907,7 +1899,7 @@ export class TwitchManager {
       sendChatMessage(progressMessage, true, false);
     });
 
-    this.eventSubListener.onChannelPollEnd(broadcasterId, (event) => {
+    listener.onChannelPollEnd(broadcasterId, (event) => {
       console.log(
         `TwitchEventSub: Poll ended - "${event.title}", Status: ${event.status}`,
       );
@@ -1952,12 +1944,11 @@ export class TwitchManager {
   }
 
   private subscribeToShoutoutEvents(
+    listener: EventSubWsListener,
     broadcasterId: string,
     moderatorId: string,
   ): void {
-    if (!this.eventSubListener) return;
-
-    this.eventSubListener.onChannelShoutoutCreate(
+    listener.onChannelShoutoutCreate(
       broadcasterId,
       moderatorId,
       (event) => {
@@ -1978,7 +1969,7 @@ export class TwitchManager {
       },
     );
 
-    this.eventSubListener.onChannelShoutoutReceive(
+    listener.onChannelShoutoutReceive(
       broadcasterId,
       moderatorId,
       (event) => {
@@ -2438,11 +2429,15 @@ export class TwitchManager {
    */
   public dispose(): void {
     // Stop EventSub listener
-    if (this.eventSubListener) {
-      this.eventSubListener.stop();
-      this.eventSubListener = undefined;
-      this.isEventSubInitialised = false;
+    if (this.botEventSubListener) {
+      this.botEventSubListener.stop();
+      this.botEventSubListener = undefined;
     }
+    if (this.streamerEventSubListener) {
+      this.streamerEventSubListener.stop();
+      this.streamerEventSubListener = undefined;
+    }
+    this.isEventSubInitialised = false;
 
     // Clear all intervals
     this.clearIntervals();
