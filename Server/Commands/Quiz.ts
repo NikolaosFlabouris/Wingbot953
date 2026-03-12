@@ -49,6 +49,7 @@ import { sendChatMessage, Wingbot953Message } from "../MessageHandling";
 import { UnifiedChatMessage } from "../../Common/UnifiedChatMessage";
 import { TwitchManager } from "../Integrations/Twitch";
 import { YouTubeManager } from "../Integrations/YouTube";
+import { generateHaloRunsQuestion } from "../Integrations/HaloRunsQuizGenerator";
 
 // ========== INTERFACES AND TYPES ==========
 
@@ -71,7 +72,7 @@ interface QuizUser {
  * Contains all information about a selected quiz question
  * @interface QuestionData
  */
-interface QuestionData {
+export interface QuestionData {
   /** The quiz question text */
   question: string;
   /** The primary correct answer (first in answers array) */
@@ -246,7 +247,9 @@ abstract class BaseQuiz {
     this.startTime = Date.now();
 
     try {
-      void TwitchManager.getInstance().enableSlowMode(this.config.slowModeSeconds);
+      void TwitchManager.getInstance().enableSlowMode(
+        this.config.slowModeSeconds,
+      );
       YouTubeManager.getInstance().setChatPollingInterval(1000);
     } catch (error) {
       console.error(`Failed to configure quiz settings: ${String(error)}`);
@@ -312,7 +315,7 @@ abstract class BaseQuiz {
   protected isValidAnswer(userInput: string): boolean {
     const cleanInput = userInput.toLowerCase().replace(/[.,!?;:]+$/, "");
     return this.questionData.answers.some(
-      (answer) => answer.toLowerCase() === cleanInput
+      (answer) => answer.toLowerCase() === cleanInput,
     );
   }
 
@@ -460,7 +463,7 @@ class AllCorrectAnswersQuiz extends BaseQuiz {
         (u) =>
           u.Username === user.Username &&
           u.UserId === user.UserId &&
-          u.Platform === user.Platform
+          u.Platform === user.Platform,
       );
 
       if (!existingUser) {
@@ -482,10 +485,10 @@ class AllCorrectAnswersQuiz extends BaseQuiz {
     }
 
     const twitchUsers = this.correctUsers.filter(
-      (u) => u.Platform === "twitch"
+      (u) => u.Platform === "twitch",
     );
     const youtubeUsers = this.correctUsers.filter(
-      (u) => u.Platform === "youtube"
+      (u) => u.Platform === "youtube",
     );
 
     const twitchCount = twitchUsers.length;
@@ -535,18 +538,39 @@ class QuestionSelector {
   private calculateTotalQuestions(): void {
     this.totalQuestionCount = quizCategories.reduce(
       (total, category) => total + category.CategoryLength,
-      0
+      0,
     );
   }
 
   /**
-   * Selects a random unused question from all available categories.
+   * Selects a random question using weighted category selection.
+   * HaloRuns Records gets a 1/N slot (where N = static categories + 1).
+   * Static categories share the remaining slots weighted by question count.
    * Automatically resets the used questions pool when all questions have been used.
-   * Includes protection against infinite loops and proper error handling.
    *
    * @returns A QuestionData object with the selected question, or null if no questions available
    */
-  selectRandomQuestion(): QuestionData | null {
+  async selectRandomQuestion(): Promise<QuestionData | null> {
+    const totalSlots = quizCategories.length + 1; // +1 for HaloRuns Records
+    const roll = Between(1, totalSlots);
+
+    // HaloRuns Records slot
+    if (roll === totalSlots) {
+      const hrQuestion = await generateHaloRunsQuestion();
+      if (hrQuestion) return hrQuestion;
+      // Fallback to static question
+    }
+
+    return this.selectStaticQuestion();
+  }
+
+  /**
+   * Selects a random unused static question from the quiz categories.
+   *
+   * @private
+   * @returns A QuestionData object with the selected question, or null if none available
+   */
+  private selectStaticQuestion(): QuestionData | null {
     const maxAttempts = this.totalQuestionCount * 2;
     let attempts = 0;
 
@@ -592,7 +616,7 @@ class QuestionSelector {
         const question = category.CategoryQuestions[currentIndex];
         if (!question) {
           console.error(
-            `Question not found at index ${currentIndex} in category ${category.CategoryName}`
+            `Question not found at index ${currentIndex} in category ${category.CategoryName}`,
           );
           return null;
         }
@@ -695,7 +719,7 @@ class LeaderboardManager {
     try {
       await fs.promises.writeFile(
         this.filePath,
-        JSON.stringify(this.leaderboards, null, 2)
+        JSON.stringify(this.leaderboards, null, 2),
       );
     } catch (error) {
       console.error(`Failed to save leaderboards: ${String(error)}`);
@@ -769,7 +793,7 @@ class LeaderboardManager {
   async getScore(
     username: string,
     userId?: string,
-    platform?: string
+    platform?: string,
   ): Promise<QuizUser | null> {
     await this.loadLeaderboards();
 
@@ -897,12 +921,12 @@ export class QuizManager {
   initialise(): void {
     try {
       console.log(
-        `Total question count: ${this.questionSelector.getTotalQuestionCount()}`
+        `Total question count: ${this.questionSelector.getTotalQuestionCount()}`,
       );
 
       for (const category of quizCategories) {
         console.log(
-          `${category.CategoryName} Question count: ${category.CategoryLength}`
+          `${category.CategoryName} Question count: ${category.CategoryLength}`,
         );
       }
 
@@ -966,7 +990,7 @@ export class QuizManager {
       if (this.isBlocked) {
         console.error(
           "Quiz block safety timeout triggered - auto-resetting isBlocked after " +
-            `${QuizManager.BLOCK_TIMEOUT_MS / 1000}s`
+            `${QuizManager.BLOCK_TIMEOUT_MS / 1000}s`,
         );
         this.isBlocked = false;
         if (this.activeQuiz) {
@@ -974,7 +998,7 @@ export class QuizManager {
             this.activeQuiz.cleanup();
           } catch (error) {
             console.error(
-              `Error during safety timeout cleanup: ${String(error)}`
+              `Error during safety timeout cleanup: ${String(error)}`,
             );
           }
           this.activeQuiz = null;
@@ -1015,7 +1039,7 @@ export class QuizManager {
    * @returns Promise that resolves when the quiz is complete
    */
   async startQuiz(
-    isFirstToAnswer: boolean = Between(0, 99) < this.config.firstToAnswerChance
+    isFirstToAnswer: boolean = Between(0, 99) < this.config.firstToAnswerChance,
   ): Promise<void> {
     if (this.isBlocked || this.activeQuiz) {
       console.log("Quiz blocked or already active");
@@ -1025,7 +1049,7 @@ export class QuizManager {
     this.setBlocked();
 
     try {
-      const questionData = this.questionSelector.selectRandomQuestion();
+      const questionData = await this.questionSelector.selectRandomQuestion();
       if (!questionData) {
         throw new Error("No question available");
       }
@@ -1037,7 +1061,7 @@ export class QuizManager {
       console.log(
         `Starting ${
           isFirstToAnswer ? "First-to-Answer" : "All-Correct-Answers"
-        } quiz: ${questionData.question}`
+        } quiz: ${questionData.question}`,
       );
 
       await this.activeQuiz.execute();
@@ -1091,7 +1115,7 @@ export class QuizManager {
 
       if (wasCorrect && this.activeQuiz instanceof FirstToAnswerQuiz) {
         console.log(
-          `Correct answer from ${msg.author.displayName}: ${msg.message.text}`
+          `Correct answer from ${msg.author.displayName}: ${msg.message.text}`,
         );
       }
     } catch (error) {
@@ -1187,7 +1211,9 @@ export class QuizManager {
       try {
         this.activeQuiz.cleanup();
       } catch (error) {
-        console.error(`Error during quiz cleanup on shutdown: ${String(error)}`);
+        console.error(
+          `Error during quiz cleanup on shutdown: ${String(error)}`,
+        );
       }
       this.activeQuiz = null;
     }
@@ -1203,7 +1229,7 @@ export class QuizManager {
  * @returns Promise that resolves when leaderboard message is sent
  */
 export async function GetQuizLeaderboards(
-  msg: UnifiedChatMessage
+  msg: UnifiedChatMessage,
 ): Promise<void> {
   try {
     const topUsers = await QuizManager.getInstance()

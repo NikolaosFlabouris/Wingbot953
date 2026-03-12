@@ -1,9 +1,19 @@
 export class People_Quiz {
+  public static Adzii = ["Adzii"];
+
   public static Adef = ["Adef"];
 
   public static Adversary = ["Adversary", "Sean"];
 
+  public static AFilthyCasual = ["AFilthyCasual", "AFC"];
+
+  public static Argentina = ["Argentina"];
+
   public static BlazeJp = ["TheBlazeJp", "BlazeJp"];
+
+  public static Bloop = ["Bloop"];
+
+  public static Bonicus = ["Bonicus"];
 
   public static Bryonato = ["Bryonato"];
 
@@ -17,13 +27,25 @@ export class People_Quiz {
 
   public static byNailz = ["byNailz", "Nailz"];
 
+  public static CaitPepsi = ["CaitPepsi", "Cait Pepsi", "Cait"];
+
+  public static Caitlin = ["Caitlin", "Cait"];
+
+  public static Cambid = ["Cambid", "Camb1d"];
+
   public static Chappified = ["Chappified", "Chappy", "Chapp"];
 
   public static Chronos = ["Chronos", "ChronosReturns"];
 
   public static c0ry123 = ["c0ry123", "cory123", "cory", "c0ry"];
 
-  public static Cryphon = ["Cryphon"];
+  public static Cryphon = ["Cryphon", "Mogami"];
+
+  public static Danielcito = ["Danielcito", "Daniel"];
+
+  public static DavidSpartan95 = ["DavidSpartan95"];
+
+  public static DawsonPlaysGames = ["DawsonPlaysGames"];
 
   public static DarkDevastation = [
     "Dark Devastation",
@@ -38,7 +60,11 @@ export class People_Quiz {
 
   public static Distro = ["Distro", "DistroTV"];
 
+  public static DrunkSniper0 = ["DrunkSniper0", "DrunkSniper", "Drunk"];
+
   public static Dyse = ["Dyse"];
+
+  public static Ecliptyk = ["Ecliptyk"];
 
   public static GarishGoblin = ["GarishGoblin", "Garish"];
 
@@ -56,6 +82,10 @@ export class People_Quiz {
   public static Goatrope = ["Goatrope", "Goat"];
 
   public static HaoleCake = ["HaoleCake"];
+
+  public static Helpless = ["Helpless"];
+
+  public static Hockeyfan = ["Hockeyfan"];
 
   public static Harc = ["Harc", "HarcTehShark", "Harcacola"];
 
@@ -84,6 +114,8 @@ export class People_Quiz {
 
   public static Mankey = ["Mankey", "Mankey_OW"];
 
+  public static Mourie = ["Mourie"];
+
   public static Monopoli = [
     "Monopoli",
     "Mister Monopoli",
@@ -104,13 +136,25 @@ export class People_Quiz {
 
   public static ProAceJoker = ["ProAceJoker", "Joker", "ProAcedJoker"];
 
+  public static Renegade_XV = ["Renegade_XV", "Renegade"];
+
+  public static rocats = ["rocats"];
+
   public static Ruudyt = ["Ruudyt", "Rudy", "Ruudy"];
 
-  public static Sasquatch = ["SasquatchSensei", "Sasquatch", "Sas"];
+  public static Sary = ["Sary"];
+
+  public static Sasquatch = ["Sasquatch", "SasquatchSensei", "Sas"];
 
   public static Scurty = ["Scurty", "Scurty_"];
 
   public static Seclusive = ["Seclusive", "Reculsive"];
+
+  public static Shoncay = ["Shoncay"];
+
+  public static SlateThelyon = ["SlateThelyon", "Slate"];
+
+  public static SlothSG = ["SlothSG", "Sloth"];
 
   public static SHIFTY = ["SHIFTY", "SHIFTY time", "SHIFTY_time"];
 
@@ -118,9 +162,19 @@ export class People_Quiz {
 
   public static Stylo = ["Stylo", "Reed Tiburon", "Tiburon"];
 
-  public static sub_WHISTLE = ["sub_WHISTLE", "WHISTLE", "sub", "sub WHISTLE"];
+  public static sub_WHISTLE = ["WHISTLE", "sub_WHISTLE", "sub", "sub WHISTLE"];
+
+  public static Waifu = ["Waifu"];
+
+  public static whitenoiz = ["whitenoiz"];
 
   public static Synyster = ["Synyster"];
+
+  public static TheReptiliani = ["TheReptiliani", "Rep", "Reptiliani"];
+
+  public static Tranqylity = ["Tranqylity"];
+
+  public static VyPr = ["VyPr"];
 
   public static Vetroxity = ["Vetroxity", "Vetro"];
 
@@ -134,6 +188,12 @@ export class People_Quiz {
   ];
 
   public static WoLfy = ["WoLfy"];
+
+  public static Woodcarpet255 = ["Woodcarpet255", "Woodcarpet"];
+
+  public static Xero = ["Xero"];
+
+  public static ZNIGMV = ["ZNIGMV"];
 
   public static Zoo = ["Zoo", "III_Zoo_III"];
 }

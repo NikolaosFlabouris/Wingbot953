@@ -36,6 +36,10 @@ const wingman953ProfileUrl = `/content/users/${Wingman953HrId}/career.json`;
 let hrGeneralJson: HrGlobalData;
 let wingman953ProfileJson: HrProfileData;
 
+export function getHrGlobalData(): HrGlobalData | undefined {
+  return hrGeneralJson;
+}
+
 export async function HaloRunsSetup() {
   try {
     // Read HR Global data
@@ -145,6 +149,7 @@ export async function GetHaloRunsWr(
     Usernames: "",
     Video: "",
     Rank: 0,
+    Points: 0,
   };
 
   console.log(hrGameName, hrCategory, hrRunnableSegment, hrDifficulty);

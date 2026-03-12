@@ -56,6 +56,7 @@ export interface HaloRunsTime {
   Usernames: string;
   Video: string;
   Rank: number;
+  Points: number;
 }
 
 export type ResolveNamesResult =
@@ -151,6 +152,7 @@ export function parseLeaderboardEntries(
     Usernames: "",
     Video: "",
     Rank: 0,
+    Points: 0,
   };
 
   if (leaderboardData.Entries.length === 0) {
@@ -194,6 +196,7 @@ export function parseLeaderboardEntries(
   );
   result.Usernames = wrUsernames;
   result.Video = wrVideo;
+  result.Points = leaderboardData.Entries[0].Points;
 
   return result;
 }
@@ -220,6 +223,7 @@ export function searchProfileForPb(
     Usernames: "",
     Video: "",
     Rank: -1,
+    Points: 0,
   };
 
   const hrGameIndex = globalData.Games.findIndex((g) => g.Name === gameName);
