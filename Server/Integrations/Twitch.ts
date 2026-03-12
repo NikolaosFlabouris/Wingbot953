@@ -789,7 +789,11 @@ export class TwitchManager {
       // --- Bot listener: subscriptions that use the bot's token ---
 
       try {
-        this.subscribeToChatMessages(this.botEventSubListener, broadcasterId, botId);
+        this.subscribeToChatMessages(
+          this.botEventSubListener,
+          broadcasterId,
+          botId,
+        );
       } catch (error) {
         console.error(
           "TwitchEventSub: Failed to subscribe to chat messages:",
@@ -798,7 +802,11 @@ export class TwitchManager {
       }
 
       try {
-        this.subscribeToChatNotifications(this.botEventSubListener, broadcasterId, botId);
+        this.subscribeToChatNotifications(
+          this.botEventSubListener,
+          broadcasterId,
+          botId,
+        );
       } catch (error) {
         console.error(
           "TwitchEventSub: Failed to subscribe to chat notifications:",
@@ -807,7 +815,11 @@ export class TwitchManager {
       }
 
       try {
-        this.subscribeToFollowEvents(this.botEventSubListener, broadcasterId, botId);
+        this.subscribeToFollowEvents(
+          this.botEventSubListener,
+          broadcasterId,
+          botId,
+        );
       } catch (error) {
         console.error(
           "TwitchEventSub: Failed to subscribe to follow events:",
@@ -816,7 +828,11 @@ export class TwitchManager {
       }
 
       try {
-        this.subscribeToShoutoutEvents(this.botEventSubListener, broadcasterId, botId);
+        this.subscribeToShoutoutEvents(
+          this.botEventSubListener,
+          broadcasterId,
+          botId,
+        );
       } catch (error) {
         console.error(
           "TwitchEventSub: Failed to subscribe to shoutout events:",
@@ -827,7 +843,11 @@ export class TwitchManager {
       // --- Streamer listener: subscriptions that use the streamer's token ---
 
       try {
-        this.subscribeToModerationEvents(this.streamerEventSubListener, broadcasterId, broadcasterId);
+        this.subscribeToModerationEvents(
+          this.streamerEventSubListener,
+          broadcasterId,
+          broadcasterId,
+        );
       } catch (error) {
         console.error(
           "TwitchEventSub: Failed to subscribe to moderation events:",
@@ -836,7 +856,10 @@ export class TwitchManager {
       }
 
       try {
-        this.subscribeToHypeTrainEvents(this.streamerEventSubListener, broadcasterId);
+        this.subscribeToHypeTrainEvents(
+          this.streamerEventSubListener,
+          broadcasterId,
+        );
       } catch (error) {
         console.error(
           "TwitchEventSub: Failed to subscribe to hype train events:",
@@ -845,7 +868,10 @@ export class TwitchManager {
       }
 
       try {
-        this.subscribeToChannelPointRedemptions(this.streamerEventSubListener, broadcasterId);
+        this.subscribeToChannelPointRedemptions(
+          this.streamerEventSubListener,
+          broadcasterId,
+        );
       } catch (error) {
         console.error(
           "TwitchEventSub: Failed to subscribe to channel point events:",
@@ -854,7 +880,10 @@ export class TwitchManager {
       }
 
       try {
-        this.subscribeToStreamEvents(this.streamerEventSubListener, broadcasterId);
+        this.subscribeToStreamEvents(
+          this.streamerEventSubListener,
+          broadcasterId,
+        );
       } catch (error) {
         console.error(
           "TwitchEventSub: Failed to subscribe to stream events:",
@@ -863,7 +892,10 @@ export class TwitchManager {
       }
 
       try {
-        this.subscribeToPredictionEvents(this.streamerEventSubListener, broadcasterId);
+        this.subscribeToPredictionEvents(
+          this.streamerEventSubListener,
+          broadcasterId,
+        );
       } catch (error) {
         console.error(
           "TwitchEventSub: Failed to subscribe to prediction events:",
@@ -872,7 +904,10 @@ export class TwitchManager {
       }
 
       try {
-        this.subscribeToPollEvents(this.streamerEventSubListener, broadcasterId);
+        this.subscribeToPollEvents(
+          this.streamerEventSubListener,
+          broadcasterId,
+        );
       } catch (error) {
         console.error(
           "TwitchEventSub: Failed to subscribe to poll events:",
@@ -989,60 +1024,60 @@ export class TwitchManager {
    * Subscribes to chat messages via EventSub, replacing IRC onMessage and onAction.
    * Messages are converted to UnifiedChatMessage and routed through handleChatMessage.
    */
-  private subscribeToChatMessages(listener: EventSubWsListener, broadcasterId: string, botId: string): void {
-    listener.onChannelChatMessage(
-      broadcasterId,
-      botId,
-      (event) => {
-        const badges = event.badges;
-        const roles = parseEventSubBadgeRoles(badges);
-        const messageParts =
-          event.messageParts as unknown as EventSubMessagePart[];
+  private subscribeToChatMessages(
+    listener: EventSubWsListener,
+    broadcasterId: string,
+    botId: string,
+  ): void {
+    listener.onChannelChatMessage(broadcasterId, botId, (event) => {
+      const badges = event.badges;
+      const roles = parseEventSubBadgeRoles(badges);
+      const messageParts =
+        event.messageParts as unknown as EventSubMessagePart[];
 
-        void (async () => {
-          const unifiedMessage: UnifiedChatMessage = {
-            id: event.messageId,
-            platform: "twitch",
-            timestamp: new Date(),
-            channel: {
-              id: broadcasterId,
-              name: this.channelName,
-            },
-            author: {
-              id: event.chatterId,
-              colour: event.color || "#FFFFFF",
-              name: event.chatterName,
-              displayName: event.chatterDisplayName,
-              isModerator: roles.isModerator,
-              isSubscriber: roles.isSubscriber,
-              isOwner: roles.isOwner,
-            },
-            message: {
-              text: event.messageText,
-              emoteMap: parseEventSubEmotes(messageParts),
-            },
-            twitchSpecific: {
-              bits: event.isCheer ? event.bits : undefined,
-              badges: await BadgeCache.getBadgeIconsFromRecord(
-                broadcasterId,
-                badges,
-              ),
-              isHighlighted: event.messageType === "highlight",
-              ...(event.messageType === "action"
-                ? {
-                    messageType: {
-                      category: "chat" as const,
-                      type: "action" as const,
-                    },
-                  }
-                : {}),
-            },
-          };
+      void (async () => {
+        const unifiedMessage: UnifiedChatMessage = {
+          id: event.messageId,
+          platform: "twitch",
+          timestamp: new Date(),
+          channel: {
+            id: broadcasterId,
+            name: this.channelName,
+          },
+          author: {
+            id: event.chatterId,
+            colour: event.color || "#FFFFFF",
+            name: event.chatterName,
+            displayName: event.chatterDisplayName,
+            isModerator: roles.isModerator,
+            isSubscriber: roles.isSubscriber,
+            isOwner: roles.isOwner,
+          },
+          message: {
+            text: event.messageText,
+            emoteMap: parseEventSubEmotes(messageParts),
+          },
+          twitchSpecific: {
+            bits: event.isCheer ? event.bits : undefined,
+            badges: await BadgeCache.getBadgeIconsFromRecord(
+              broadcasterId,
+              badges,
+            ),
+            isHighlighted: event.messageType === "highlight",
+            ...(event.messageType === "action"
+              ? {
+                  messageType: {
+                    category: "chat" as const,
+                    type: "action" as const,
+                  },
+                }
+              : {}),
+          },
+        };
 
-          handleChatMessage(unifiedMessage);
-        })();
-      },
-    );
+        handleChatMessage(unifiedMessage);
+      })();
+    });
   }
 
   /**
@@ -1055,67 +1090,63 @@ export class TwitchManager {
     broadcasterId: string,
     botId: string,
   ): void {
-    listener.onChannelChatNotification(
-      broadcasterId,
-      botId,
-      (event) => {
-        // Twurple provides a complex union type; we cast to our minimal interfaces per case
-        const e = event as unknown as { type: string };
-        switch (e.type) {
-          case "sub":
-            this.handleSubNotification(
-              event as unknown as EventSubSubNotification,
-            );
-            break;
-          case "resub":
-            this.handleResubNotification(
-              event as unknown as EventSubResubNotification,
-            );
-            break;
-          case "sub_gift":
-            this.handleSubGiftNotification(
-              event as unknown as EventSubSubGiftNotification,
-            );
-            break;
-          case "community_sub_gift":
-            this.handleCommunitySubGiftNotification(
-              event as unknown as EventSubCommunitySubGiftNotification,
-            );
-            break;
-          case "raid":
-            this.handleRaidNotification(
-              event as unknown as EventSubRaidNotification,
-            );
-            break;
-          case "announcement":
-            this.handleAnnouncementNotification(
-              broadcasterId,
-              event as unknown as EventSubAnnouncementNotification,
-            );
-            break;
-          case "gift_paid_upgrade":
-            this.handleGiftPaidUpgradeNotification(
-              event as unknown as EventSubGiftPaidUpgradeNotification,
-            );
-            break;
-          case "prime_paid_upgrade":
-            this.handlePrimePaidUpgradeNotification(
-              event as unknown as EventSubGiftPaidUpgradeNotification,
-            );
-            break;
-          case "pay_it_forward":
-            this.handlePayItForwardNotification(
-              event as unknown as EventSubPayItForwardNotification,
-            );
-            break;
-          case "unraid":
-            this.handleUnraidNotification(
-              event as unknown as EventSubSubNotification,
-            );
-            break;
-        }
-      },
-    );
+    listener.onChannelChatNotification(broadcasterId, botId, (event) => {
+      // Twurple provides a complex union type; we cast to our minimal interfaces per case
+      const e = event as unknown as { type: string };
+      switch (e.type) {
+        case "sub":
+          this.handleSubNotification(
+            event as unknown as EventSubSubNotification,
+          );
+          break;
+        case "resub":
+          this.handleResubNotification(
+            event as unknown as EventSubResubNotification,
+          );
+          break;
+        case "sub_gift":
+          this.handleSubGiftNotification(
+            event as unknown as EventSubSubGiftNotification,
+          );
+          break;
+        case "community_sub_gift":
+          this.handleCommunitySubGiftNotification(
+            event as unknown as EventSubCommunitySubGiftNotification,
+          );
+          break;
+        case "raid":
+          this.handleRaidNotification(
+            event as unknown as EventSubRaidNotification,
+          );
+          break;
+        case "announcement":
+          this.handleAnnouncementNotification(
+            broadcasterId,
+            event as unknown as EventSubAnnouncementNotification,
+          );
+          break;
+        case "gift_paid_upgrade":
+          this.handleGiftPaidUpgradeNotification(
+            event as unknown as EventSubGiftPaidUpgradeNotification,
+          );
+          break;
+        case "prime_paid_upgrade":
+          this.handlePrimePaidUpgradeNotification(
+            event as unknown as EventSubGiftPaidUpgradeNotification,
+          );
+          break;
+        case "pay_it_forward":
+          this.handlePayItForwardNotification(
+            event as unknown as EventSubPayItForwardNotification,
+          );
+          break;
+        case "unraid":
+          this.handleUnraidNotification(
+            event as unknown as EventSubSubNotification,
+          );
+          break;
+      }
+    });
   }
 
   private handleSubNotification(event: EventSubSubNotification): void {
@@ -1127,6 +1158,7 @@ export class TwitchManager {
     subMessage.platform = "twitch";
     subMessage.twitchSpecific = {
       messageType: { category: "subscription", type: "sub" },
+      isHighlighted: true,
     };
 
     void sleep(1000).then(() => {
@@ -1140,6 +1172,7 @@ export class TwitchManager {
         userSubMessage.author.displayName = event.chatterDisplayName;
         userSubMessage.twitchSpecific = {
           messageType: { category: "subscription", type: "sub" },
+          isHighlighted: true,
         };
         sendChatMessage(userSubMessage);
       }
@@ -1159,6 +1192,7 @@ export class TwitchManager {
     subMessage.platform = "twitch";
     subMessage.twitchSpecific = {
       messageType: { category: "subscription", type: "resub" },
+      isHighlighted: true,
     };
 
     void sleep(1000).then(() => {
@@ -1172,6 +1206,7 @@ export class TwitchManager {
         userResubMessage.author.displayName = event.chatterDisplayName;
         userResubMessage.twitchSpecific = {
           messageType: { category: "subscription", type: "resub" },
+          isHighlighted: true,
         };
         sendChatMessage(userResubMessage);
       }
@@ -1192,6 +1227,7 @@ export class TwitchManager {
     subGiftMessage.platform = "twitch";
     subGiftMessage.twitchSpecific = {
       messageType: { category: "subscription", type: "subgift" },
+      isHighlighted: true,
     };
 
     void sleep(1000).then(() => {
@@ -1236,6 +1272,7 @@ export class TwitchManager {
         gifterMessage.author.displayName = gifterName;
         gifterMessage.twitchSpecific = {
           messageType: { category: "subscription", type: "communitysub" },
+          isHighlighted: true,
         };
         sendChatMessage(gifterMessage);
       }
@@ -1338,6 +1375,7 @@ export class TwitchManager {
         userUpgradeMessage.author.displayName = event.chatterDisplayName;
         userUpgradeMessage.twitchSpecific = {
           messageType: { category: "subscription", type: "giftpaidupgrade" },
+          isHighlighted: true,
         };
         sendChatMessage(userUpgradeMessage);
       }
@@ -1373,6 +1411,7 @@ export class TwitchManager {
         userPrimeMessage.author.displayName = event.chatterDisplayName;
         userPrimeMessage.twitchSpecific = {
           messageType: { category: "subscription", type: "primepaidupgrade" },
+          isHighlighted: true,
         };
         sendChatMessage(userPrimeMessage);
       }
@@ -1422,6 +1461,7 @@ export class TwitchManager {
         userPayForwardMessage.author.displayName = event.chatterDisplayName;
         userPayForwardMessage.twitchSpecific = {
           messageType: { category: "subscription", type: "payforward" },
+          isHighlighted: true,
         };
         sendChatMessage(userPayForwardMessage);
       }
@@ -1466,30 +1506,26 @@ export class TwitchManager {
     broadcasterId: string,
     moderatorId: string,
   ): void {
-    listener.onChannelModerate(
-      broadcasterId,
-      moderatorId,
-      (event) => {
-        switch (event.moderationAction) {
-          case "ban":
-            this.handleBanModeration(event as unknown as EventSubBanModeration);
-            break;
-          case "timeout":
-            this.handleTimeoutModeration(
-              event as unknown as EventSubTimeoutModeration,
-            );
-            break;
-          case "delete":
-            this.handleDeleteModeration(
-              event as unknown as EventSubDeleteModeration,
-            );
-            break;
-          default:
-            // Other moderation actions (unban, untimeout, slow, etc.) - no handling needed
-            break;
-        }
-      },
-    );
+    listener.onChannelModerate(broadcasterId, moderatorId, (event) => {
+      switch (event.moderationAction) {
+        case "ban":
+          this.handleBanModeration(event as unknown as EventSubBanModeration);
+          break;
+        case "timeout":
+          this.handleTimeoutModeration(
+            event as unknown as EventSubTimeoutModeration,
+          );
+          break;
+        case "delete":
+          this.handleDeleteModeration(
+            event as unknown as EventSubDeleteModeration,
+          );
+          break;
+        default:
+          // Other moderation actions (unban, untimeout, slow, etc.) - no handling needed
+          break;
+      }
+    });
   }
 
   private handleBanModeration(event: EventSubBanModeration): void {
@@ -1589,33 +1625,33 @@ export class TwitchManager {
     broadcasterId: string,
     moderatorId: string,
   ): void {
-    listener.onChannelFollow(
-      broadcasterId,
-      moderatorId,
-      (event) => {
-        console.log(`TwitchEventSub: New follower - ${event.userDisplayName}`);
+    listener.onChannelFollow(broadcasterId, moderatorId, (event) => {
+      console.log(`TwitchEventSub: New follower - ${event.userDisplayName}`);
 
-        const followMessage: UnifiedChatMessage =
-          structuredClone(Wingbot953Message);
-        followMessage.platform = "twitch";
-        followMessage.message.text = buildFollowMessage(event.userDisplayName);
-        followMessage.twitchSpecific = {
-          isHighlighted: true,
-          messageType: { category: "notification", type: "follow" },
-        };
+      const followMessage: UnifiedChatMessage =
+        structuredClone(Wingbot953Message);
+      followMessage.platform = "twitch";
+      followMessage.message.text = buildFollowMessage(event.userDisplayName);
+      followMessage.twitchSpecific = {
+        isHighlighted: true,
+        messageType: { category: "notification", type: "follow" },
+      };
 
-        sendChatMessage(followMessage, true, false);
+      // INTENTIONALLY DISABLED: Electing to not show follow event for now.
+      // sendChatMessage(followMessage, true, false);
 
-        this.eventBus.safeEmit(EventTypes.TWITCH_FOLLOW, {
-          userName: event.userName,
-          userDisplayName: event.userDisplayName,
-          followDate: event.followDate.toISOString(),
-        });
-      },
-    );
+      this.eventBus.safeEmit(EventTypes.TWITCH_FOLLOW, {
+        userName: event.userName,
+        userDisplayName: event.userDisplayName,
+        followDate: event.followDate.toISOString(),
+      });
+    });
   }
 
-  private subscribeToHypeTrainEvents(listener: EventSubWsListener, broadcasterId: string): void {
+  private subscribeToHypeTrainEvents(
+    listener: EventSubWsListener,
+    broadcasterId: string,
+  ): void {
     listener.onChannelHypeTrainBeginV2(broadcasterId, (event) => {
       console.log(
         `TwitchEventSub: Hype Train started! Level ${event.level}, Goal: ${event.goal}`,
@@ -1640,25 +1676,23 @@ export class TwitchManager {
       });
     });
 
-    listener.onChannelHypeTrainProgressV2(
-      broadcasterId,
-      (event) => {
-        console.log(
-          `TwitchEventSub: Hype Train progress - Level ${event.level}, ${event.total}/${event.goal}`,
-        );
+    listener.onChannelHypeTrainProgressV2(broadcasterId, (event) => {
+      console.log(
+        `TwitchEventSub: Hype Train progress - Level ${event.level}, ${event.total}/${event.goal}`,
+      );
 
-        const progressMessage: UnifiedChatMessage =
-          structuredClone(Wingbot953Message);
-        progressMessage.platform = "twitch";
-        progressMessage.channel = { name: "Admin" };
-        progressMessage.message.text = `Hype Train progress - Level ${event.level}, ${event.total}/${event.goal}`;
-        progressMessage.twitchSpecific = {
-          messageType: { category: "activity", type: "hypetrain" },
-        };
+      const progressMessage: UnifiedChatMessage =
+        structuredClone(Wingbot953Message);
+      progressMessage.platform = "twitch";
+      progressMessage.channel = { name: "Admin" };
+      progressMessage.message.text = `Hype Train progress - Level ${event.level}, ${event.total}/${event.goal}`;
+      progressMessage.twitchSpecific = {
+        messageType: { category: "activity", type: "hypetrain" },
+        isHighlighted: true,
+      };
 
-        sendChatMessage(progressMessage, true, false);
-      },
-    );
+      sendChatMessage(progressMessage, true, false);
+    });
 
     listener.onChannelHypeTrainEndV2(broadcasterId, (event) => {
       console.log(`TwitchEventSub: Hype Train ended at level ${event.level}!`);
@@ -1691,7 +1725,10 @@ export class TwitchManager {
    * Subscribes to channel point custom reward redemption events.
    * Replaces the previous polling-based redemption detection.
    */
-  private subscribeToChannelPointRedemptions(listener: EventSubWsListener, broadcasterId: string): void {
+  private subscribeToChannelPointRedemptions(
+    listener: EventSubWsListener,
+    broadcasterId: string,
+  ): void {
     listener.onChannelRedemptionAdd(broadcasterId, (event) => {
       console.log(
         `TwitchEventSub: Channel point redemption - ${event.userDisplayName} redeemed "${event.rewardTitle}"`,
@@ -1742,7 +1779,10 @@ export class TwitchManager {
    * Subscribes to stream online and offline events.
    * Replaces the previous polling-based stream status detection.
    */
-  private subscribeToStreamEvents(listener: EventSubWsListener, broadcasterId: string): void {
+  private subscribeToStreamEvents(
+    listener: EventSubWsListener,
+    broadcasterId: string,
+  ): void {
     listener.onStreamOnline(broadcasterId, (event) => {
       console.log(`TwitchEventSub: Stream went online! Type: ${event.type}`);
 
@@ -1773,7 +1813,10 @@ export class TwitchManager {
     });
   }
 
-  private subscribeToPredictionEvents(listener: EventSubWsListener, broadcasterId: string): void {
+  private subscribeToPredictionEvents(
+    listener: EventSubWsListener,
+    broadcasterId: string,
+  ): void {
     listener.onChannelPredictionBegin(broadcasterId, (event) => {
       console.log(`TwitchEventSub: Prediction started - "${event.title}"`);
 
@@ -1815,6 +1858,7 @@ export class TwitchManager {
       lockMessage.message.text = `Prediction locked: "${event.title}"`;
       lockMessage.twitchSpecific = {
         messageType: { category: "activity", type: "prediction" },
+        isHighlighted: true,
       };
 
       sendChatMessage(lockMessage, true, false);
@@ -1852,7 +1896,10 @@ export class TwitchManager {
     });
   }
 
-  private subscribeToPollEvents(listener: EventSubWsListener, broadcasterId: string): void {
+  private subscribeToPollEvents(
+    listener: EventSubWsListener,
+    broadcasterId: string,
+  ): void {
     listener.onChannelPollBegin(broadcasterId, (event) => {
       console.log(`TwitchEventSub: Poll started - "${event.title}"`);
 
@@ -1948,56 +1995,48 @@ export class TwitchManager {
     broadcasterId: string,
     moderatorId: string,
   ): void {
-    listener.onChannelShoutoutCreate(
-      broadcasterId,
-      moderatorId,
-      (event) => {
-        console.log(
-          `TwitchEventSub: Shoutout created for ${event.shoutedOutBroadcasterDisplayName}`,
-        );
+    listener.onChannelShoutoutCreate(broadcasterId, moderatorId, (event) => {
+      console.log(
+        `TwitchEventSub: Shoutout created for ${event.shoutedOutBroadcasterDisplayName}`,
+      );
 
-        const shoutoutCreateMessage: UnifiedChatMessage =
-          structuredClone(Wingbot953Message);
-        shoutoutCreateMessage.platform = "twitch";
-        shoutoutCreateMessage.channel = { name: "Admin" };
-        shoutoutCreateMessage.message.text = `Shoutout sent to ${event.shoutedOutBroadcasterDisplayName}`;
-        shoutoutCreateMessage.twitchSpecific = {
-          messageType: { category: "notification", type: "shoutout" },
-        };
+      const shoutoutCreateMessage: UnifiedChatMessage =
+        structuredClone(Wingbot953Message);
+      shoutoutCreateMessage.platform = "twitch";
+      shoutoutCreateMessage.channel = { name: "Admin" };
+      shoutoutCreateMessage.message.text = `Shoutout sent to ${event.shoutedOutBroadcasterDisplayName}`;
+      shoutoutCreateMessage.twitchSpecific = {
+        messageType: { category: "notification", type: "shoutout" },
+      };
 
-        sendChatMessage(shoutoutCreateMessage, true, false);
-      },
-    );
+      sendChatMessage(shoutoutCreateMessage, true, false);
+    });
 
-    listener.onChannelShoutoutReceive(
-      broadcasterId,
-      moderatorId,
-      (event) => {
-        console.log(
-          `TwitchEventSub: Shoutout received from ${event.shoutingOutBroadcasterDisplayName}`,
-        );
+    listener.onChannelShoutoutReceive(broadcasterId, moderatorId, (event) => {
+      console.log(
+        `TwitchEventSub: Shoutout received from ${event.shoutingOutBroadcasterDisplayName}`,
+      );
 
-        const shoutoutMessage: UnifiedChatMessage =
-          structuredClone(Wingbot953Message);
-        shoutoutMessage.platform = "twitch";
-        shoutoutMessage.message.text = buildShoutoutReceiveMessage(
-          event.shoutingOutBroadcasterDisplayName,
-        );
-        shoutoutMessage.twitchSpecific = {
-          isHighlighted: true,
-          messageType: { category: "notification", type: "shoutout" },
-        };
+      const shoutoutMessage: UnifiedChatMessage =
+        structuredClone(Wingbot953Message);
+      shoutoutMessage.platform = "twitch";
+      shoutoutMessage.message.text = buildShoutoutReceiveMessage(
+        event.shoutingOutBroadcasterDisplayName,
+      );
+      shoutoutMessage.twitchSpecific = {
+        isHighlighted: true,
+        messageType: { category: "notification", type: "shoutout" },
+      };
 
-        sendChatMessage(shoutoutMessage, true, false);
+      sendChatMessage(shoutoutMessage, true, false);
 
-        this.eventBus.safeEmit(EventTypes.TWITCH_SHOUTOUT_RECEIVE, {
-          shoutingOutUserName: event.shoutingOutBroadcasterName,
-          shoutingOutUserDisplayName: event.shoutingOutBroadcasterDisplayName,
-          viewerCount: event.viewerCount,
-          startDate: event.startDate.toISOString(),
-        });
-      },
-    );
+      this.eventBus.safeEmit(EventTypes.TWITCH_SHOUTOUT_RECEIVE, {
+        shoutingOutUserName: event.shoutingOutBroadcasterName,
+        shoutingOutUserDisplayName: event.shoutingOutBroadcasterDisplayName,
+        viewerCount: event.viewerCount,
+        startDate: event.startDate.toISOString(),
+      });
+    });
   }
 
   /**
