@@ -199,46 +199,65 @@
                 border-radius: 6px;
                 margin-bottom: 16px;
                 z-index: 1;
+                box-sizing: border-box;
             }
 
             .message.special-message::before {
                 content: "";
                 position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
+                inset: 0;
                 border-radius: 6px;
                 z-index: -1;
                 opacity: 0.85;
+                box-sizing: border-box;
             }
 
-            /* Subscription message style */
+            /* Subscription - Orange */
             .message.sub-message::before {
-                background: linear-gradient(135deg, #6441a5 0%, #4b367c 100%);
-                border: 2px solid #9146ff;
-                box-shadow: 0 0 10px rgba(145, 70, 255, 0.5);
+                background: linear-gradient(135deg, #c45100 0%, #8a3a00 100%);
+                border: 2px solid #ff6b1a;
+                box-shadow: 0 0 12px rgba(255, 107, 26, 0.5);
             }
 
-            /* Bits message style */
-            .message.bits-message::before {
-                background: linear-gradient(135deg, #9146ff 0%, #00ffff 100%);
-                border: 2px solid #00ffff;
-                box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            /* Moderation - Red */
+            .message.moderation-message::before {
+                background: linear-gradient(135deg, #a51b1b 0%, #6e0f0f 100%);
+                border: 2px solid #e63939;
+                box-shadow: 0 0 12px rgba(230, 57, 57, 0.5);
             }
 
-            /* YouTube superchat message style */
+            /* Activity - Green */
+            .message.activity-message::before {
+                background: linear-gradient(135deg, #1a7a3a 0%, #0f5227 100%);
+                border: 2px solid #2ecc40;
+                box-shadow: 0 0 12px rgba(46, 204, 64, 0.5);
+            }
+
+            /* Notification - Blue */
+            .message.notification-message::before {
+                background: linear-gradient(135deg, #1456a0 0%, #0b3366 100%);
+                border: 2px solid #3d9df6;
+                box-shadow: 0 0 12px rgba(61, 157, 246, 0.5);
+            }
+
+            /* Bits & YouTube SuperChat - Purple */
+            .message.bits-message::before,
             .message.superchat-message::before {
-                background: linear-gradient(135deg, #ff0000 0%, #ff8800 100%);
-                border: 2px solid #ff0000;
-                box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+                background: linear-gradient(135deg, #7b2fbe 0%, #4a1a75 100%);
+                border: 2px solid #b44dff;
+                box-shadow: 0 0 12px rgba(180, 77, 255, 0.5);
             }
 
-            /* For any other special message */
+            /* Twitch highlighted chat message - Grey */
             .message.highlighted-message::before {
-                background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
-                border: 2px solid #00c6ff;
-                box-shadow: 0 0 10px rgba(0, 198, 255, 0.5);
+                background: linear-gradient(135deg, #4a4a4a 0%, #2e2e2e 100%);
+                border: 2px solid #777;
+                box-shadow: 0 0 10px rgba(150, 150, 150, 0.4);
+            }
+
+            /* /me action messages - italic, no special background */
+            .message.action-message .message-text {
+                font-style: italic;
             }
         </style>
     </head>
@@ -479,14 +498,6 @@
 
                 // Determine if this is a special message
                 const isSpecialMessage = () => {
-                    // Check for a highlighted message
-                    if (
-                        msg.twitchSpecific &&
-                        msg.twitchSpecific.isHighlighted
-                    ) {
-                        return "highlighted-message"
-                    }
-
                     // Check for Twitch bits
                     if (
                         msg.twitchSpecific &&
@@ -496,32 +507,41 @@
                         return "bits-message"
                     }
 
-                    // Check for Twitch subscription
-                    if (
-                        msg.twitchSpecific &&
-                        (msg.twitchSpecific.messageType === "sub" ||
-                            msg.twitchSpecific.messageType === "resub" ||
-                            msg.twitchSpecific.messageType === "subgift")
-                    ) {
-                        return "sub-message"
+                    // Check for YouTube SuperChat
+                    if (msg.youtubeSpecific && msg.youtubeSpecific.isSuperChat) {
+                        return "superchat-message"
                     }
 
-                    // Check for YouTube Superchat
-                    if (msg.youtubeSpecific && msg.youtubeSpecific.superChat) {
-                        return "superchat-message"
+                    // Route by messageType category
+                    if (msg.twitchSpecific && msg.twitchSpecific.messageType) {
+                        const category = msg.twitchSpecific.messageType.category
+                        if (category === "chat") return "action-message"
+                        if (category === "subscription") return "sub-message"
+                        if (category === "moderation") return "moderation-message"
+                        if (category === "activity") return "activity-message"
+                        if (category === "notification") return "notification-message"
+                    }
+
+                    // Twitch highlighted chat message
+                    if (
+                        msg.twitchSpecific &&
+                        msg.twitchSpecific.isHighlighted
+                    ) {
+                        return "highlighted-message"
                     }
 
                     return ""
                 }
 
                 const specialMessageClass = isSpecialMessage()
+                const isBackgroundMessage = specialMessageClass && specialMessageClass !== "action-message"
 
                 return (
                     <div
                         className={`message ${
-                            specialMessageClass
+                            isBackgroundMessage
                                 ? "special-message " + specialMessageClass
-                                : ""
+                                : specialMessageClass || ""
                         }`}
                     >
                         <div className="icons-container">

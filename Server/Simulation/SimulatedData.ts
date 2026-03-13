@@ -227,7 +227,7 @@ function makeBotMessage(text: string, messageType: TwitchMessageType, extra?: Pa
         channel: { id: "sim-channel-twitch", name: "Wingman953" },
         author: { name: "wingbot953", displayName: "Wingbot953" },
         message: { text },
-        twitchSpecific: { messageType, isHighlighted: true, ...extra },
+        twitchSpecific: { messageType, ...extra },
     }
 }
 
@@ -413,7 +413,6 @@ const specialEvents: SimulatedEvent[] = [
             twitchSpecific: {
                 messageType: { category: "notification" as const, type: "announcement" as const },
                 announcementColor: randomFrom(["PRIMARY", "BLUE", "GREEN", "ORANGE", "PURPLE"]),
-                isHighlighted: true,
             },
         },
     }),
@@ -565,6 +564,81 @@ const specialEvents: SimulatedEvent[] = [
         const user = randomFrom(twitchUsernames)
         return {
             botMessage: makeAdminMessage(`${user} redeemed "Add Custom Greeting" (2000 points)`, { category: "activity", type: "redemption" }),
+        }
+    },
+    // Bits (cheer message)
+    () => {
+        const user = randomFrom(twitchUsernames)
+        const bits = randomFrom([100, 500, 1000, 5000])
+        return {
+            botMessage: {
+                id: `sim-event-${Date.now()}`,
+                platform: "twitch" as const,
+                timestamp: new Date(),
+                channel: { id: "sim-channel-twitch", name: "Wingman953" },
+                author: {
+                    id: `sim-twitch-${user.toLowerCase()}`,
+                    name: user.toLowerCase(),
+                    displayName: user,
+                    isSubscriber: true,
+                },
+                message: { text: `Cheer${bits} Great stream, keep it up!` },
+                twitchSpecific: { bits },
+            },
+        }
+    },
+    // Twitch highlighted chat message
+    () => {
+        const user = randomFrom(twitchUsernames)
+        return {
+            botMessage: {
+                id: `sim-event-${Date.now()}`,
+                platform: "twitch" as const,
+                timestamp: new Date(),
+                channel: { id: "sim-channel-twitch", name: "Wingman953" },
+                author: {
+                    id: `sim-twitch-${user.toLowerCase()}`,
+                    name: user.toLowerCase(),
+                    displayName: user,
+                },
+                message: { text: randomFrom([
+                    "Can you explain that strat?",
+                    "What's your PB for this game?",
+                    "Do you have any tips for new runners?",
+                ]) },
+                twitchSpecific: { isHighlighted: true },
+            },
+        }
+    },
+    // YouTube SuperChat
+    () => {
+        const user = randomFrom(youtubeUsernames)
+        const amount = randomFrom([2, 5, 10, 20, 50])
+        return {
+            botMessage: {
+                id: `sim-event-${Date.now()}`,
+                platform: "youtube" as const,
+                timestamp: new Date(),
+                channel: { id: "sim-channel-youtube", name: "Wingman953" },
+                author: {
+                    id: `sim-youtube-${user.toLowerCase()}`,
+                    name: user.toLowerCase(),
+                    displayName: user,
+                },
+                message: { text: randomFrom([
+                    "Love the content, keep it up!",
+                    "Amazing run, well deserved!",
+                    "Here's some support for the stream!",
+                ]) },
+                youtubeSpecific: {
+                    isSuperChat: true,
+                    superChatDetails: {
+                        amount,
+                        currency: "USD",
+                        color: "#FFD700",
+                    },
+                },
+            },
         }
     },
 ]

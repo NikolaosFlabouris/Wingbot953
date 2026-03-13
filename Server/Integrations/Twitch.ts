@@ -1158,7 +1158,6 @@ export class TwitchManager {
     subMessage.platform = "twitch";
     subMessage.twitchSpecific = {
       messageType: { category: "subscription", type: "sub" },
-      isHighlighted: true,
     };
 
     void sleep(1000).then(() => {
@@ -1172,7 +1171,6 @@ export class TwitchManager {
         userSubMessage.author.displayName = event.chatterDisplayName;
         userSubMessage.twitchSpecific = {
           messageType: { category: "subscription", type: "sub" },
-          isHighlighted: true,
         };
         sendChatMessage(userSubMessage);
       }
@@ -1192,7 +1190,6 @@ export class TwitchManager {
     subMessage.platform = "twitch";
     subMessage.twitchSpecific = {
       messageType: { category: "subscription", type: "resub" },
-      isHighlighted: true,
     };
 
     void sleep(1000).then(() => {
@@ -1206,7 +1203,6 @@ export class TwitchManager {
         userResubMessage.author.displayName = event.chatterDisplayName;
         userResubMessage.twitchSpecific = {
           messageType: { category: "subscription", type: "resub" },
-          isHighlighted: true,
         };
         sendChatMessage(userResubMessage);
       }
@@ -1227,7 +1223,6 @@ export class TwitchManager {
     subGiftMessage.platform = "twitch";
     subGiftMessage.twitchSpecific = {
       messageType: { category: "subscription", type: "subgift" },
-      isHighlighted: true,
     };
 
     void sleep(1000).then(() => {
@@ -1257,7 +1252,6 @@ export class TwitchManager {
     communitySubMessage.platform = "twitch";
     communitySubMessage.twitchSpecific = {
       messageType: { category: "subscription", type: "communitysub" },
-      isHighlighted: true,
       giftCount: event.total,
     };
 
@@ -1272,7 +1266,6 @@ export class TwitchManager {
         gifterMessage.author.displayName = gifterName;
         gifterMessage.twitchSpecific = {
           messageType: { category: "subscription", type: "communitysub" },
-          isHighlighted: true,
         };
         sendChatMessage(gifterMessage);
       }
@@ -1291,7 +1284,6 @@ export class TwitchManager {
     );
     raidMessage.platform = "twitch";
     raidMessage.twitchSpecific = {
-      isHighlighted: true,
       messageType: { category: "notification", type: "raid" },
     };
 
@@ -1337,7 +1329,6 @@ export class TwitchManager {
       twitchSpecific: {
         messageType: { category: "notification", type: "announcement" },
         announcementColor: event.announcementColor,
-        isHighlighted: true,
       },
     };
 
@@ -1360,7 +1351,6 @@ export class TwitchManager {
     upgradeMessage.platform = "twitch";
     upgradeMessage.twitchSpecific = {
       messageType: { category: "subscription", type: "giftpaidupgrade" },
-      isHighlighted: true,
       originalGifter: event.gifterDisplayName,
     };
 
@@ -1375,7 +1365,6 @@ export class TwitchManager {
         userUpgradeMessage.author.displayName = event.chatterDisplayName;
         userUpgradeMessage.twitchSpecific = {
           messageType: { category: "subscription", type: "giftpaidupgrade" },
-          isHighlighted: true,
         };
         sendChatMessage(userUpgradeMessage);
       }
@@ -1397,7 +1386,6 @@ export class TwitchManager {
     upgradeMessage.platform = "twitch";
     upgradeMessage.twitchSpecific = {
       messageType: { category: "subscription", type: "primepaidupgrade" },
-      isHighlighted: true,
     };
 
     void sleep(1000).then(() => {
@@ -1411,7 +1399,6 @@ export class TwitchManager {
         userPrimeMessage.author.displayName = event.chatterDisplayName;
         userPrimeMessage.twitchSpecific = {
           messageType: { category: "subscription", type: "primepaidupgrade" },
-          isHighlighted: true,
         };
         sendChatMessage(userPrimeMessage);
       }
@@ -1446,7 +1433,6 @@ export class TwitchManager {
     payForwardMessage.platform = "twitch";
     payForwardMessage.twitchSpecific = {
       messageType: { category: "subscription", type: "payforward" },
-      isHighlighted: true,
       originalGifter: gifterName,
     };
 
@@ -1461,7 +1447,6 @@ export class TwitchManager {
         userPayForwardMessage.author.displayName = event.chatterDisplayName;
         userPayForwardMessage.twitchSpecific = {
           messageType: { category: "subscription", type: "payforward" },
-          isHighlighted: true,
         };
         sendChatMessage(userPayForwardMessage);
       }
@@ -1533,24 +1518,12 @@ export class TwitchManager {
       `User ${event.userDisplayName} was banned in ${event.broadcasterName}`,
     );
 
-    const banMessage: UnifiedChatMessage = {
-      platform: "twitch",
-      timestamp: new Date(),
-      channel: {
-        id: event.broadcasterId,
-        name: "Admin",
-      },
-      author: {
-        id: event.userId,
-        name: event.userName,
-        displayName: event.userDisplayName,
-      },
-      message: {
-        text: `${event.userDisplayName} has been banned.`,
-      },
-      twitchSpecific: {
-        messageType: { category: "moderation", type: "ban" },
-      },
+    const banMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+    banMessage.platform = "twitch";
+    banMessage.channel = { id: event.broadcasterId, name: "Admin" };
+    banMessage.message.text = `${event.userDisplayName} has been banned.`;
+    banMessage.twitchSpecific = {
+      messageType: { category: "moderation", type: "ban" },
     };
 
     sendChatMessage(banMessage, true, false);
@@ -1567,25 +1540,13 @@ export class TwitchManager {
       `User ${event.userDisplayName} was timed out for ${duration}s in ${event.broadcasterName}`,
     );
 
-    const timeoutMessage: UnifiedChatMessage = {
-      platform: "twitch",
-      timestamp: new Date(),
-      channel: {
-        id: event.broadcasterId,
-        name: "Admin",
-      },
-      author: {
-        id: event.userId,
-        name: event.userName,
-        displayName: event.userDisplayName,
-      },
-      message: {
-        text: `${event.userDisplayName} has been timed out for ${duration} seconds.`,
-      },
-      twitchSpecific: {
-        messageType: { category: "moderation", type: "timeout" },
-        timeoutDuration: duration,
-      },
+    const timeoutMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+    timeoutMessage.platform = "twitch";
+    timeoutMessage.channel = { id: event.broadcasterId, name: "Admin" };
+    timeoutMessage.message.text = `${event.userDisplayName} has been timed out for ${duration} seconds.`;
+    timeoutMessage.twitchSpecific = {
+      messageType: { category: "moderation", type: "timeout" },
+      timeoutDuration: duration,
     };
 
     sendChatMessage(timeoutMessage, true, false);
@@ -1596,25 +1557,13 @@ export class TwitchManager {
       `Message ${event.messageId} from ${event.userDisplayName} was deleted in ${event.broadcasterName}`,
     );
 
-    const removeMessage: UnifiedChatMessage = {
-      id: event.messageId,
-      platform: "twitch",
-      timestamp: new Date(),
-      channel: {
-        id: event.broadcasterId,
-        name: "Admin",
-      },
-      author: {
-        id: event.userId,
-        name: event.userName,
-        displayName: event.userDisplayName,
-      },
-      message: {
-        text: event.messageText,
-      },
-      twitchSpecific: {
-        messageType: { category: "moderation", type: "messageremove" },
-      },
+    const removeMessage: UnifiedChatMessage = structuredClone(Wingbot953Message);
+    removeMessage.id = event.messageId;
+    removeMessage.platform = "twitch";
+    removeMessage.channel = { id: event.broadcasterId, name: "Admin" };
+    removeMessage.message.text = event.messageText;
+    removeMessage.twitchSpecific = {
+      messageType: { category: "moderation", type: "messageremove" },
     };
 
     sendChatMessage(removeMessage, true, false);
@@ -1633,7 +1582,6 @@ export class TwitchManager {
       followMessage.platform = "twitch";
       followMessage.message.text = buildFollowMessage(event.userDisplayName);
       followMessage.twitchSpecific = {
-        isHighlighted: true,
         messageType: { category: "notification", type: "follow" },
       };
 
@@ -1662,7 +1610,6 @@ export class TwitchManager {
       hypeMessage.platform = "twitch";
       hypeMessage.message.text = buildHypeTrainBeginMessage(event.level);
       hypeMessage.twitchSpecific = {
-        isHighlighted: true,
         messageType: { category: "activity", type: "hypetrain" },
       };
 
@@ -1688,7 +1635,6 @@ export class TwitchManager {
       progressMessage.message.text = `Hype Train progress - Level ${event.level}, ${event.total}/${event.goal}`;
       progressMessage.twitchSpecific = {
         messageType: { category: "activity", type: "hypetrain" },
-        isHighlighted: true,
       };
 
       sendChatMessage(progressMessage, true, false);
@@ -1702,7 +1648,6 @@ export class TwitchManager {
       hypeEndMessage.platform = "twitch";
       hypeEndMessage.message.text = buildHypeTrainEndMessage(event.level);
       hypeEndMessage.twitchSpecific = {
-        isHighlighted: true,
         messageType: { category: "activity", type: "hypetrain" },
       };
 
@@ -1834,7 +1779,6 @@ export class TwitchManager {
         outcomes.map((o) => o.title),
       );
       predictionMessage.twitchSpecific = {
-        isHighlighted: true,
         messageType: { category: "activity", type: "prediction" },
       };
 
@@ -1858,7 +1802,6 @@ export class TwitchManager {
       lockMessage.message.text = `Prediction locked: "${event.title}"`;
       lockMessage.twitchSpecific = {
         messageType: { category: "activity", type: "prediction" },
-        isHighlighted: true,
       };
 
       sendChatMessage(lockMessage, true, false);
@@ -1880,7 +1823,6 @@ export class TwitchManager {
           winningOutcome.title,
         );
         predEndMessage.twitchSpecific = {
-          isHighlighted: true,
           messageType: { category: "activity", type: "prediction" },
         };
 
@@ -1916,7 +1858,6 @@ export class TwitchManager {
         choices.map((c) => c.title),
       );
       pollMessage.twitchSpecific = {
-        isHighlighted: true,
         messageType: { category: "activity", type: "poll" },
       };
 
@@ -1973,7 +1914,6 @@ export class TwitchManager {
           winningChoice.totalVotes,
         );
         pollEndMessage.twitchSpecific = {
-          isHighlighted: true,
           messageType: { category: "activity", type: "poll" },
         };
 
@@ -2024,7 +1964,6 @@ export class TwitchManager {
         event.shoutingOutBroadcasterDisplayName,
       );
       shoutoutMessage.twitchSpecific = {
-        isHighlighted: true,
         messageType: { category: "notification", type: "shoutout" },
       };
 
@@ -2399,7 +2338,7 @@ export class TwitchManager {
     gDayMessage.author.displayName = userDisplayName;
     gDayMessage.author.id = userId;
     gDayMessage.twitchSpecific = {
-      isHighlighted: true,
+      messageType: { category: "activity", type: "redemption" },
     };
     gDayMessage.message.text = `wingma14Arrive G'Day ${this.streamerUser.displayName}!`;
 
@@ -2424,7 +2363,7 @@ export class TwitchManager {
     gNightMessage.author.displayName = userDisplayName;
     gNightMessage.author.id = userId;
     gNightMessage.twitchSpecific = {
-      isHighlighted: true,
+      messageType: { category: "activity", type: "redemption" },
     };
     gNightMessage.message.text = `wingma14Good Good night, ${this.streamerUser.displayName}!`;
 
