@@ -80,7 +80,11 @@
                 align-items: flex-start;
                 width: 100%;
                 max-width: 100%;
-                flex-wrap: wrap; /* Allow the message to wrap */
+            }
+
+            .text-content {
+                flex: 1;
+                min-width: 0;
             }
 
             .platform-icon {
@@ -116,15 +120,14 @@
                 font-weight: bold;
                 margin-right: 5px;
                 font-size: 1.2em;
-                flex-shrink: 0; /* Prevent username from shrinking */
-                /*white-space: nowrap; /* Keep author on one line */
+                display: inline;
             }
 
             .message-text {
                 color: white;
                 text-align: left;
                 font-size: 1.3em;
-                display: block; /* Force the message text to start on a new line */
+                display: inline;
                 word-wrap: break-word;
                 word-break: break-word;
                 overflow-wrap: break-word;
@@ -553,34 +556,36 @@
                             {/* Render badges from Twitch or other platforms */}
                             {renderBadges(msg)}
                         </div>
-                        <div
-                            className="author"
-                            style={{
-                                color: authorColor,
-                                "-webkit-text-stroke": isColorDark(authorColor)
-                                    ? "0.04em #aaa"
-                                    : "none",
-                            }}
-                        >
-                            {msg.author.displayName}:
-                        </div>
-                        <div className="message-text">
-                            {parseMessageWithEmotes(
-                                msg.message.text,
-                                msg.message.emoteMap
-                            ).map((part, i) =>
-                                part.type === "text" ? (
-                                    <span key={i}>{part.content}</span>
-                                ) : (
-                                    <img
-                                        key={i}
-                                        src={part.src}
-                                        alt={part.content}
-                                        className="inline-emote"
-                                        title={part.content}
-                                    />
-                                )
-                            )}
+                        <div className="text-content">
+                            <span
+                                className="author"
+                                style={{
+                                    color: authorColor,
+                                    "-webkit-text-stroke": isColorDark(authorColor)
+                                        ? "0.04em #aaa"
+                                        : "none",
+                                }}
+                            >
+                                {msg.author.displayName}:
+                            </span>
+                            <span className="message-text">
+                                {parseMessageWithEmotes(
+                                    msg.message.text,
+                                    msg.message.emoteMap
+                                ).map((part, i) =>
+                                    part.type === "text" ? (
+                                        <span key={i}>{part.content}</span>
+                                    ) : (
+                                        <img
+                                            key={i}
+                                            src={part.src}
+                                            alt={part.content}
+                                            className="inline-emote"
+                                            title={part.content}
+                                        />
+                                    )
+                                )}
+                            </span>
                         </div>
                     </div>
                 )
